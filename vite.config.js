@@ -17,12 +17,10 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       cors: true,
-      strictPort: true,
-      port: 3000,
       https: false,
-      hmr: {
-        host: 'localhost',
-      }
+      host: true,
+      port: 3012,
+      hmr: {host: 'localhost', protocol: 'ws'},
     },
     build: {
       outDir: dest,

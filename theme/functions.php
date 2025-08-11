@@ -104,8 +104,8 @@ class Timberland extends Timber\Site {
 
 		if ( $vite_env === 'development' ) {
 			function vite_head_module_hook() {
-				echo '<script type="module" crossorigin src="http://localhost:3000/@vite/client"></script>';
-				echo '<script type="module" crossorigin src="http://localhost:3000/theme/assets/main.js"></script>';
+				echo '<script type="module" crossorigin src="http://localhost:3012/@vite/client"></script>';
+				echo '<script type="module" crossorigin src="http://localhost:3012/theme/assets/main.js"></script>';
 			}
 			add_action( 'wp_head', 'vite_head_module_hook' );
 		}

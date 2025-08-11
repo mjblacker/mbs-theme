@@ -25,12 +25,12 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 
 if [[ $CI = true ]]
 then
-	# are we in a CI environment?
-	echo 'forcing non-interactive mode for CI environment'
-	INTERACTIVE='NO'
+  # are we in a CI environment?
+  echo 'forcing non-interactive mode for CI environment'
+  INTERACTIVE='NO'
 else
-	# not in a CI environment, default to interactive mode
-	INTERACTIVE=${INTERACTIVE:-'YES'}
+  # not in a CI environment, default to interactive mode
+  INTERACTIVE=${INTERACTIVE:-'YES'}
 fi
 
 # Install and configure WordPress if we haven't already
@@ -40,10 +40,16 @@ main() {
 
   WP_DIR="$LANDO_MOUNT/wp"
 
-  if ! [[ -f "$WP_DIR"/wp-content/themes/mbs ]]
+  echo "Current App Name is: $LANDO_APP_NAME"
+
+  # Construct default domain using LANDO_APP_NAME and .lndo.site for Lando convention
+  DEFAULT_APP_NAME="${LANDO_APP_NAME:-AW_Theme}"
+  DEFAULT_DOMAIN="${DEFAULT_APP_NAME}.${LANDO_DOMAIN:-lndo.site}"
+
+  if ! [[ -f "$WP_DIR"/wp-content/themes/$DEFAULT_APP_NAME ]]
   then
     echo 'Linking theme directory...'
-    ln -s "../../../theme/" "$WP_DIR"/wp-content/themes/mbs
+    ln -s "../../../theme/" "$WP_DIR"/wp-content/themes/$DEFAULT_APP_NAME
   fi
 
   echo 'Checking for WordPress config...'
@@ -82,11 +88,11 @@ EOF
       # Normal/default interactive mode: prompt the user for WP settings
       #
 
-      read -p "${BOLD}Site URL${NORMAL} (https://groot.lndo.site): " URL
-      URL=${URL:-'https://groot.lndo.site'}
+      read -p "${BOLD}Site URL${NORMAL} (https://$DEFAULT_DOMAIN): " URL
+      URL=${URL:-"https://$DEFAULT_DOMAIN"}
 
-      read -p "${BOLD}Site Title${NORMAL} (Groot): " TITLE
-      TITLE=${TITLE:-'Groot'}
+      read -p "${BOLD}Site Title${NORMAL} ($DEFAULT_APP_NAME): " TITLE
+      TITLE=${TITLE:-"$DEFAULT_APP_NAME"}
 
       # Determine the default username/email to suggest based on git config
       DEFAULT_EMAIL=$(git config --global user.email)
@@ -96,8 +102,8 @@ EOF
       read -p "${BOLD}Admin username${NORMAL} ($DEFAULT_USERNAME): " ADMIN_USER
       ADMIN_USER=${ADMIN_USER:-"$DEFAULT_USERNAME"}
 
-      read -p "${BOLD}Admin password${NORMAL} (groot): " ADMIN_PASSWORD
-      ADMIN_PASSWORD=${ADMIN_PASSWORD:-'groot'}
+      read -p "${BOLD}Admin password${NORMAL} (aspireme): " ADMIN_PASSWORD
+      ADMIN_PASSWORD=${ADMIN_PASSWORD:-'aspireme'}
 
       read -p "${BOLD}Admin email${NORMAL} ($DEFAULT_EMAIL): " ADMIN_EMAIL
       ADMIN_EMAIL=${ADMIN_EMAIL:-"$DEFAULT_EMAIL"}
@@ -118,9 +124,9 @@ EOF
   uninstall_plugins hello akismet
 
   wp --quiet plugin install --activate advanced-custom-fields
-  wp --quiet plugin install --activate classic-editor
-  wp --quiet plugin activate conifer
-  wp --quiet theme activate groot
+  #wp --quiet plugin install --activate classic-editor
+  #wp --quiet plugin activate conifer
+  wp --quiet theme activate "$DEFAULT_APP_NAME"
 
   # uninstall stock themes
   wp theme uninstall twentyten twentyeleven twentytwelve \

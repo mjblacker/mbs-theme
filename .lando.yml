@@ -15,7 +15,7 @@ services:
     run:
       - cd $LANDO_MOUNT && composer install
       #- cd $LANDO_MOUNT && scripts/setup-wordpress.sh
-      - echo $LANDO_MOUNT
+      - echo "To set up WordPress, run 'lando install' if you have not already done so."
 
     overrides:
       environment:
@@ -28,6 +28,9 @@ services:
 
   node:
     type: node:20
+
+    ports:
+      - 3012:3012
 
     globals:
       webpack: "latest"
@@ -43,6 +46,9 @@ tooling:
     cmd: '/app/scripts/setup-wordpress.sh'
     description: 'Install and configure WordPress for custom theme dev'
 
+  wp:
+    service: appserver
+
   composer:
     service: appserver
 
@@ -51,6 +57,19 @@ tooling:
 
   npm:
     service: node
+
+  dev-debug:
+    service: node
+    cmd: 'DEBUG="vite:*" npm run dev'
+
+  dev:
+    service: node
+    cmd: 'npm run dev'
+  
+  build:
+    service: node
+    cmd: 'npm run build'
+    description: 'Build the theme assets for production'
 
   debug:
     service: appserver
