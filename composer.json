@@ -1,0 +1,31 @@
+{
+  "name": "cearls/timberland",
+  "type": "wordpress-theme",
+  "description": "A modern WordPress theme using Timber, ACF, Tailwind CSS and Alpine JS",
+  "license": "MIT",
+  "authors": [{
+    "name": "Chris Earls",
+    "email": "cgearls@gmail.com"
+  }],
+  "require": {
+    "php": ">= 8.2",
+    "timber/timber": "^2.2"
+  },
+  "require-dev": {
+      "johnpbloch/wordpress-core-installer": "^2.0",
+      "johnpbloch/wordpress-core": "^6.8.2"
+  },
+  "extra": {
+      "wordpress-install-dir": {
+          "johnpbloch/wordpress-core": "wp"
+      }
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "sort-packages": true,
+    "allow-plugins": {
+      "johnpbloch/wordpress-core-installer": true
+    }
+  },
+  "minimum-stability": "stable"
+}

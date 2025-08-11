@@ -1,0 +1,87 @@
+name: mbs
+recipe: wordpress
+config:
+  webroot: wp
+  php: '8.2'
+  composer_version: 2-latest
+
+services:
+  appserver:
+    run_as_root:
+      - apt-get update
+      - apt-get install zip
+
+    run:
+      - cd $LANDO_MOUNT && composer install
+      #- cd $LANDO_MOUNT && scripts/setup-wordpress.sh
+      - echo $LANDO_MOUNT
+
+    overrides:
+      environment:
+        # Pass any non-empty CI envvar from the host into Lando
+        # This is so we can force non-interactive mode setting up WP
+        CI: ${CI:-''}
+
+  database:
+    type: mysql
+
+  node:
+    type: node:20
+
+    globals:
+      webpack: "latest"
+      yarn: "latest"
+      npm: "latest"
+
+    run:
+      - npm
+
+tooling:
+  install:
+    service: appserver
+    cmd: '/app/scripts/setup-wordpress.sh'
+    description: 'Install and configure WordPress for custom theme dev'
+
+  composer:
+    service: appserver
+
+  yarn:
+    service: node
+
+  npm:
+    service: node
+
+  debug:
+    service: appserver
+    cmd: 'tail -f /app/wp/wp-content/debug.log'
+    description: 'Get real-time WP debug log output'
+
+  webpack:
+    service: node
+    cmd: 'node_modules/.bin/webpack'
+    description: 'Run arbitrary webpack commands'
+
+  sniff:
+    service: appserver
+    cmd: 'composer sniff'
+    description: 'Run phpcs code sniffer'
+
+  sniff-summary:
+    service: appserver
+    cmd: 'composer sniff-summary'
+    description: 'Summarize phpcs results'
+
+  sniff-fix:
+    service: appserver
+    cmd: 'composer sniff-fix'
+    description: 'Fix coding standards issues that are automatically fixable'
+
+  release:
+    service: appserver
+    cmd: '/app/scripts/build-release.sh'
+    description: 'Build a downloadable release archive of Groot'
+
+# proxy:
+#   appserver:
+#     - groot.lndo.site
+
