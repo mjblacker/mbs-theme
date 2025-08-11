@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]

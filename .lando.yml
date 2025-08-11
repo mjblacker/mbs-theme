@@ -9,7 +9,8 @@ services:
   appserver:
     run_as_root:
       - apt-get update
-      - apt-get install zip
+      - apt-get install zip dos2unix
+      - dos2unix /app/scripts/setup-wordpress.sh
 
     run:
       - cd $LANDO_MOUNT && composer install
@@ -34,7 +35,7 @@ services:
       npm: "latest"
 
     run:
-      - npm
+      - npm install
 
 tooling:
   install:
