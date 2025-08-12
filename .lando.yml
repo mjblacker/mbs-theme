@@ -33,12 +33,10 @@ services:
       - 3012:3012
 
     globals:
-      webpack: "latest"
-      yarn: "latest"
       npm: "latest"
 
     run:
-      - npm install
+      - 'npm install'
 
 tooling:
   install:
@@ -52,9 +50,6 @@ tooling:
   composer:
     service: appserver
 
-  yarn:
-    service: node
-
   npm:
     service: node
 
@@ -65,43 +60,20 @@ tooling:
   dev:
     service: node
     cmd: 'npm run dev'
-  
+
   build:
     service: node
     cmd: 'npm run build'
     description: 'Build the theme assets for production'
+
+  bundle:
+    service: node
+    cmd: 'npm run bundle'
+    description: 'Build and Bundle the theme ready for deployment as a theme zip'
 
   debug:
     service: appserver
     cmd: 'tail -f /app/wp/wp-content/debug.log'
     description: 'Get real-time WP debug log output'
 
-  webpack:
-    service: node
-    cmd: 'node_modules/.bin/webpack'
-    description: 'Run arbitrary webpack commands'
-
-  sniff:
-    service: appserver
-    cmd: 'composer sniff'
-    description: 'Run phpcs code sniffer'
-
-  sniff-summary:
-    service: appserver
-    cmd: 'composer sniff-summary'
-    description: 'Summarize phpcs results'
-
-  sniff-fix:
-    service: appserver
-    cmd: 'composer sniff-fix'
-    description: 'Fix coding standards issues that are automatically fixable'
-
-  release:
-    service: appserver
-    cmd: '/app/scripts/build-release.sh'
-    description: 'Build a downloadable release archive of Groot'
-
-# proxy:
-#   appserver:
-#     - groot.lndo.site
 

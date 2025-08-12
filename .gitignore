@@ -1,20 +1,18 @@
 *.log
+.env
 .DS_Store
 /theme/assets/dist/
-.env
 
 # Ignore dev dependencies
 /node_modules
 /bower_components
 /doc
+/theme/vendor
 /vendor
 /wp
-/wp-content
-/js/browserified
 
 # Release artifacts
 /*.zip
 /*.tar
 /*.tar.gz
 /*.sql.gz
-/groot-v*/
