@@ -20,6 +20,13 @@
           "johnpbloch/wordpress-core": "wp"
       }
   },
+  "autoload": {
+      "psr-4": {
+          "Sapling\\": "theme/app/Sapling",
+          "App\\": "theme/app/"
+      },
+      "classmap": ["theme/app/Sapling/Integrations/", "theme/app/Sapling/Sapling.php"]
+  },
   "config": {
     "vendor-dir": "theme/vendor",
     "optimize-autoloader": true,
