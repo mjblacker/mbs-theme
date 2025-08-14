@@ -1,12 +1,12 @@
 {
   "apiVersion": 2,
-  "name": "acf/example",
-  "title": "Example",
+  "name": "acf/example-simple",
+  "title": "Example Simple",
   "description": "",
   "category": "custom",
   "acf": {
     "mode": "preview",
-    "renderCallback": "acf_block_render_callback"
+    "renderCallback": "acf_block_json_render_callback"
   },
   "supports": {
     "align": false,

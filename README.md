@@ -1,10 +1,10 @@
-# Timberland :evergreen_tree:
+# Sapling :evergreen_tree:
 
-Timberland is an opinionated WordPress theme based on Timberland using [Lando](https://lando.dev/), [Timber](https://www.upstatement.com/timber/), [Advanced Custom Fields Pro](https://www.advancedcustomfields.com/), [Vite](https://vitejs.dev/), [Tailwind](https://tailwindcss.com/) and [Alpine.js](https://github.com/alpinejs/alpine).
+Sapling is an opinionated WordPress theme based on Sapling using [Lando](https://lando.dev/), [Timber](https://www.upstatement.com/timber/), [Advanced Custom Fields Pro](https://www.advancedcustomfields.com/), [Vite](https://vitejs.dev/), [Tailwind](https://tailwindcss.com/) and [Alpine.js](https://github.com/alpinejs/alpine).
 
-Timberland now uses the WordPress block editor to visually edit the site. This is made possible by the [ACF Blocks feature](https://www.advancedcustomfields.com/resources/blocks/).
+Sapling uses the WordPress block editor to visually edit the site. This is made possible by the [ACF Blocks feature](https://www.advancedcustomfields.com/resources/blocks/). *ACF Pro license is required for this feature.*
 
-Timberland runs on Lando (docker) to make developement consistent between all developers. It will install WordPress into a `wp` directory and symlink the theme, this allows the theme to contain everything it needs to run for development.
+Sapling runs on Lando (docker) to make developement consistent between all developers. It will install WordPress into a `wp` directory and symlink the theme, this allows the theme to contain everything it needs to run for development.
 
 Built and Maintained by [Aspire Web](https://aspireweb.com.au)
 
@@ -18,7 +18,7 @@ Built and Maintained by [Aspire Web](https://aspireweb.com.au)
 
 ## Development
 
-Timberland builds your css and js files using Vite. This allows you to use the latest Javascript and CSS features.
+Sapling builds your css and js files using Vite. This allows you to use the latest Javascript and CSS features.
 
 To get started:
 1. Run `lando build` to generate assets that can be used in the admin block editor. This only needs to be run as often as you want to see updated block previews in the admin.
@@ -87,6 +87,10 @@ Here's an example of how to loop through a repeater field where "features" is th
 `theme/assets/` contain all of your fonts, images, styles and scripts.
 
 `theme/blocks/` contain all of your site's blocks. These blocks are available to use on any page via the block editor. Each block has its own template, script and style files.
+There are two ways to create blocks:
+- JSON: These use the block.json file to specify the details of the block
+- PHP: These use a block.php file to specify the details of the block
+This is purely personal preference and you can mix both in a single project. When using the php blocks we will also bundle in the ACF Fields for the block so the block can be re-used on different themes without any adjustment to ACF field groups required.
 
 `theme/patterns/` contains all of your sites's block patterns. Block Patterns are a collection of predefined blocks that you can insert into pages and posts and then customize with your own content.
 
