@@ -1,7 +1,5 @@
 <?php
 
-use Sapling;
-use ACF;
 use Timber\Timber;
 use Sapling\SaplingPlugin;
 use Sapling\FileUtils;
@@ -25,12 +23,18 @@ class AcfBlocks implements SaplingPlugin
 
             function acf_block_json_render_callback($block, $content)
             {
+                $base_dir = get_template_directory(). '/blocks/';
+
                 $context           = Timber::context();
                 $context['post']   = Timber::get_post();
                 $context['block']  = $block;
                 $context['fields'] = get_fields();
                 $block_name        = explode('/', $block['name'])[1];
-                $template          = 'blocks/'. $block_name . '/index.twig';
+                $template          = FileUtils::firstOfFiles([
+                    $base_dir . $block_name . '/'. $block_name. '-render.twig',
+                    $base_dir . $block_name . '/'. $block_name. '-index.twig',
+                    $base_dir . $block_name . '/index.twig',
+                ]);
 
                 // load the context filter file if it exists
                 // change the context for this block here for this specific block
@@ -47,21 +51,23 @@ class AcfBlocks implements SaplingPlugin
 
             function acf_block_php_render_callback($block, $content)
             {
+                $base_dir = get_template_directory(). '/blocks/';
+
                 $context           = Timber::context();
                 $context['post']   = Timber::get_post();
                 $context['block']  = $block;
                 $context['fields'] = get_fields();
                 $block_name        = explode('/', $block['name'])[1];
                 $template          = FileUtils::firstOfFiles([
-                    'blocks/'. $block_name . '/'. $block_name. '-index.twig',
-                    'blocks/'. $block_name . '/index.twig',
+                    $base_dir . $block_name . '/'. $block_name. '-render.twig',
+                    $base_dir . $block_name . '/'. $block_name. '-index.twig',
+                    $base_dir . $block_name . '/index.twig',
                 ]);
 
                 // load the context filter file if it exists
                 // change the context for this block here for this specific block
-                $base_dir = get_template_directory(). '/blocks/';
                 $context_filter = FileUtils::firstOfFiles([
-                    $base_dir . $block_name . '/'. $block_name .'context.php',
+                    $base_dir . $block_name . '/'. $block_name .'-context.php',
                     $base_dir . $block_name . '/context.php',
                 ]);
 

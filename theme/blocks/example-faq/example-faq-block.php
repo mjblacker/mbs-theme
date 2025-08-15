@@ -22,10 +22,6 @@ function example_faq_register_block()
                 'align' => ['wide', 'full'],
                 'mode'  => 'preview',
             ],
-            // 'enqueue_style'    => get_stylesheet_directory_uri() . '/template-parts/blocks/faq/image-box.css',
-            // 'enqueue_assets'   => function () use ($name) {
-            //     wp_enqueue_style($name.'-editor', get_stylesheet_directory_uri() . '/template-parts/blocks/'.$name.'/'.$name.'-editor.css');
-            // },
         ));
     }
 
