@@ -1,1 +1,277 @@
 /* Custom theme styles */
+
+/* Lexend Font Face Definitions */
+@font-face {
+  font-family: 'Lexend';
+  src: url('../fonts/Lexend/Lexend-Thin.ttf') format('truetype');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lexend';
+  src: url('../fonts/Lexend/Lexend-ExtraLight.ttf') format('truetype');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lexend';
+  src: url('../fonts/Lexend/Lexend-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lexend';
+  src: url('../fonts/Lexend/Lexend-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lexend';
+  src: url('../fonts/Lexend/Lexend-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lexend';
+  src: url('../fonts/Lexend/Lexend-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lexend';
+  src: url('../fonts/Lexend/Lexend-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lexend';
+  src: url('../fonts/Lexend/Lexend-ExtraBold.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lexend';
+  src: url('../fonts/Lexend/Lexend-Black.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* WordPress Generated Font Family Classes */
+.has-lexend-font-family {
+  font-family: 'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif !important;
+}
+
+/* Global Typography - Lexend Font */
+body {
+  font-family: 'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+}
+
+/* WooCommerce Styles */
+.woocommerce {
+  @apply text-gray-900;
+}
+
+.woocommerce .price {
+  @apply text-xl font-bold;
+}
+
+.woocommerce .price del {
+  @apply text-gray-500 opacity-75;
+}
+
+.woocommerce .price ins {
+  @apply text-green-600 no-underline;
+}
+
+.woocommerce .star-rating {
+  @apply text-yellow-400;
+}
+
+.woocommerce .woocommerce-tabs ul.tabs {
+  @apply flex border-b border-gray-200 mb-6;
+}
+
+.woocommerce .woocommerce-tabs ul.tabs li {
+  @apply mr-6;
+}
+
+.woocommerce .woocommerce-tabs ul.tabs li a {
+  @apply block px-4 py-3 text-gray-600 hover:text-gray-900 border-b-2 border-transparent hover:border-blue-500 no-underline;
+}
+
+.woocommerce .woocommerce-tabs ul.tabs li.active a {
+  @apply text-blue-600 border-blue-600;
+}
+
+.woocommerce .woocommerce-tabs .panel {
+  @apply prose max-w-none;
+}
+
+.woocommerce form .form-row {
+  @apply mb-4;
+}
+
+.woocommerce form .form-row label {
+  @apply block text-sm font-medium text-gray-700 mb-1;
+}
+
+.woocommerce form input[type="text"],
+.woocommerce form input[type="email"],
+.woocommerce form input[type="number"],
+.woocommerce form input[type="password"],
+.woocommerce form select,
+.woocommerce form textarea {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.woocommerce .woocommerce-message {
+  @apply bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded mb-4;
+}
+
+.woocommerce .woocommerce-error {
+  @apply bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-4;
+}
+
+.woocommerce .woocommerce-info {
+  @apply bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded mb-4;
+}
+
+.woocommerce .quantity input {
+  @apply w-16 text-center;
+}
+
+.woocommerce .cart-collaterals {
+  @apply mt-8;
+}
+
+.woocommerce table.shop_table {
+  @apply w-full border-collapse;
+}
+
+.woocommerce table.shop_table th,
+.woocommerce table.shop_table td {
+  @apply border-b border-gray-200 px-4 py-3 text-left;
+}
+
+.woocommerce table.shop_table th {
+  @apply bg-gray-50 font-semibold;
+}
+
+.woocommerce-products .grid {
+  column-gap: 2rem !important;
+  row-gap: 4rem !important;
+}
+
+.product-item .space-y-2 > * + * {
+  margin-top: 0.5rem;
+}
+
+.woocommerce .button,
+.woocommerce button,
+.woocommerce input[type="submit"] {
+  @apply bg-yellow-400 hover:bg-yellow-500 text-black px-4 py-2 font-bold transition-colors inline-block no-underline;
+  background-color: #facc15 !important;
+  color: #000 !important;
+  width: auto !important;
+  display: inline-block !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+.woocommerce .button:hover,
+.woocommerce button:hover,
+.woocommerce input[type="submit"]:hover {
+  background-color: #eab308 !important;
+  color: #000 !important;
+  text-decoration: none !important;
+}
+
+.woocommerce .button.alt {
+  background-color: #facc15 !important;
+  color: #000 !important;
+}
+
+.woocommerce .button.alt:hover {
+  background-color: #eab308 !important;
+  color: #000 !important;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.prose :where(a):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+  @apply no-underline;
+}
+
+/* Essential Gutenberg Block Styles */
+.wp-block-columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2em;
+}
+
+.wp-block-column {
+  flex: 1;
+  min-width: 0;
+}
+
+.wp-block-columns.are-vertically-aligned-top {
+  align-items: flex-start;
+}
+
+.wp-block-columns.are-vertically-aligned-center {
+  align-items: center;
+}
+
+.wp-block-columns.are-vertically-aligned-bottom {
+  align-items: flex-end;
+}
+
+/* Individual column alignment */
+.wp-block-column.is-vertically-aligned-top {
+  align-self: flex-start;
+}
+
+.wp-block-column.is-vertically-aligned-center {
+  align-self: center;
+}
+
+.wp-block-column.is-vertically-aligned-bottom {
+  align-self: flex-end;
+}
+
+/* Responsive columns */
+@media (max-width: 781px) {
+  .wp-block-columns {
+    flex-direction: column;
+  }
+
+  .wp-block-column {
+    flex: none;
+  }
+}
