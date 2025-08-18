@@ -1,0 +1,61 @@
+{% extends "base.twig" %}
+
+{% block content %}
+    <div class="woocommerce-single-product">
+        {{ function('woocommerce_output_content_wrapper') }}
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Product Images -->
+            <div class="product-images">
+                {{ function('woocommerce_show_product_images') }}
+            </div>
+
+            <!-- Product Summary -->
+            <div class="product-summary">
+                <h1 class="text-3xl font-bold text-gray-900 mb-4">{{ post.title }}</h1>
+                
+                {% if product %}
+                    <!-- Price -->
+                    <div class="mb-4">
+                        <span class="text-2xl font-bold text-gray-900">
+                            {{ function('wc_price', product.get_price())|raw }}
+                        </span>
+                        {% if product.is_on_sale() and product.get_regular_price() %}
+                            <span class="text-lg text-gray-500 line-through ml-2">
+                                {{ function('wc_price', product.get_regular_price())|raw }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Short Description -->
+                    {% if product.get_short_description() %}
+                        <div class="prose max-w-none mb-6 text-gray-600">
+                            {{ product.get_short_description()|raw }}
+                        </div>
+                    {% endif %}
+
+                    <!-- Add to Cart Form -->
+                    <div class="mb-6">
+                        {{ function('woocommerce_template_single_add_to_cart') }}
+                    </div>
+
+                    <!-- Product Meta -->
+                    <div class="border-t pt-6">
+                        {{ function('woocommerce_template_single_meta') }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Product Tabs -->
+        <div class="woocommerce-tabs">
+            {{ function('woocommerce_output_product_data_tabs') }}
+        </div>
+
+        <!-- Related Products -->
+        {{ function('woocommerce_upsell_display') }}
+        {{ function('woocommerce_cross_sell_display') }}
+
+        {{ function('woocommerce_output_content_wrapper_end') }}
+    </div>
+{% endblock %}
