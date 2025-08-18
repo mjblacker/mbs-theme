@@ -1,7 +1,10 @@
 *.log
 .env
 .DS_Store
+CLAUDE.md
+/.claude
 /theme/assets/dist/
+/stubs
 
 # Ignore dev dependencies
 /node_modules

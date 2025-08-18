@@ -18,5 +18,5 @@ $templates = array( 'index.twig' );
 if ( is_home() ) {
 	array_unshift( $templates, 'front-page.twig', 'home.twig' );
 }
-$context['foo'] = 'hey team'; // Example of adding a variable to the context
+// $context['foo'] = 'hey team'; // Example of adding a variable to the context
 Timber::render( $templates, $context );

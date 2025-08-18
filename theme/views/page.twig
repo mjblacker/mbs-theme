@@ -1,5 +1,13 @@
 {% extends "base.twig" %}
 
 {% block content %}
-    {{ post.content }}
+    {% if not function('is_front_page') %}
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 text-left">{{ post.title }}</h1>
+        </header>
+    {% endif %}
+    
+    <div class="prose max-w-none">
+        {{ post.content }}
+    </div>
 {% endblock %}
