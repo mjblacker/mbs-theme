@@ -1,0 +1,51 @@
+{% set columns = fields.columns ?: '4' %}
+{% set show_brand = fields.show_brand %}
+{% set show_sale_badge = fields.show_sale_badge %}
+
+{% if block.data.is_preview %}
+    <div class="bg-gray-100 p-8 text-center rounded">
+        <h3 class="text-lg font-semibold mb-2">AW Product Loop Block</h3>
+        <p class="text-gray-600">
+            Manual selection • {{ columns }} columns
+        </p>
+    </div>
+{% else %}
+    {# Manual product selection only #}
+    {% if fields.selected_products %}
+        {% set products = [] %}
+        {% for product_id in fields.selected_products %}
+            {% set product_post = function('get_post', product_id) %}
+            {% if product_post %}
+                {% set products = products|merge([product_post]) %}
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        {% set products = [] %}
+    {% endif %}
+
+    {% if products %}
+        <div class="product-loop-block">
+            {% set col_classes = {
+                '2': 'product-grid-2',
+                '3': 'product-grid-3', 
+                '4': 'product-grid-4',
+                '5': 'product-grid-5',
+                '6': 'product-grid-6'
+            } %}
+            
+            <div class="grid {{ col_classes[columns] }} gap-x-8 gap-y-12">
+                {% for product_post in products %}
+                    {% include 'woocommerce/product-card.twig' with {
+                        'post': product_post,
+                        'show_brand': show_brand,
+                        'show_sale_badge': show_sale_badge
+                    } %}
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-8 text-gray-500">
+            <p>No products selected. Please select products in the block settings.</p>
+        </div>
+    {% endif %} 
+{% endif %} 

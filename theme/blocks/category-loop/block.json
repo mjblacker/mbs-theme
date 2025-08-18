@@ -1,0 +1,25 @@
+{
+  "apiVersion": 2,
+  "name": "acf/category-loop",
+  "title": "AW Category Loop",
+  "description": "Display a carousel of selected product categories with manual selection",
+  "category": "aspireweb",
+  "icon": "grid-view",
+  "keywords": ["category", "carousel", "woocommerce", "shop"],
+  "acf": {
+    "mode": "preview",
+    "renderCallback": "acf_block_json_render_callback"
+  },
+  "supports": {
+    "align": ["wide", "full"],
+    "jsx": false
+  },
+  "example": {
+    "attributes": {
+      "mode": "preview",
+      "data": {
+        "is_preview": true
+      }
+    }
+  }
+}

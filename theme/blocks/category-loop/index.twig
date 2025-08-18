@@ -1,0 +1,59 @@
+{% set title = fields.title ?: 'Browse By Category' %}
+{% set slides_per_view = fields.slides_per_view ?: '4' %}
+{% set show_arrows = fields.show_arrows %}
+{% set selected_categories = fields.selected_categories %}
+
+{% if selected_categories %}
+    {% set categories = [] %}
+    {% for category_id in selected_categories %}
+        {% set category = function('get_term', category_id, 'product_cat') %}
+        {% if category and not category.errors %}
+            {% set categories = categories|merge([category]) %}
+        {% endif %}
+    {% endfor %}
+{% else %}
+    {% set categories = [] %}
+{% endif %}
+
+{% if categories %}
+    <div class="category-loop-block">
+        <!-- Block Title -->
+        {% if title %}
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl font-bold text-gray-900">{{ title }}</h2>
+                {% if show_arrows %}
+                    <div class="flex space-x-2">
+                        <button class="category-carousel-prev w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors">
+                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </button>
+                        <button class="category-carousel-next w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors">
+                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- Swiper Container -->
+        <div class="swiper category-carousel" data-slides-per-view="{{ slides_per_view }}">
+            <div class="swiper-wrapper">
+                {% for category in categories %}
+                    <div class="swiper-slide">
+                        {% include 'woocommerce/category-card.twig' with {
+                            'category': category,
+                            'is_preview': block.data.is_preview
+                        } %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="text-center py-8 text-gray-500">
+        <p>No categories selected. Please select categories in the block settings.</p>
+    </div>
+{% endif %}
