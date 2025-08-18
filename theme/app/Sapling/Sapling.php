@@ -46,8 +46,8 @@ class Sapling extends \Timber\Site
         );
         add_theme_support('menus');
         register_nav_menus( array(
-			'primary' => __( 'Primary Menu', 'timberland' ),
-			'footer'  => __( 'Footer Menu', 'timberland' )
+			'primary' => __( 'Primary Menu', 'sapling' ),
+			'footer'  => __( 'Footer Menu', 'sapling' )
 		) );
         add_theme_support('post-thumbnails');
         add_theme_support('title-tag');
