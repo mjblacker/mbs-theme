@@ -45,9 +45,19 @@ class Sapling extends \Timber\Site
             )
         );
         add_theme_support('menus');
+        register_nav_menus( array(
+			'primary' => __( 'Primary Menu', 'timberland' ),
+			'footer'  => __( 'Footer Menu', 'timberland' )
+		) );
         add_theme_support('post-thumbnails');
         add_theme_support('title-tag');
         add_theme_support('editor-styles');
+
+        // WooCommerce support
+		add_theme_support( 'woocommerce' );
+		add_theme_support( 'wc-product-gallery-zoom' );
+		add_theme_support( 'wc-product-gallery-lightbox' );
+		add_theme_support( 'wc-product-gallery-slider' );
     }
 
     public function enqueue_assets()
@@ -115,6 +125,10 @@ class Sapling extends \Timber\Site
                     'slug'  => 'custom',
                     'title' => __('Custom'),
                 ),
+                array(
+					'slug'  => 'aspireweb',
+					'title' => __( 'AspireWeb' ),
+				),
             ),
             $categories
         );
