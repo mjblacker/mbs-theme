@@ -1,0 +1,38 @@
+{% extends "base.twig" %}
+
+{% block content %}
+    <div class="woocommerce-shop prose max-w-none">
+        {% if term %}
+            <header class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-4">{{ title }}</h1>
+                {% if term.description %}
+                    <div class="text-gray-600 prose max-w-none">{{ term.description|raw }}</div>
+                {% endif %}
+            </header>
+        {% else %}
+            <header class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900">Shop</h1>
+            </header>
+        {% endif %}
+
+        {% if posts %}
+            <div class="woocommerce-products">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-12">
+                    {% for post in posts %}
+                        {% include 'woocommerce/product-card.twig' with {
+                            'post': post,
+                            'show_brand': true,
+                            'show_sale_badge': true
+                        } %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% include 'partial/pagination.twig' %}
+        {% else %}
+            <div class="text-center py-12">
+                <p class="text-gray-600 text-lg">{{ function('__', 'No products were found matching your selection.', 'woocommerce') }}</p>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
