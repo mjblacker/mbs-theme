@@ -1,0 +1,27 @@
+{#
+  Contact Button Component
+  - Yellow contact us button
+  - Supports desktop and mobile contexts
+  
+  Parameters:
+  - context: 'desktop' or 'mobile' for different styling
+  - mobile_menu: set to true for mobile menu context (adds click handler)
+#}
+
+{% set context = context is defined ? context : 'desktop' %}
+{% set mobile_menu = mobile_menu is defined ? mobile_menu : false %}
+
+{% if context == 'desktop' %}
+    {# Desktop Contact Button #}
+    <a href="/contact" 
+       class="bg-[#FFF200] hover:bg-yellow-300 text-black font-medium px-6 py-2 rounded-md transition-colors duration-200">
+        Contact Us
+    </a>
+{% else %}
+    {# Mobile Contact Button #}
+    <a href="/contact" 
+       class="block w-full bg-[#FFF200] hover:bg-yellow-300 text-black font-medium px-4 py-3 rounded-md transition-colors duration-200 text-center"
+       {% if mobile_menu %}@click="mobileMenuOpen = false"{% endif %}>
+        Contact Us
+    </a>
+{% endif %}

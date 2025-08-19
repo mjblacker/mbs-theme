@@ -11,12 +11,16 @@
     {{function('wp_head')}}
 </head>
 
-<body class="{{body_class}}" data-template="base.twig">
+<body class="{{body_class}} min-h-screen flex flex-col" data-template="base.twig">
     {% include 'header.twig' %}
 
-    {% block content %}
-    Sorry, no content
-    {% endblock %}
+    <main class="flex-grow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {% block content %}
+            Sorry, no content
+            {% endblock %}
+        </div>
+    </main>
 
     {% block footer %}
         {% include 'footer.twig' %}

@@ -22,7 +22,10 @@ class Sapling extends \Timber\Site
     public function add_to_context($context)
     {
         $context['site'] = $this;
-        $context['menu'] = Timber::get_menu();
+        $context['menu'] = array(
+            'primary' => Timber::get_menu('primary'),
+            'footer'  => Timber::get_menu('footer')
+        );
 
         return $context;
     }

@@ -1,0 +1,38 @@
+{#
+  Header Component
+  - Uses modular partials for better organization
+  - Logo, navigation, contact button, and cart are separate components
+  - Responsive design with mobile menu
+  - Includes top alert banner
+#}
+
+{# Top Header Alert Banner #}
+{% include "partial/top-header/top-header.twig" %}
+
+<header class="relative bg-white shadow-sm border-b border-gray-100" x-data="{ mobileMenuOpen: false }">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16 lg:h-20">
+            
+            {# Logo Section #}
+            {% include "partial/header/logo.twig" %}
+
+            {# Right Side - Navigation and Actions #}
+            <div class="hidden lg:flex lg:items-center lg:space-x-8">
+                {# Desktop Navigation #}
+                {% include "partial/header/navigation.twig" with {'context': 'desktop'} %}
+                
+                {# Actions - Contact Button and Cart #}
+                <div class="flex items-center space-x-4">
+                    {% include "partial/header/contact-button.twig" with {'context': 'desktop'} %}
+                    {% include "partial/header/cart.twig" with {'context': 'desktop'} %}
+                </div>
+            </div>
+
+            {# Mobile Menu Button #}
+            {% include "partial/header/mobile-menu-button.twig" %}
+        </div>
+    </div>
+
+    {# Mobile Menu Overlay #}
+    {% include "partial/header/mobile-menu-overlay.twig" %}
+</header>

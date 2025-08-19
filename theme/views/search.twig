@@ -1,10 +1,33 @@
-{# see `archive.twig` for an alternative strategy of extending templates #}
+{# Search results template #}
 {% extends "base.twig" %}
 
 {% block content %}
-    {% for post in posts %}
-        {% include ['tease-'~post.post_type~'.twig', 'tease.twig'] %}
-    {% endfor %}
+    <header class="mb-12">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">Search Results</h1>
+        {% if search_query %}
+            <p class="text-lg text-gray-700">Results for: <span class="font-semibold">"{{ search_query }}"</span></p>
+        {% endif %}
+    </header>
 
-    {% include 'partial/pagination.twig' with { pagination: posts.pagination({show_all: false, mid_size: 3, end_size: 2}) } %}
+    {% if posts %}
+        <div class="space-y-8">
+            {% for post in posts %}
+                {% include ['tease-'~post.post_type~'.twig', 'tease.twig'] %}
+            {% endfor %}
+        </div>
+
+        {% if posts.pagination %}
+            <div class="mt-12">
+                {% include 'partial/pagination.twig' with { pagination: posts.pagination({show_all: false, mid_size: 3, end_size: 2}) } %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">No results found</h2>
+            <p class="text-gray-600 mb-8">Try adjusting your search terms or browse our content.</p>
+            <a href="/" class="inline-flex items-center px-6 py-3 bg-[#FFF200] text-black font-medium rounded-lg hover:bg-yellow-300 transition-colors duration-200">
+                Browse All Posts
+            </a>
+        </div>
+    {% endif %}
 {% endblock %}

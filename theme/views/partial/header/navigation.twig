@@ -1,0 +1,31 @@
+{#
+  Navigation Component
+  - Primary menu navigation
+  - Supports desktop and mobile contexts
+  
+  Parameters:
+  - context: 'desktop' or 'mobile' for different styling
+#}
+
+{% set context = context is defined ? context : 'desktop' %}
+
+{% if context == 'desktop' %}
+    {# Desktop Navigation #}
+    {% if menu.primary %}
+        <nav class="flex items-center">
+            {% include "menu.twig" with {
+                'items': menu.primary.items, 
+                'context': 'desktop',
+                'extra_classes': 'flex space-x-8 items-center'
+            } %}
+        </nav>
+    {% endif %}
+{% else %}
+    {# Mobile Navigation #}
+    {% if menu.primary %}
+        {% include "menu.twig" with {
+            'items': menu.primary.items, 
+            'context': 'mobile'
+        } %}
+    {% endif %}
+{% endif %}

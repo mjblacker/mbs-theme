@@ -1,0 +1,66 @@
+{#
+  Top Header Alert Banner Component
+  - Dark alert banner with dismissible functionality
+  - Alert text and contact button centered together as a group
+  - Close button positioned on the far right
+  - Uses Alpine.js for show/hide state management
+  - Responsive design with mobile considerations
+  
+  Layout: [Full Width Dark Banner]
+          [Centered Content Area: Alert Text + Contact Button]    [Close Button - Far Right]
+  
+  Parameters:
+  - alert_text: The alert message text (default provided)
+  - show_banner: Boolean to control visibility (default true)
+  - contact_url: URL for contact button (default '/contact')
+#}
+
+{% set alert_text = alert_text is defined ? alert_text : 'Alert Banner goes here in case you need to alert anyone to special offers!' %}
+{% set show_banner = show_banner is defined ? show_banner : true %}
+{% set contact_url = contact_url is defined ? contact_url : '/contact' %}
+
+<div x-data="{ showTopHeader: {{ show_banner ? 'true' : 'false' }} }" 
+     x-show="showTopHeader" 
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="transform -translate-y-full"
+     x-transition:enter-end="transform translate-y-0"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="transform translate-y-0"
+     x-transition:leave-end="transform -translate-y-full"
+     class="bg-[#3D3D3D] text-white relative z-50">
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-center py-2 sm:py-2.5 relative">
+            
+            {# Centered Content Group - Alert Text + Contact Button #}
+            <div class="flex items-center justify-center space-x-4 sm:space-x-6">
+                
+                {# Alert Message #}
+                <div class="flex-shrink-0">
+                    <p class="text-sm sm:text-base font-normal text-white hidden sm:block">
+                        {{ alert_text }}
+                    </p>
+                    {# Mobile version - shorter text #}
+                    <p class="text-xs sm:text-sm font-normal text-white block sm:hidden">
+                        Special offers available!
+                    </p>
+                </div>
+
+                {# Contact Us Button #}
+                <a href="{{ contact_url }}" 
+                   class="bg-[#FFF200] hover:bg-yellow-300 text-black font-medium px-3 py-1.5 sm:px-4 sm:py-1.5 rounded-md transition-colors duration-200 text-sm whitespace-nowrap flex-shrink-0">
+                    Contact Us
+                </a>
+            </div>
+
+            {# Close Button - Positioned absolutely on the far right #}
+            <button @click="showTopHeader = false" 
+                    class="absolute right-0 text-white hover:text-gray-300 transition-colors duration-200 p-2 rounded-md hover:bg-gray-600/50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
+                    aria-label="Close alert banner">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
