@@ -3,6 +3,7 @@
   - Shopping cart icon with badge
   - WooCommerce integration
   - Supports desktop and mobile contexts
+  - Gracefully handles WooCommerce deactivation
   
   Parameters:
   - context: 'desktop' or 'mobile' for different styling
@@ -12,37 +13,43 @@
 {% set context = context is defined ? context : 'desktop' %}
 {% set mobile_menu = mobile_menu is defined ? mobile_menu : false %}
 
-{% if context == 'desktop' %}
-    {# Desktop Cart Icon #}
-    <div class="relative">
+{# Check if WooCommerce is active by verifying core functions exist #}
+{% set wc_active = function('function_exists', 'wc_get_cart_url') and function('function_exists', 'WC') %}
+
+{# Only show cart if WooCommerce is active #}
+{% if wc_active %}
+    {% if context == 'desktop' %}
+        {# Desktop Cart Icon #}
+        <div class="relative">
+            <a href="{{ function('wc_get_cart_url') }}" 
+               class="text-gray-700 hover:text-gray-900 transition-colors p-2">
+                <img src="{{ site.theme.uri }}/assets/images/Cart.svg" 
+                     alt="Cart" 
+                     class="h-6 w-6">
+                {# Cart Badge #}
+                {% if function('WC') and function('WC').cart.get_cart_contents_count() > 0 %}
+                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                        {{ function('WC').cart.get_cart_contents_count() }}
+                    </span>
+                {% endif %}
+            </a>
+        </div>
+    {% else %}
+        {# Mobile Cart Link #}
         <a href="{{ function('wc_get_cart_url') }}" 
-           class="text-gray-700 hover:text-gray-900 transition-colors p-2">
-            <img src="{{ site.theme.uri }}/assets/images/Cart.svg" 
-                 alt="Cart" 
-                 class="h-6 w-6">
-            {# Cart Badge #}
+           class="flex items-center justify-between px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+           {% if mobile_menu %}@click="mobileMenuOpen = false"{% endif %}>
+            <span class="flex items-center">
+                <img src="{{ site.theme.uri }}/assets/images/Cart.svg" 
+                     alt="Cart" 
+                     class="h-5 w-5 mr-3">
+                Cart
+            </span>
             {% if function('WC') and function('WC').cart.get_cart_contents_count() > 0 %}
-                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                <span class="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
                     {{ function('WC').cart.get_cart_contents_count() }}
                 </span>
             {% endif %}
         </a>
-    </div>
-{% else %}
-    {# Mobile Cart Link #}
-    <a href="{{ function('wc_get_cart_url') }}" 
-       class="flex items-center justify-between px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
-       {% if mobile_menu %}@click="mobileMenuOpen = false"{% endif %}>
-        <span class="flex items-center">
-            <img src="{{ site.theme.uri }}/assets/images/Cart.svg" 
-                 alt="Cart" 
-                 class="h-5 w-5 mr-3">
-            Cart
-        </span>
-        {% if function('WC') and function('WC').cart.get_cart_contents_count() > 0 %}
-            <span class="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                {{ function('WC').cart.get_cart_contents_count() }}
-            </span>
-        {% endif %}
-    </a>
+    {% endif %}
 {% endif %}
