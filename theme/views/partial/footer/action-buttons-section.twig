@@ -1,0 +1,42 @@
+{#
+  Footer Action Buttons Section
+  - Contact action buttons and payment methods
+  - Uses brand yellow for buttons matching header style
+  - Separated from quick links for proper 6-column layout
+#}
+
+<div>
+    {# Empty heading space to align with other columns #}
+    {# <div class="h-[28px] mb-6"></div> #}
+    
+    {# Action Buttons #}
+    <div class="space-y-3 mb-6">
+        <a href="/contact" 
+           class="inline-block w-full bg-[#FFF200] hover:bg-yellow-300 focus:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-black font-medium px-4 py-2 rounded-md transition-colors duration-200 text-center text-sm">
+            Contact Us
+        </a>
+        <a href="/directions" 
+           class="inline-block w-full bg-[#FFF200] hover:bg-yellow-300 focus:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-black font-medium px-4 py-2 rounded-md transition-colors duration-200 text-center text-sm">
+            Get Directions
+        </a>
+    </div>
+
+    {# Payment Methods #}
+    <div>
+        <h4 class="text-sm font-medium text-white mb-3">We Accept</h4>
+        <div class="flex space-x-2">
+            <div class="bg-white rounded p-1 flex items-center justify-center w-12 h-8" 
+                 title="Visa">
+                <img src="{{ site.theme.uri }}/assets/images/Visa.png" 
+                     alt="Visa" 
+                     class="max-w-full max-h-full object-contain">
+            </div>
+            <div class="bg-white rounded p-1 flex items-center justify-center w-12 h-8"
+                 title="Mastercard">
+                <img src="{{ site.theme.uri }}/assets/images/MasterCard.png" 
+                     alt="Mastercard" 
+                     class="max-w-full max-h-full object-contain">
+            </div>
+        </div>
+    </div>
+</div>

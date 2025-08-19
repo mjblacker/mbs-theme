@@ -1,0 +1,72 @@
+{#
+  Footer Component
+  - Comprehensive footer with 6-column layout matching design reference
+  - Dark gradient background with pattern overlay
+  - Responsive design that adapts to mobile/tablet (6-col → 3x2 → 2x3 → single)
+  - Uses brand yellow (#FFF200) for buttons and accents
+  - Modular design using partials for better maintainability
+#}
+
+<footer class="relative bg-gradient-to-r from-black to-gray-800 text-white" role="contentinfo">
+    {# Pattern Background Overlay #}
+    <div class="absolute inset-0 opacity-80" aria-hidden="true">
+        <div class="w-full h-full bg-cover bg-center bg-no-repeat" style="background-image: url('{{ site.theme.uri }}/assets/images/Pattern.png');"></div>
+    </div>
+    
+    {# Main Footer Content #}
+    <div class="relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+            
+            {# Six Column Grid Layout #}
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 lg:gap-6">
+                
+                {# Column 1: Logo #}
+                <section class="col-span-1 sm:col-span-2 md:col-span-1 lg:col-span-1" aria-labelledby="footer-about">
+                    <h2 id="footer-about" class="sr-only">About Metro Building Supplies</h2>
+                    {% include "partial/footer/logo-section.twig" %}
+                </section>
+
+                {# Column 2: Categories Part 1 #}
+                <section class="col-span-1" aria-labelledby="footer-categories-1">
+                    <h2 id="footer-categories-1" class="sr-only">Product Categories Part 1</h2>
+                    {% include "partial/footer/categories-part1-section.twig" %}
+                </section>
+
+                {# Column 3: Categories Part 2 #}
+                <section class="col-span-1" aria-labelledby="footer-categories-2">
+                    <h2 id="footer-categories-2" class="sr-only">Product Categories Part 2</h2>
+                    {% include "partial/footer/categories-part2-section.twig" %}
+                </section>
+
+                {# Column 4: Locations #}
+                <section class="col-span-1 sm:col-span-2 md:col-span-1 lg:col-span-1" aria-labelledby="footer-locations">
+                    <h2 id="footer-locations" class="sr-only">Our Locations</h2>
+                    {% include "partial/footer/locations-section.twig" %}
+                </section>
+
+                {# Column 5: Quick Links #}
+                <section class="col-span-1" aria-labelledby="footer-links">
+                    <h2 id="footer-links" class="sr-only">Quick Links</h2>
+                    {% include "partial/footer/quick-links-section.twig" %}
+                </section>
+
+                {# Column 6: Action Buttons & Payment Icons #}
+                <section class="col-span-1 sm:col-span-2 md:col-span-1 lg:col-span-1" aria-labelledby="footer-actions">
+                    <h2 id="footer-actions" class="sr-only">Contact Actions and Payment Methods</h2>
+                    {% include "partial/footer/action-buttons-section.twig" %}
+                </section>
+            </div>
+        </div>
+
+        {# Copyright Bar #}
+        <div class="border-t border-gray-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div class="text-center">
+                    <p class="text-gray-400 text-sm">
+                        © Copyright {{ "now"|date("Y") }} {{ site.name|default('Metro Building Supplies') }}. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>

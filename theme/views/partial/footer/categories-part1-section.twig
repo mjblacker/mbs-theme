@@ -1,0 +1,19 @@
+{#
+  Footer Categories Section - Part 1
+  - First half of product category navigation links using reusable component
+  - Shows "Categories" heading
+  - Displays first 5 categories
+#}
+
+{% 
+    set wc_categories = function('function_exists', 'wc_get_product_category_list') 
+        ? function('get_terms', {taxonomy: 'product_cat', hide_empty: false, number: 10})
+        : null 
+%}
+
+{% include "partial/category-column.twig" with {
+    'show_heading': true,
+    'categories': wc_categories,
+    'start_index': 0,
+    'limit': 5
+} %}
