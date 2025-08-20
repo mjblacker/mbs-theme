@@ -95,13 +95,13 @@
                 <button type="submit" 
                         name="add-to-cart" 
                         value="{{ product.get_id() }}" 
-                        class="text-black transition-colors py-1 px-4 mt-2 text-xs font-semibold uppercase inline-block"
+                        class="text-black transition-colors py-2 px-4 mt-2 text-xs font-semibold uppercase inline-block"
                         style="background-color: #FFF200 !important; color: #000 !important; width: auto !important; display: inline-block !important; border: none !important; border-radius: 0 !important;">
                     Add To Cart
                 </button>
             {% else %}
                 <a href="{{ post.link ?: function('get_permalink', post.ID) }}" 
-                   class="text-black transition-colors py-1 px-4 mt-2 inline-block text-xs font-semibold uppercase"
+                   class="text-black transition-colors py-2 px-4 mt-2 inline-block text-xs font-semibold uppercase"
                    style="background-color: #FFF200 !important; color: #000 !important; width: auto !important; display: inline-block !important; text-decoration: none !important; border: none !important; border-radius: 0 !important;">
                     View Options
                 </a>
