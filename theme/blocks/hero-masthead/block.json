@@ -1,16 +1,15 @@
 {
   "apiVersion": 2,
-  "name": "acf/category-loop",
-  "title": "AW Category Loop",
-  "description": "Display a carousel of selected product categories with manual selection",
+  "name": "acf/hero-masthead",
+  "title": "Hero Masthead",
+  "description": "A hero section with heading, description, button, background pattern and overlay image",
   "category": "aspireweb",
-  "icon": "grid-view",
-  "keywords": ["category", "carousel", "woocommerce", "shop"],
   "acf": {
     "mode": "preview",
     "renderCallback": "acf_block_json_render_callback"
   },
   "supports": {
+    "align": ["wide", "full"],
     "jsx": false
   },
   "example": {

@@ -7,19 +7,17 @@
     <style>
         [x-cloak] { display: none; }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+    {# <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet"> #}
     {{function('wp_head')}}
 </head>
 
-<body class="{{body_class}} min-h-screen flex flex-col" data-template="base.twig">
+<body class="{{body_class}} min-h-screen flex flex-col" data-template="base.twig" data-layout="{{ layout_type|default('boxed') }}">
     {% include 'header.twig' %}
 
     <main class="flex-grow">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {% block content %}
-            Sorry, no content
-            {% endblock %}
-        </div>
+        {% block content %}
+        Sorry, no content
+        {% endblock %}
     </main>
 
     {% block footer %}

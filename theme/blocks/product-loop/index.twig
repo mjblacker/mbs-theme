@@ -1,3 +1,6 @@
+{% set title = fields.title %}
+{% set button_text = fields.button_text %}
+{% set button_link = fields.button_link %}
 {% set columns = fields.columns ?: '4' %}
 {% set show_brand = fields.show_brand %}
 {% set show_sale_badge = fields.show_sale_badge %}
@@ -24,28 +27,46 @@
     {% endif %}
 
     {% if products %}
-        <div class="product-loop-block">
-            {% set col_classes = {
-                '2': 'product-grid-2',
-                '3': 'product-grid-3', 
-                '4': 'product-grid-4',
-                '5': 'product-grid-5',
-                '6': 'product-grid-6'
-            } %}
-            
-            <div class="grid {{ col_classes[columns] }} gap-x-8 gap-y-12">
-                {% for product_post in products %}
-                    {% include 'woocommerce/product-card.twig' with {
-                        'post': product_post,
-                        'show_brand': show_brand,
-                        'show_sale_badge': show_sale_badge
-                    } %}
-                {% endfor %}
+        <div class="product-loop-block sm:mb-8 lg:mb-15">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <!-- Block Title -->
+                {% if title %}
+                    <div class="flex items-center justify-between mb-8">
+                        <h2 class="text-4xl font-medium text-gray-900 text-block-title">{{ title }}</h2>
+                        {% if button_text and button_link %}
+                            <a href="{{ button_link.url ?: '#' }}" 
+                               class="inline-flex items-center bg-transparent hover:bg-gray-50 text-black border border-gray-300 px-6 py-3 transition-colors rounded text-button-sm font-medium no-underline"
+                               style="color: #000 !important; text-decoration: none !important;"
+                               {% if button_link.target %}target="{{ button_link.target }}"{% endif %}>
+                                {{ button_text }}
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                {% set col_classes = {
+                    '2': 'product-grid-2',
+                    '3': 'product-grid-3', 
+                    '4': 'product-grid-4',
+                    '5': 'product-grid-5',
+                    '6': 'product-grid-6'
+                } %}
+                
+                <div class="grid {{ col_classes[columns] }} gap-x-6 gap-y-8 lg:gap-x-8 lg:gap-y-12">
+                    {% for product_post in products %}
+                        {% include 'woocommerce/product-card.twig' with {
+                            'post': product_post,
+                            'show_brand': show_brand,
+                            'show_sale_badge': show_sale_badge
+                        } %}
+                    {% endfor %}
+                </div>
             </div>
         </div>
     {% else %}
-        <div class="text-center py-8 text-gray-500">
-            <p>No products selected. Please select products in the block settings.</p>
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center py-8 text-gray-500">
+                <p>No products selected. Please select products in the block settings.</p>
+            </div>
         </div>
     {% endif %} 
 {% endif %} 

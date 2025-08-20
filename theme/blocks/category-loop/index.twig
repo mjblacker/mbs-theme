@@ -16,44 +16,48 @@
 {% endif %}
 
 {% if categories %}
-    <div class="category-loop-block">
-        <!-- Block Title -->
-        {% if title %}
-            <div class="flex items-center justify-between mb-8">
-                <h2 class="text-2xl font-bold text-gray-900">{{ title }}</h2>
-                {% if show_arrows %}
-                    <div class="flex space-x-2">
-                        <button class="category-carousel-prev w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors">
-                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                            </svg>
-                        </button>
-                        <button class="category-carousel-next w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors">
-                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                            </svg>
-                        </button>
-                    </div>
-                {% endif %}
-            </div>
-        {% endif %}
+    <div class="category-loop-block sm:mb-8 lg:mb-15">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Block Title -->
+            {% if title %}
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-4xl font-medium text-gray-900 text-block-title">{{ title }}</h2>
+                    {% if show_arrows %}
+                        <div class="flex space-x-2">
+                            <button class="category-carousel-prev w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors">
+                                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <button class="category-carousel-next w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors">
+                                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
 
-        <!-- Swiper Container -->
-        <div class="swiper category-carousel" data-slides-per-view="{{ slides_per_view }}">
-            <div class="swiper-wrapper">
-                {% for category in categories %}
-                    <div class="swiper-slide">
-                        {% include 'woocommerce/category-card.twig' with {
-                            'category': category,
-                            'is_preview': block.data.is_preview
-                        } %}
-                    </div>
-                {% endfor %}
+            <!-- Swiper Container -->
+            <div class="swiper category-carousel" data-slides-per-view="{{ slides_per_view }}">
+                <div class="swiper-wrapper">
+                    {% for category in categories %}
+                        <div class="swiper-slide">
+                            {% include 'woocommerce/category-card.twig' with {
+                                'category': category,
+                                'is_preview': block.data.is_preview
+                            } %}
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
 {% else %}
-    <div class="text-center py-8 text-gray-500">
-        <p>No categories selected. Please select categories in the block settings.</p>
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center py-8 text-gray-500">
+            <p>No categories selected. Please select categories in the block settings.</p>
+        </div>
     </div>
 {% endif %}

@@ -1,73 +1,81 @@
 /* Custom theme styles */
 
+
+/* Custom Container Configuration */
+.container {
+  @media (width >= 96rem) {
+    max-width: 1440px;
+  }
+}
+
 /* Lexend Font Face Definitions */
 @font-face {
-  font-family: 'Lexend';
-  src: url('../fonts/Lexend/Lexend-Thin.ttf') format('truetype');
+  font-family: "Lexend";
+  src: url("../fonts/Lexend/Lexend-Thin.ttf") format("truetype");
   font-weight: 100;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Lexend';
-  src: url('../fonts/Lexend/Lexend-ExtraLight.ttf') format('truetype');
+  font-family: "Lexend";
+  src: url("../fonts/Lexend/Lexend-ExtraLight.ttf") format("truetype");
   font-weight: 200;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Lexend';
-  src: url('../fonts/Lexend/Lexend-Light.ttf') format('truetype');
+  font-family: "Lexend";
+  src: url("../fonts/Lexend/Lexend-Light.ttf") format("truetype");
   font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Lexend';
-  src: url('../fonts/Lexend/Lexend-Regular.ttf') format('truetype');
+  font-family: "Lexend";
+  src: url("../fonts/Lexend/Lexend-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Lexend';
-  src: url('../fonts/Lexend/Lexend-Medium.ttf') format('truetype');
+  font-family: "Lexend";
+  src: url("../fonts/Lexend/Lexend-Medium.ttf") format("truetype");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Lexend';
-  src: url('../fonts/Lexend/Lexend-SemiBold.ttf') format('truetype');
+  font-family: "Lexend";
+  src: url("../fonts/Lexend/Lexend-SemiBold.ttf") format("truetype");
   font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Lexend';
-  src: url('../fonts/Lexend/Lexend-Bold.ttf') format('truetype');
+  font-family: "Lexend";
+  src: url("../fonts/Lexend/Lexend-Bold.ttf") format("truetype");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Lexend';
-  src: url('../fonts/Lexend/Lexend-ExtraBold.ttf') format('truetype');
+  font-family: "Lexend";
+  src: url("../fonts/Lexend/Lexend-ExtraBold.ttf") format("truetype");
   font-weight: 800;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Lexend';
-  src: url('../fonts/Lexend/Lexend-Black.ttf') format('truetype');
+  font-family: "Lexend";
+  src: url("../fonts/Lexend/Lexend-Black.ttf") format("truetype");
   font-weight: 900;
   font-style: normal;
   font-display: swap;
@@ -75,16 +83,24 @@
 
 /* WordPress Generated Font Family Classes */
 .has-lexend-font-family {
-  font-family: 'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif !important;
+  font-family: "Lexend", system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", sans-serif !important;
 }
 
 /* Global Typography - Lexend Font */
 body {
-  font-family: 'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font-family: "Lexend", system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", sans-serif;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Lexend", system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", sans-serif;
 }
 
 /* WooCommerce Styles */
@@ -190,8 +206,8 @@ h1, h2, h3, h4, h5, h6 {
 .woocommerce .button,
 .woocommerce button,
 .woocommerce input[type="submit"] {
-  @apply bg-yellow-400 hover:bg-yellow-500 text-black px-4 py-2 font-bold transition-colors inline-block no-underline;
-  background-color: #facc15 !important;
+  @apply hover:bg-yellow-500 text-black px-4 py-2 font-bold transition-colors inline-block no-underline;
+  background-color: #FFF200 !important;
   color: #000 !important;
   width: auto !important;
   display: inline-block !important;
@@ -208,7 +224,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .woocommerce .button.alt {
-  background-color: #facc15 !important;
+  background-color: #FFF200 !important;
   color: #000 !important;
 }
 

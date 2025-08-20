@@ -1,3 +1,7 @@
+.product-loop-block {
+  width: 100%;
+}
+
 .product-loop-block .grid {
   column-gap: 2rem !important;
   row-gap: 3rem !important;
@@ -24,8 +28,10 @@
   margin-top: 0.5rem;
 }
 
-.product-loop-block h3 {
+.product-loop-block h3,
+.product-item h3 {
   line-height: 1.25;
+  margin-top: 10px;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -99,4 +105,3 @@
     grid-template-columns: 1fr;
   }
 }
-

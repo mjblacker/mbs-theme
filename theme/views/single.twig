@@ -1,31 +1,33 @@
 {% extends "base.twig" %}
 
 {% block content %}
-    <article class="prose prose-lg max-w-none">
-        <header class="mb-8">
-            <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ post.title }}</h1>
-            
-            {% if post.post_type == 'post' %}
-                <div class="flex items-center text-sm text-gray-600 space-x-4">
-                    <time datetime="{{ post.date|date('c') }}">{{ post.date }}</time>
-                    {% if post.author %}
-                        <span>by {{ post.author.name }}</span>
-                    {% endif %}
-                    {% if post.categories %}
-                        <div class="flex items-center space-x-2">
-                            <span>in</span>
-                            {% for category in post.categories %}
-                                <a href="{{ category.link }}" class="text-[#FFF200] hover:text-yellow-300">{{ category.name }}</a>
-                                {% if not loop.last %}, {% endif %}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-            {% endif %}
-        </header>
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <article class="prose prose-lg max-w-none">
+            <header class="mb-8">
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ post.title }}</h1>
+                
+                {% if post.post_type == 'post' %}
+                    <div class="flex items-center text-sm text-gray-600 space-x-4">
+                        <time datetime="{{ post.date|date('c') }}">{{ post.date }}</time>
+                        {% if post.author %}
+                            <span>by {{ post.author.name }}</span>
+                        {% endif %}
+                        {% if post.categories %}
+                            <div class="flex items-center space-x-2">
+                                <span>in</span>
+                                {% for category in post.categories %}
+                                    <a href="{{ category.link }}" class="text-[#FFF200] hover:text-yellow-300">{{ category.name }}</a>
+                                    {% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </header>
 
-        <div class="prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-[#FFF200] hover:prose-a:text-yellow-300">
-            {{ post.content }}
-        </div>
-    </article>
+            <div class="prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-[#FFF200] hover:prose-a:text-yellow-300">
+                {{ post.content }}
+            </div>
+        </article>
+    </div>
 {% endblock %}

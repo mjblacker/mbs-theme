@@ -3,6 +3,62 @@
   "title": "Product Loop Settings",
   "fields": [
     {
+      "key": "field_title",
+      "label": "Block Title",
+      "name": "title",
+      "aria-label": "",
+      "type": "text",
+      "instructions": "Optional title for the product section",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "default_value": "",
+      "placeholder": "Featured Products",
+      "maxlength": "",
+      "readonly": 0,
+      "disabled": 0
+    },
+    {
+      "key": "field_button_text",
+      "label": "Button Text",
+      "name": "button_text",
+      "aria-label": "",
+      "type": "text",
+      "instructions": "Text for the action button (optional)",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "50",
+        "class": "",
+        "id": ""
+      },
+      "default_value": "",
+      "placeholder": "View All Products",
+      "maxlength": "",
+      "readonly": 0,
+      "disabled": 0
+    },
+    {
+      "key": "field_button_link",
+      "label": "Button Link",
+      "name": "button_link",
+      "aria-label": "",
+      "type": "link",
+      "instructions": "Link for the action button",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "50",
+        "class": "",
+        "id": ""
+      },
+      "return_format": "array"
+    },
+    {
       "key": "field_selected_products",
       "label": "Select Products",
       "name": "selected_products",

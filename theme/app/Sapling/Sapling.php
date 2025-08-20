@@ -130,7 +130,7 @@ class Sapling extends \Timber\Site
                 ),
                 array(
 					'slug'  => 'aspireweb',
-					'title' => __( 'AspireWeb' ),
+					'title' => __( 'Sapling' ),
 				),
             ),
             $categories
