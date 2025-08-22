@@ -1,0 +1,141 @@
+/* WooCommerce Styles - Using CSS Nesting */
+.woocommerce {
+  @apply text-gray-900;
+
+  /* Price styling */
+  .price {
+    @apply text-xl font-bold;
+
+    del {
+      @apply text-gray-500 opacity-75;
+    }
+
+    ins {
+      @apply text-green-600 no-underline;
+    }
+  }
+
+  /* Star ratings */
+  .star-rating {
+    @apply text-yellow-400;
+  }
+
+  /* Product tabs */
+  .woocommerce-tabs {
+    ul.tabs {
+      @apply flex border-b border-gray-200 mb-6;
+
+      li {
+        @apply mr-6;
+
+        a {
+          @apply block px-4 py-3 text-gray-600 hover:text-gray-900 border-b-2 border-transparent hover:border-blue-500 no-underline;
+        }
+
+        &.active a {
+          @apply text-blue-600 border-blue-600;
+        }
+      }
+    }
+
+    .panel {
+      @apply prose max-w-none;
+    }
+  }
+
+  /* Forms */
+  form {
+    .form-row {
+      @apply mb-4;
+
+      label {
+        @apply block text-sm font-medium text-gray-700 mb-1;
+      }
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    input[type="password"],
+    select,
+    textarea {
+      @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+    }
+  }
+
+  /* Messages */
+  .woocommerce-message {
+    @apply bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded mb-4;
+  }
+
+  .woocommerce-error {
+    @apply bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-4;
+  }
+
+  .woocommerce-info {
+    @apply bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded mb-4;
+  }
+
+  /* Quantity input */
+  .quantity input {
+    @apply w-16 text-center;
+  }
+
+  /* Cart */
+  .cart-collaterals {
+    @apply mt-8;
+  }
+
+  /* Tables */
+  table.shop_table {
+    @apply w-full border-collapse;
+
+    th,
+    td {
+      @apply border-b border-gray-200 px-4 py-3 text-left;
+    }
+
+    th {
+      @apply bg-gray-50 font-semibold;
+    }
+  }
+
+  /* Buttons */
+  .button,
+  button,
+  input[type="submit"] {
+    @apply hover:bg-yellow-500 text-black px-4 py-2 font-bold transition-colors inline-block no-underline;
+    background-color: #fff200 !important;
+    color: #000 !important;
+    width: auto !important;
+    display: inline-block !important;
+    border: none !important;
+    border-radius: 0 !important;
+
+    &:hover {
+      background-color: #eab308 !important;
+      color: #000 !important;
+      text-decoration: none !important;
+    }
+
+    &.alt {
+      background-color: #fff200 !important;
+      color: #000 !important;
+
+      &:hover {
+        background-color: #eab308 !important;
+        color: #000 !important;
+      }
+    }
+  }
+}
+
+/* Standalone product styles (outside .woocommerce scope) */
+.woocommerce-products .grid {
+  column-gap: 2rem !important;
+  row-gap: 4rem !important;
+}
+
+.product-item .space-y-2 > * + * {
+  margin-top: 0.5rem;
+}

@@ -13,7 +13,7 @@
 {% set show_sale_badge = show_sale_badge is defined ? show_sale_badge : true %}
 
 {% if product %}
-    <div class="product-item bg-white relative group h-full flex flex-col">
+    <div class="product-item bg-white relative group h-full flex flex-col transition-transform duration-200 ease-in-out hover:-translate-y-1">
         <!-- Sale Badge -->
         {% if show_sale_badge and product.is_on_sale() %}
             {% set regular_price = product.get_regular_price() %}
@@ -32,7 +32,7 @@
                 <div class="aspect-square overflow-hidden bg-gray-100 mb-4">
                     <img src="{{ post.thumbnail.src('medium') }}" 
                          alt="{{ post.thumbnail.alt }}"
-                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-out">
                 </div>
             {% else %}
                 {% set thumbnail = function('get_the_post_thumbnail_url', post.ID, 'medium') %}
@@ -40,7 +40,7 @@
                     <div class="aspect-square overflow-hidden bg-gray-100 mb-4">
                         <img src="{{ thumbnail }}" 
                              alt="{{ post.post_title ?: post.title }}"
-                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-out">
                     </div>
                 {% else %}
                     <div class="aspect-square bg-gray-100 mb-4 flex items-center justify-center">
@@ -66,7 +66,7 @@
                 {% endif %}
                 
                 <!-- Product Name -->
-                <h3 class="text-gray-900 leading-tight mb-2 flex-1 text-product-title font-semibold">{{ post.title ?: post.post_title }}</h3>
+                <h3 class="text-gray-900 leading-tight mb-2 flex-1 text-product-title font-semibold mt-2.5 line-clamp-2">{{ post.title ?: post.post_title }}</h3>
                 
                 <!-- Price -->
                 <div class="flex items-center flex-wrap mb-2">
@@ -95,14 +95,12 @@
                 <button type="submit" 
                         name="add-to-cart" 
                         value="{{ product.get_id() }}" 
-                        class="text-black transition-colors py-2 px-4 mt-2 text-xs font-semibold uppercase inline-block"
-                        style="background-color: #FFF200 !important; color: #000 !important; width: auto !important; display: inline-block !important; border: none !important; border-radius: 0 !important;">
+                        class="bg-[#FFF200] text-black transition-colors py-2 px-4 mt-2 text-xs font-semibold uppercase inline-block border-0 rounded-none">
                     Add To Cart
                 </button>
             {% else %}
                 <a href="{{ post.link ?: function('get_permalink', post.ID) }}" 
-                   class="text-black transition-colors py-2 px-4 mt-2 inline-block text-xs font-semibold uppercase"
-                   style="background-color: #FFF200 !important; color: #000 !important; width: auto !important; display: inline-block !important; text-decoration: none !important; border: none !important; border-radius: 0 !important;">
+                   class="bg-[#FFF200] text-black transition-colors py-2 px-4 mt-2 inline-block text-xs font-semibold uppercase no-underline border-0 rounded-none">
                     View Options
                 </a>
             {% endif %}

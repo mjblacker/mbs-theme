@@ -1,13 +1,9 @@
-@import 'tailwindcss';
-@import './theme.css';
+@import "tailwindcss";
+@import "./theme.css";
 
 @plugin '@tailwindcss/typography';
 
-body {
-  @apply font-sans;
-}
-
-.wp-block{
+.wp-block {
   @apply max-w-(--breakpoint-xl);
 }
 
@@ -15,7 +11,9 @@ body {
   @apply max-w-(--breakpoint-xl) mx-auto my-6;
 }
 
-.mce-content-body, .acf_content, .mceContentBody {
+.mce-content-body,
+.acf_content,
+.mceContentBody {
   @apply prose prose-lg max-w-none;
 }
 
