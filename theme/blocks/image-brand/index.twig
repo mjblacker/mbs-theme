@@ -19,7 +19,7 @@
       
       {# Heading #}
       {% if heading %}
-        <h2 class="image-brand__heading font-lexend font-medium text-gray-900 mb-6" 
+        <h2 class="image-brand__heading font-medium text-gray-900 mb-6" 
             style="font-size: 48px; line-height: 1.2;">
           {{ heading }}
         </h2>
@@ -27,7 +27,7 @@
       
       {# Description #}
       {% if description %}
-        <p class="image-brand__description font-lexend text-gray-600 mb-12 mx-auto max-w-2xl" 
+        <p class="image-brand__description text-gray-600 mb-12 mx-auto max-w-2xl" 
            style="font-size: 20px; line-height: 1.6;">
           {{ description }}
         </p>
@@ -62,7 +62,7 @@
         <div class="image-brand__grid grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-8 items-center justify-items-center">
           {% for i in 1..4 %}
             <div class="image-brand__item flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg min-h-[80px] min-w-[120px]">
-              <span class="text-gray-400 text-sm font-lexend">Brand {{ i }}</span>
+              <span class="text-gray-400 text-sm">Brand {{ i }}</span>
             </div>
           {% endfor %}
         </div>
