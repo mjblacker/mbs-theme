@@ -17,7 +17,7 @@
 {% set phone = phone|default('') %}
 {% set is_head_office = is_head_office|default(false) %}
 
-<div class="{% if is_head_office %}mb-6{% endif %}" itemscope itemtype="https://schema.org/LocalBusiness">
+<div class="mb-6" itemscope itemtype="https://schema.org/LocalBusiness">
     <h4 class="font-medium text-white mb-2" itemprop="name">
         {{ name }}{% if is_head_office %} (Head Office){% endif %}
     </h4>

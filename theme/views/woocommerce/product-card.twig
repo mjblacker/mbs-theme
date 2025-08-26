@@ -29,7 +29,7 @@
         <a href="{{ post.link ?: function('get_permalink', post.ID) }}" class="flex-1 flex flex-col">
             <!-- Product Image -->
             {% if post.thumbnail %}
-                <div class="aspect-square overflow-hidden bg-gray-100 mb-4">
+                <div class="aspect-square overflow-hidden rounded-md bg-gray-100 mb-4">
                     <img src="{{ post.thumbnail.src('medium') }}" 
                          alt="{{ post.thumbnail.alt }}"
                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-out mt-0 mb-0">
@@ -37,13 +37,13 @@
             {% else %}
                 {% set thumbnail = function('get_the_post_thumbnail_url', post.ID, 'medium') %}
                 {% if thumbnail %}
-                    <div class="aspect-square overflow-hidden bg-gray-100 mb-4">
+                    <div class="aspect-square rounded-md overflow-hidden bg-gray-100 mb-4">
                         <img src="{{ thumbnail }}" 
                              alt="{{ post.post_title ?: post.title }}"
                              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-out mt-0 mb-0">
                     </div>
                 {% else %}
-                    <div class="aspect-square bg-gray-100 mb-4 flex items-center justify-center">
+                    <div class="aspect-square rounded-md bg-gray-100 mb-4 flex items-center justify-center">
                         <span class="text-gray-400 text-sm">No Image</span>
                     </div>
                 {% endif %}
