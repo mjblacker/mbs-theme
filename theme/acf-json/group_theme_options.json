@@ -1,0 +1,250 @@
+{
+    "key": "group_theme_options",
+    "title": "Theme Options",
+    "fields": [
+        {
+            "key": "field_theme_locations",
+            "label": "Business Locations",
+            "name": "locations",
+            "aria-label": "",
+            "type": "repeater",
+            "instructions": "Add business locations with their contact information",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "collapsed": "field_location_name",
+            "min": 0,
+            "max": 10,
+            "layout": "table",
+            "button_label": "Add Location",
+            "rows_per_page": 20,
+            "sub_fields": [
+                {
+                    "key": "field_location_name",
+                    "label": "Location Name",
+                    "name": "name",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Enter the name of this location",
+                    "required": 1,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "e.g., Pakenham",
+                    "prepend": "",
+                    "append": "",
+                    "parent_repeater": "field_theme_locations"
+                },
+                {
+                    "key": "field_location_address_lines",
+                    "label": "Address Lines",
+                    "name": "address_lines",
+                    "aria-label": "",
+                    "type": "repeater",
+                    "instructions": "Add address lines (street address, suite number, etc.)",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "collapsed": "",
+                    "min": 1,
+                    "max": 5,
+                    "layout": "table",
+                    "button_label": "Add Address Line",
+                    "rows_per_page": 20,
+                    "parent_repeater": "field_theme_locations",
+                    "sub_fields": [
+                        {
+                            "key": "field_address_line",
+                            "label": "Address Line",
+                            "name": "line",
+                            "aria-label": "",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 1,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "",
+                            "maxlength": "",
+                            "placeholder": "e.g., 102 Racecourse Road",
+                            "prepend": "",
+                            "append": "",
+                            "parent_repeater": "field_location_address_lines"
+                        }
+                    ]
+                },
+                {
+                    "key": "field_location_city_state",
+                    "label": "City & State",
+                    "name": "city_state",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Enter the city and state",
+                    "required": 1,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "e.g., Pakenham VIC 3810",
+                    "prepend": "",
+                    "append": "",
+                    "parent_repeater": "field_theme_locations"
+                },
+                {
+                    "key": "field_location_phone",
+                    "label": "Phone Number",
+                    "name": "phone",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Enter the phone number for this location",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "e.g., (03) 9707 0264",
+                    "prepend": "",
+                    "append": "",
+                    "parent_repeater": "field_theme_locations"
+                },
+                {
+                    "key": "field_location_is_head_office",
+                    "label": "Head Office",
+                    "name": "is_head_office",
+                    "aria-label": "",
+                    "type": "true_false",
+                    "instructions": "Check if this is the head office location",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "message": "This is the head office",
+                    "default_value": 0,
+                    "ui_on_text": "",
+                    "ui_off_text": "",
+                    "ui": 1,
+                    "parent_repeater": "field_theme_locations"
+                }
+            ]
+        },
+        {
+            "key": "field_theme_company_info",
+            "label": "Company Information",
+            "name": "company_info",
+            "aria-label": "",
+            "type": "group",
+            "instructions": "General company information",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "layout": "block",
+            "sub_fields": [
+                {
+                    "key": "field_company_name",
+                    "label": "Company Name",
+                    "name": "name",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Enter the full company name",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "Metro Building Supplies",
+                    "maxlength": "",
+                    "placeholder": "",
+                    "prepend": "",
+                    "append": ""
+                },
+                {
+                    "key": "field_company_email",
+                    "label": "General Email",
+                    "name": "email",
+                    "aria-label": "",
+                    "type": "email",
+                    "instructions": "Enter the general contact email address",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "placeholder": "info@company.com",
+                    "prepend": "",
+                    "append": ""
+                },
+                {
+                    "key": "field_company_website",
+                    "label": "Website URL",
+                    "name": "website",
+                    "aria-label": "",
+                    "type": "url",
+                    "instructions": "Enter the company website URL",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "placeholder": "https://www.example.com"
+                }
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": "theme-options"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "Configuration options for theme contact information and company details",
+    "show_in_rest": 0
+}

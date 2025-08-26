@@ -1,6 +1,7 @@
 <?php
 
 use Timber\Timber;
+use Sapling\Integrations\ThemeOptions;
 
 class Sapling extends \Timber\Site
 {
@@ -26,6 +27,14 @@ class Sapling extends \Timber\Site
             'primary' => Timber::get_menu('primary'),
             'footer'  => Timber::get_menu('footer')
         );
+
+        // Add theme options if ACF is available
+        if (function_exists('get_field')) {
+            $context['theme_options'] = array(
+                'locations' => get_field('locations', 'option') ?: array(),
+                'company_info' => get_field('company_info', 'option') ?: array()
+            );
+        }
 
         return $context;
     }
@@ -142,6 +151,7 @@ class Sapling extends \Timber\Site
         // activate all "global" plugins, composer will check for plugins in the integrations directory
         $plugins = [
             new AcfBlocks(),
+            new ThemeOptions(),
         ];
 
         $plugins = array_filter($plugins, function ($plugin) {
