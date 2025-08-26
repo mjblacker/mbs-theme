@@ -32,7 +32,8 @@ class Sapling extends \Timber\Site
         if (function_exists('get_field')) {
             $context['theme_options'] = array(
                 'locations' => get_field('locations', 'option') ?: array(),
-                'company_info' => get_field('company_info', 'option') ?: array()
+                'company_info' => get_field('company_info', 'option') ?: array(),
+                'alert_banner' => get_field('alert_banner', 'option') ?: array()
             );
         }
 

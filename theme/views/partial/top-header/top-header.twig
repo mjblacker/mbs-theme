@@ -15,9 +15,10 @@
   - contact_url: URL for contact button (default '/contact')
 #}
 
-{% set alert_text = alert_text is defined ? alert_text : 'Alert Banner goes here in case you need to alert anyone to special offers!' %}
-{% set show_banner = show_banner is defined ? show_banner : true %}
-{% set contact_url = contact_url is defined ? contact_url : '/contact' %}
+{% set alert_text = theme_options.alert_banner.text ?: 'Alert Banner goes here in case you need to alert anyone to special offers!' %}
+{% set show_banner = theme_options.alert_banner.enabled ? true : false %}
+{% set contact_url = theme_options.alert_banner.button_link ?: '/contact' %}
+{% set button_text = theme_options.alert_banner.button_text ?: 'Contact Us' %}
 
 <div x-data="{ showTopHeader: {{ show_banner ? 'true' : 'false' }} }" 
      x-show="showTopHeader" 
@@ -49,7 +50,7 @@
                 {# Contact Us Button #}
                 <a href="{{ contact_url }}" 
                    class="bg-[#FFF200] hover:bg-yellow-300 text-black font-medium px-3 py-1.5 sm:px-4 sm:py-1.5 rounded-md transition-colors duration-200 text-sm whitespace-nowrap flex-shrink-0">
-                    Contact Us
+                    {{ button_text }}
                 </a>
             </div>
 

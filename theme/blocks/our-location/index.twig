@@ -1,0 +1,94 @@
+{# Our Location Block Template #}
+
+<section class="our-location-block py-16 lg:py-20 relative overflow-hidden {{ is_full_width ? 'our-location-block--full-width' : '' }} {{ is_wide ? 'our-location-block--wide' : '' }}" 
+         style="background: linear-gradient(to bottom, #000000 0%, #333333 50%, #ffffff 50%, #ffffff 100%);">
+  
+  {# Main content container #}
+  <div class="relative z-10 px-4 sm:px-6 lg:px-8 {% if is_full_width %}w-full{% elseif is_wide %}max-w-[1280px] mx-auto{% else %}container mx-auto{% endif %}">
+    <div class="{% if is_full_width %}max-w-7xl mx-auto{% endif %}">
+      
+      {# Header Section #}
+      <div class="text-center mb-12 lg:mb-16">
+        <h2 class="text-4xl lg:text-5xl font-medium text-white mb-4" style="font-size: 48px; color: #ffffff;">
+          {{ heading }}
+        </h2>
+        <p class="text-lg lg:text-xl text-gray-400" style="font-size: 20px; color: #7D8184;">
+          {{ sub_heading }}
+        </p>
+      </div>
+      
+      {# Locations Grid #}
+      {% if locations %}
+        <div class="grid {{ grid_classes }} gap-8 lg:gap-12">
+          {% for location in locations %}
+            <div class="location-card bg-white text-center overflow-hidden transform transition-all duration-300 hover:-translate-y-2 w-full ">
+              
+              {# Location Image #}
+              {% if location.location_image %}
+                <div class="aspect-[4/3] overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 bg-gray-50 ">
+                  <img src="{{ location.location_image.url }}" 
+                       alt="{{ location.location_image.alt ?: location.name ~ ' location' }}"
+                       class="w-full h-full object-cover transition-transform duration-300 hover:scale-105 mt-0 mb-0">
+                </div>
+              {% endif %}
+              
+              {# Location Details #}
+              <div class="p-4">
+                
+                {# Location Name with Head Office indicator #}
+                <h3 class="text-[20px] font-semibold text-black mb-1">
+                  {{ location.name }}
+                  {% if location.is_head_office %}
+                    <span class="text-[20px] font-semibold text-black ml-2">- Head Office</span>
+                  {% endif %}
+                </h3>
+                
+                {# Address #}
+                {% if location.address %}
+                  <p class="text-[16px] text-[#7D8184] mb-1">
+                    {{ location.address }}
+                  </p>
+                {% endif %}
+                
+                {# Phone Number #}
+                {% if location.phone %}
+                  <p class="text-[16px] text-[#7D8184] mb-6 mt-0">
+                    Phone: {{ location.phone }}
+                  </p>
+                {% endif %}
+                
+                {# Get Directions Button #}
+                {% if location.get_direction_link and location.get_direction_link != '#' %}
+                  <a href="{{ location.get_direction_link }}" 
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     class="inline-flex items-center px-4 py-2 bg-transparent border border-gray-300 text-gray-700 font-semibold text-sm rounded-md hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50" 
+                     style="font-size: 14px; color: #333333; font-weight: 600;">
+                    <svg class="mr-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Get Directions
+                  </a>
+                {% endif %}
+                
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        {# No locations fallback #}
+        <div class="text-center py-12">
+          <p class="text-lg text-gray-400" style="color: #7D8184;">
+            No locations are currently configured. Please add locations in Theme Options.
+          </p>
+        </div>
+      {% endif %}
+      
+    </div>
+  </div>
+  
+  {# Subtle decorative elements #}
+  <div class="absolute top-0 right-0 w-32 h-32 bg-yellow-400 opacity-5 rounded-full transform translate-x-16 -translate-y-16"></div>
+  <div class="absolute bottom-0 left-0 w-24 h-24 bg-yellow-400 opacity-3 rounded-full transform -translate-x-12 translate-y-12"></div>
+</section>

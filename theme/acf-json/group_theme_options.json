@@ -151,6 +151,50 @@
                     "ui_off_text": "",
                     "ui": 1,
                     "parent_repeater": "field_theme_locations"
+                },
+                {
+                    "key": "field_location_image",
+                    "label": "Location Image",
+                    "name": "location_image",
+                    "aria-label": "",
+                    "type": "image",
+                    "instructions": "Upload an image representing this location",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "return_format": "array",
+                    "preview_size": "thumbnail",
+                    "library": "all",
+                    "min_width": "",
+                    "min_height": "",
+                    "min_size": "",
+                    "max_width": "",
+                    "max_height": "",
+                    "max_size": "",
+                    "mime_types": "",
+                    "parent_repeater": "field_theme_locations"
+                },
+                {
+                    "key": "field_location_get_direction_link",
+                    "label": "Get Direction Link",
+                    "name": "get_direction_link",
+                    "aria-label": "",
+                    "type": "url",
+                    "instructions": "Enter the URL for getting directions to this location (e.g., Google Maps link)",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "placeholder": "https://maps.google.com/...",
+                    "parent_repeater": "field_theme_locations"
                 }
             ]
         },
@@ -225,6 +269,128 @@
                     },
                     "default_value": "",
                     "placeholder": "https://www.example.com"
+                }
+            ]
+        },
+        {
+            "key": "field_theme_alert_banner",
+            "label": "Top Header Banner",
+            "name": "alert_banner",
+            "aria-label": "",
+            "type": "group",
+            "instructions": "Alert or promotional banner that appears at the top of the website",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "layout": "block",
+            "sub_fields": [
+                {
+                    "key": "field_alert_banner_enabled",
+                    "label": "Enable Alert Banner",
+                    "name": "enabled",
+                    "aria-label": "",
+                    "type": "true_false",
+                    "instructions": "Check to enable the top header alert banner",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "message": "Enable Alert Banner",
+                    "default_value": 0,
+                    "ui_on_text": "Enabled",
+                    "ui_off_text": "Disabled",
+                    "ui": 1
+                },
+                {
+                    "key": "field_alert_banner_text",
+                    "label": "Alert Banner Text",
+                    "name": "text",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Enter the alert or promotional message text",
+                    "required": 0,
+                    "conditional_logic": [
+                        [
+                            {
+                                "field": "field_alert_banner_enabled",
+                                "operator": "==",
+                                "value": "1"
+                            }
+                        ]
+                    ],
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "e.g., Special Sale - 20% off all products this week!",
+                    "prepend": "",
+                    "append": ""
+                },
+                {
+                    "key": "field_alert_banner_button_text",
+                    "label": "Button Text",
+                    "name": "button_text",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Enter the text for the button or link",
+                    "required": 0,
+                    "conditional_logic": [
+                        [
+                            {
+                                "field": "field_alert_banner_enabled",
+                                "operator": "==",
+                                "value": "1"
+                            }
+                        ]
+                    ],
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "e.g., Shop Now",
+                    "prepend": "",
+                    "append": ""
+                },
+                {
+                    "key": "field_alert_banner_button_link",
+                    "label": "Button Link",
+                    "name": "button_link",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Enter the URL for the button or link destination (e.g., /shop, /contact, or full URL)",
+                    "required": 0,
+                    "conditional_logic": [
+                        [
+                            {
+                                "field": "field_alert_banner_enabled",
+                                "operator": "==",
+                                "value": "1"
+                            }
+                        ]
+                    ],
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "e.g., /shop or https://example.com",
+                    "prepend": "",
+                    "append": ""
                 }
             ]
         }
