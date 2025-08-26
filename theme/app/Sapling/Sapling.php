@@ -36,6 +36,25 @@ class Sapling extends \Timber\Site
             );
         }
 
+        // Add WooCommerce categories if available
+        if (function_exists('wc_get_product_category_list')) {
+            $raw_categories = get_terms(array(
+                'taxonomy' => 'product_cat',
+                'hide_empty' => false,
+                'number' => 10
+            ));
+            
+            $context['wc_categories'] = array();
+            if (!is_wp_error($raw_categories) && !empty($raw_categories)) {
+                foreach ($raw_categories as $category) {
+                    $context['wc_categories'][] = array(
+                        'name' => $category->name,
+                        'url' => get_term_link($category->term_id, 'product_cat')
+                    );
+                }
+            }
+        }
+
         return $context;
     }
 

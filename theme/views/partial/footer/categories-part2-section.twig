@@ -5,11 +5,7 @@
   - Displays categories 5-10
 #}
 
-{% 
-    set wc_categories = function('function_exists', 'wc_get_product_category_list') 
-        ? function('get_terms', {taxonomy: 'product_cat', hide_empty: false, number: 10})
-        : null 
-%}
+{# WooCommerce categories are now available globally via context #}
 
 {% include "partial/category-column.twig" with {
     'show_heading': false,
