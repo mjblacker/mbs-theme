@@ -1,0 +1,16 @@
+{
+  "apiVersion": 2,
+  "name": "acf/icon-box",
+  "title": "Sapling Icon Box",
+  "description": "A custom block with icon, heading, and sub-heading. Perfect for services or features sections.",
+  "category": "aspireweb",
+  "keywords": ["icon", "box", "service", "feature"],
+  "acf": {
+    "mode": "preview",
+    "renderCallback": "acf_block_json_render_callback"
+  },
+  "supports": {
+    "align": false,
+    "jsx": false
+  }
+}
