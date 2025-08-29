@@ -4,12 +4,23 @@
   - Logo, navigation, contact button, and cart are separate components
   - Responsive design with mobile menu
   - Includes top alert banner
+  - Sticky header functionality with Alpine.js scroll detection
+  - Smooth transitions and backdrop blur on scroll
+  - Admin bar compatibility: Desktop only (32px/top-8), mobile ignores admin bar
 #}
+
 
 {# Top Header Alert Banner #}
 {% include "partial/top-header/top-header.twig" %}
 
-<header class="relative bg-white shadow-sm border-b border-gray-100" x-data="{ mobileMenuOpen: false }">
+{# Sticky Header Implementation with Alpine.js - Admin Bar Desktop Only Positioning #}
+<header class="sticky {{ admin_bar.is_showing ? 'top-0 lg:top-8' : 'top-0' }} bg-white shadow-sm border-b border-gray-100 z-40 transition-all duration-300" 
+        x-data="headerScroll()"
+        @scroll.window="checkScroll()"
+        :class="{
+            '!fixed w-full shadow-lg backdrop-blur-sm bg-white/95': isScrolled,
+            'shadow-sm bg-white': !isScrolled
+        }">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16 lg:h-20">
             

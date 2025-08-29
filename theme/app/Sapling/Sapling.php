@@ -38,6 +38,12 @@ class Sapling extends \Timber\Site
             );
         }
 
+        // Add WordPress admin bar context (desktop only)
+        $context['admin_bar'] = array(
+            'is_showing' => is_admin_bar_showing(),
+            'desktop_class' => is_admin_bar_showing() ? 'top-8' : 'top-0'  // 32px admin bar height on desktop
+        );
+
         // Add WooCommerce categories if available
         if (function_exists('wc_get_product_category_list')) {
             $raw_categories = get_terms(array(

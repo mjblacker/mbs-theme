@@ -96,13 +96,13 @@
           <div class="flex justify-center">
             {% if button_link and button_link.url %}
               <a href="{{ button_link.url }}" 
-                 class="inline-flex items-center px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5 {{ button_classes }}"
+                 class="inline-flex items-center px-8 py-4 rounded-lg text-base font-semibold transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5 {{ button_classes }}"
                  {% if button_link.target %}target="{{ button_link.target }}"{% endif %}
                  {% if button_link.title %}aria-label="{{ button_link.title }}"{% endif %}>
                 {{ button_text }}
               </a>
             {% else %}
-              <button class="inline-flex items-center px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5 {{ button_classes }}">
+              <button class="inline-flex items-center px-8 py-4 rounded-lg text-base font-semibold transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5 {{ button_classes }}">
                 {{ button_text }}
               </button>
             {% endif %}

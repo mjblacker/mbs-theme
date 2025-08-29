@@ -2,6 +2,7 @@ import "./styles/main.css";
 import.meta.glob("../blocks/**/*.css", { eager: true });
 import Alpine from "alpinejs";
 
+
 // Import Swiper and modules globally
 import { Swiper } from "swiper";
 import { Navigation } from "swiper/modules";
@@ -15,5 +16,6 @@ window.SwiperNavigation = Navigation;
 window.Alpine = Alpine;
 
 import.meta.glob("../blocks/**/*.js", { eager: true });
+import.meta.glob("./js/**/*.js", { eager: true });
 
 window.Alpine.start();

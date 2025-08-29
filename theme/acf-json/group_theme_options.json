@@ -269,6 +269,31 @@
                     },
                     "default_value": "",
                     "placeholder": "https://www.example.com"
+                },
+                {
+                    "key": "field_company_logo",
+                    "label": "Company Logo",
+                    "name": "logo",
+                    "aria-label": "",
+                    "type": "image",
+                    "instructions": "Upload the company logo that will be displayed in the footer and other locations throughout the site",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "return_format": "array",
+                    "preview_size": "thumbnail",
+                    "library": "all",
+                    "min_width": "",
+                    "min_height": "",
+                    "min_size": "",
+                    "max_width": "",
+                    "max_height": "",
+                    "max_size": "",
+                    "mime_types": "jpg,jpeg,png,gif,svg,webp"
                 }
             ]
         },
