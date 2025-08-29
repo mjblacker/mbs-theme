@@ -3,6 +3,7 @@
   - Contact action buttons and payment methods
   - Uses brand yellow for buttons matching header style
   - Separated from quick links for proper 6-column layout
+  - Now dynamically configured via Theme Options
 #}
 
 <div>
@@ -10,16 +11,50 @@
     {# <div class="h-[28px] mb-6"></div> #}
     
     {# Action Buttons #}
-    <div class="space-y-3 mb-6">
-        <a href="/contact" 
-           class="inline-block w-full bg-[#FFF200] hover:bg-yellow-300 focus:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-black font-medium px-4 py-2 rounded-md transition-colors duration-200 text-center text-sm">
-            Contact Us
-        </a>
-        <a href="/directions" 
-           class="inline-block w-full bg-transparent hover:bg-[#000] text-[#fafafa] border-1 !border-[#fafafa] font-medium px-4 py-2 rounded-md transition-colors duration-200 text-center text-sm">
-            Get Directions
-        </a>
-    </div>
+    {% set footer_buttons = theme_options.footer_action_buttons %}
+    {% set show_buttons = footer_buttons.enabled ? true : false %}
+    
+    {# Show buttons if enabled in theme options and buttons exist, or fallback to hardcoded if no options set #}
+    {% if show_buttons and footer_buttons.buttons %}
+        <div class="space-y-3 mb-6">
+            {% for button in footer_buttons.buttons %}
+                {% if button.enabled %}
+                    {% set button_url = button.url ?: '#' %}
+                    {% set button_text = button.text ?: 'Button' %}
+                    {% set button_style = button.style ?: 'primary' %}
+                    {% set target_attr = button.target_blank ? 'target="_blank" rel="noopener noreferrer"' : '' %}
+                    
+                    {# Primary button style (yellow background) #}
+                    {% if button_style == 'primary' %}
+                        <a href="{{ button_url }}" 
+                           class="inline-block w-full bg-[#FFF200] hover:bg-[#FFF200] focus:bg-[#FFF200] focus:outline-none focus:ring-2 focus:ring-[#FFF200] text-black font-medium px-4 py-2 rounded-md transition-colors duration-200 text-center text-sm"
+                           {{ target_attr|raw }}>
+                            {{ button_text }}
+                        </a>
+                    {# Secondary button style (transparent with border) #}
+                    {% else %}
+                        <a href="{{ button_url }}" 
+                           class="inline-block w-full bg-transparent hover:bg-[#000] text-[#fafafa] border-1 !border-[#fafafa] font-medium px-4 py-2 rounded-md transition-colors duration-200 text-center text-sm"
+                           {{ target_attr|raw }}>
+                            {{ button_text }}
+                        </a>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        </div>
+    {# Fallback to original hardcoded buttons if no theme options configured #}
+    {% elseif not footer_buttons.enabled %}
+        <div class="space-y-3 mb-6">
+            <a href="/contact" 
+               class="inline-block w-full bg-[#FFF200] hover:bg-yellow-300 focus:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-black font-medium px-4 py-2 rounded-md transition-colors duration-200 text-center text-sm">
+                Contact Us
+            </a>
+            <a href="/directions" 
+               class="inline-block w-full bg-transparent hover:bg-[#000] text-[#fafafa] border-1 !border-[#fafafa] font-medium px-4 py-2 rounded-md transition-colors duration-200 text-center text-sm">
+                Get Directions
+            </a>
+        </div>
+    {% endif %}
 
     {# Payment Methods #}
     <div>
