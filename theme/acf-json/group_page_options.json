@@ -1,0 +1,44 @@
+{
+    "key": "group_page_options",
+    "title": "Page Options",
+    "fields": [
+        {
+            "key": "field_page_hide_title",
+            "label": "Hide Page Title",
+            "name": "hide_page_title",
+            "aria-label": "",
+            "type": "true_false",
+            "instructions": "Check this box to hide the page title from displaying on the frontend. Note: The title will still be used for SEO and browser tabs.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "message": "Hide the page title",
+            "default_value": 0,
+            "ui_on_text": "Hidden",
+            "ui_off_text": "Visible",
+            "ui": 1
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "page"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "side",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "Options for controlling page display settings",
+    "show_in_rest": 0
+}
