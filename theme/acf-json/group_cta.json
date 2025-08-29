@@ -1,0 +1,317 @@
+{
+  "key": "group_cta",
+  "title": "CTA Settings",
+  "fields": [
+    {
+      "key": "field_cta_background_type",
+      "label": "Background Type",
+      "name": "background_type",
+      "aria-label": "",
+      "type": "select",
+      "instructions": "Choose whether to use a solid color or background image",
+      "required": 1,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "choices": {
+        "color": "Solid Color",
+        "image": "Background Image"
+      },
+      "default_value": "color",
+      "return_format": "value",
+      "multiple": 0,
+      "allow_null": 0
+    },
+    {
+      "key": "field_cta_background_color",
+      "label": "Background Color",
+      "name": "background_color",
+      "aria-label": "",
+      "type": "color_picker",
+      "instructions": "Choose the background color",
+      "required": 0,
+      "conditional_logic": [
+        [
+          {
+            "field": "field_cta_background_type",
+            "operator": "==",
+            "value": "color"
+          }
+        ]
+      ],
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "default_value": "#FFF200",
+      "enable_opacity": 0,
+      "return_format": "string"
+    },
+    {
+      "key": "field_cta_background_image_desktop",
+      "label": "Desktop Background Image",
+      "name": "background_image_desktop",
+      "aria-label": "",
+      "type": "image",
+      "instructions": "Upload a background image for desktop displays (1024px and above). Image will be used as a background cover.",
+      "required": 0,
+      "conditional_logic": [
+        [
+          {
+            "field": "field_cta_background_type",
+            "operator": "==",
+            "value": "image"
+          }
+        ]
+      ],
+      "wrapper": {
+        "width": "50",
+        "class": "",
+        "id": ""
+      },
+      "return_format": "array",
+      "library": "all",
+      "min_width": "",
+      "min_height": "",
+      "min_size": "",
+      "max_width": "",
+      "max_height": "",
+      "max_size": "",
+      "mime_types": "jpg,jpeg,png,webp",
+      "preview_size": "medium"
+    },
+    {
+      "key": "field_cta_background_image_mobile",
+      "label": "Mobile Background Image",
+      "name": "background_image_mobile",
+      "aria-label": "",
+      "type": "image",
+      "instructions": "Upload a background image for mobile displays (below 1024px). If not provided, desktop image will be used as fallback.",
+      "required": 0,
+      "conditional_logic": [
+        [
+          {
+            "field": "field_cta_background_type",
+            "operator": "==",
+            "value": "image"
+          }
+        ]
+      ],
+      "wrapper": {
+        "width": "50",
+        "class": "",
+        "id": ""
+      },
+      "return_format": "array",
+      "library": "all",
+      "min_width": "",
+      "min_height": "",
+      "min_size": "",
+      "max_width": "",
+      "max_height": "",
+      "max_size": "",
+      "mime_types": "jpg,jpeg,png,webp",
+      "preview_size": "medium"
+    },
+    {
+      "key": "field_cta_overlay_color",
+      "label": "Overlay Color",
+      "name": "overlay_color",
+      "aria-label": "",
+      "type": "color_picker",
+      "instructions": "Optional overlay color for background image (helps with text readability)",
+      "required": 0,
+      "conditional_logic": [
+        [
+          {
+            "field": "field_cta_background_type",
+            "operator": "==",
+            "value": "image"
+          }
+        ]
+      ],
+      "wrapper": {
+        "width": "50",
+        "class": "",
+        "id": ""
+      },
+      "default_value": "",
+      "enable_opacity": 1,
+      "return_format": "string"
+    },
+    {
+      "key": "field_cta_overlay_opacity",
+      "label": "Overlay Opacity",
+      "name": "overlay_opacity",
+      "aria-label": "",
+      "type": "range",
+      "instructions": "Adjust the opacity of the overlay (0-100%)",
+      "required": 0,
+      "conditional_logic": [
+        [
+          {
+            "field": "field_cta_background_type",
+            "operator": "==",
+            "value": "image"
+          }
+        ]
+      ],
+      "wrapper": {
+        "width": "50",
+        "class": "",
+        "id": ""
+      },
+      "default_value": 50,
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "prepend": "",
+      "append": "%"
+    },
+    {
+      "key": "field_cta_heading",
+      "label": "Heading",
+      "name": "heading",
+      "aria-label": "",
+      "type": "text",
+      "instructions": "Enter the main heading text",
+      "required": 1,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "default_value": "Need it fast? Call us today.",
+      "maxlength": 150,
+      "placeholder": "Enter main heading",
+      "prepend": "",
+      "append": ""
+    },
+    {
+      "key": "field_cta_sub_heading",
+      "label": "Sub Heading",
+      "name": "sub_heading",
+      "aria-label": "",
+      "type": "textarea",
+      "instructions": "Enter the sub heading or description text",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "default_value": "Haven't got time to wait? Call us today for a quote and to see if we can help.",
+      "maxlength": 300,
+      "placeholder": "Enter description text",
+      "rows": 3,
+      "new_lines": ""
+    },
+    {
+      "key": "field_cta_button_text",
+      "label": "Button Text",
+      "name": "button_text",
+      "aria-label": "",
+      "type": "text",
+      "instructions": "Enter the text for the call-to-action button",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "50",
+        "class": "",
+        "id": ""
+      },
+      "default_value": "Contact us for a Quote",
+      "maxlength": 50,
+      "placeholder": "Enter button text",
+      "prepend": "",
+      "append": ""
+    },
+    {
+      "key": "field_cta_button_link",
+      "label": "Button Link",
+      "name": "button_link",
+      "aria-label": "",
+      "type": "link",
+      "instructions": "Select the page or URL for the button link",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "50",
+        "class": "",
+        "id": ""
+      },
+      "return_format": "array"
+    },
+    {
+      "key": "field_cta_text_color",
+      "label": "Text Color",
+      "name": "text_color",
+      "aria-label": "",
+      "type": "select",
+      "instructions": "Choose the text color scheme",
+      "required": 1,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "50",
+        "class": "",
+        "id": ""
+      },
+      "choices": {
+        "dark": "Dark Text (for light backgrounds)",
+        "light": "Light Text (for dark backgrounds)"
+      },
+      "default_value": "dark",
+      "return_format": "value",
+      "multiple": 0,
+      "allow_null": 0
+    },
+    {
+      "key": "field_cta_button_style",
+      "label": "Button Style",
+      "name": "button_style",
+      "aria-label": "",
+      "type": "select",
+      "instructions": "Choose the button color style",
+      "required": 1,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "50",
+        "class": "",
+        "id": ""
+      },
+      "choices": {
+        "dark": "Dark Button",
+        "light": "Light Button",
+        "yellow": "Yellow Button (Brand)"
+      },
+      "default_value": "dark",
+      "return_format": "value",
+      "multiple": 0,
+      "allow_null": 0
+    }
+  ],
+  "location": [
+    [
+      {
+        "param": "block",
+        "operator": "==",
+        "value": "acf/cta"
+      }
+    ]
+  ],
+  "menu_order": 0,
+  "position": "normal",
+  "style": "default",
+  "label_placement": "top",
+  "instruction_placement": "label",
+  "hide_on_screen": "",
+  "active": true,
+  "description": "",
+  "show_in_rest": 0
+}

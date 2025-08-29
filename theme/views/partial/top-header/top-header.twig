@@ -28,17 +28,17 @@
      x-transition:leave="transition ease-in duration-200"
      x-transition:leave-start="transform translate-y-0"
      x-transition:leave-end="transform -translate-y-full"
-     class="bg-[#3D3D3D] text-white relative z-50">
+     class="bg-black text-white relative z-50">
     
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-center py-2 sm:py-2.5 relative">
+        <div class="flex items-center justify-center py-1 sm:py-1.5 relative">
             
             {# Centered Content Group - Alert Text + Contact Button #}
             <div class="flex items-center justify-center space-x-4 sm:space-x-6">
                 
                 {# Alert Message #}
                 <div class="flex-shrink-0">
-                    <p class="text-sm sm:text-base font-normal text-white hidden sm:block">
+                    <p class="text-sm font-normal text-white hidden sm:block">
                         {{ alert_text }}
                     </p>
                     {# Mobile version - shorter text #}
