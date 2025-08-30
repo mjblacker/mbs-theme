@@ -2,6 +2,8 @@
 
 use Timber\Timber;
 use Sapling\Integrations\ThemeOptions;
+use Sapling\Integrations\ProductFilters;
+use Sapling\Integrations\ShopFiltersData;
 
 class Sapling extends \Timber\Site
 {
@@ -179,6 +181,8 @@ class Sapling extends \Timber\Site
         $plugins = [
             new AcfBlocks(),
             new ThemeOptions(),
+            new ProductFilters(),
+            new ShopFiltersData(),
         ];
 
         $plugins = array_filter($plugins, function ($plugin) {

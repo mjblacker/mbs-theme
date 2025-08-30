@@ -1,0 +1,26 @@
+{#
+    Breadcrumbs Component
+    
+    Dynamic breadcrumbs for shop pages
+    Shows: Home / Shop / Category (if on category page)
+           Home / All Products (if on main shop page)
+#}
+
+<!-- Breadcrumbs -->
+<div class="container mx-auto mt-4 px-4 sm:px-6 lg:px-8 py-4">
+    <nav class="flex items-center text-sm text-gray-600" aria-label="Breadcrumb">
+        <a href="{{ function('home_url') }}" class="hover:text-gray-900 transition-colors">
+            Home
+        </a>
+        <span class="mx-2">/</span>
+        {% if term %}
+            <a href="{{ function('wc_get_page_permalink', 'shop') }}" class="hover:text-gray-900 transition-colors">
+                All Products
+            </a>
+            <span class="mx-2">/</span>
+            <span class="text-gray-900 font-medium">{{ title }}</span>
+        {% else %}
+            <span class="text-gray-900 font-medium">All Products</span>
+        {% endif %}
+    </nav>
+</div>

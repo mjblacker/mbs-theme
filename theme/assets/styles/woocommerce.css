@@ -104,18 +104,19 @@
   .button,
   button,
   input[type="submit"] {
-    @apply hover:bg-yellow-500 text-black px-4 py-2 font-bold transition-colors inline-block no-underline;
+    /* @apply hover:bg-yellow-500 text-black px-4 py-2 font-bold transition-colors inline-block no-underline;
     background-color: #fff200 !important;
     color: #000 !important;
     width: auto !important;
     display: inline-block !important;
     border: none !important;
-    border-radius: 0 !important;
+    border-radius: 0 !important; */
 
     &:hover {
-      background-color: #eab308 !important;
+      /* background-color: #eab308 !important;
       color: #000 !important;
-      text-decoration: none !important;
+      text-decoration: none !important; */
+      cursor: pointer;
     }
 
     &.alt {
