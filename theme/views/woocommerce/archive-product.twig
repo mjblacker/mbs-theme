@@ -2,37 +2,79 @@
 
 {% block content %}
     <div class="woocommerce-shop prose max-w-none">
-        {% if term %}
-            <header class="mb-8 mt-8 container mx-auto px-4 sm:px-6 lg:px-8">
-                <h1 class="text-3xl font-bold text-gray-900 mb-4">{{ title }}</h1>
-                {% if term.description %}
-                    <div class="text-gray-600 prose max-w-none">{{ term.description|raw }}</div>
+        <!-- Banner Header with Background Image -->
+        <header class="relative bg-cover bg-center bg-no-repeat flex items-center" style="background-image: url('{{ function('get_template_directory_uri') }}/assets/images/shop-banner.png'); height: 171px;">
+     
+            <!-- Banner Content -->
+            <div class="relative z-10 text-left container mx-auto px-4 sm:px-6 lg:px-8">
+                {% if term %}
+                    <h1 class="text-4xl text-white font-medium mb-4">{{ title }}</h1>
+                    {% if term.description %}
+                        <div class="text-4xl md:text-4xl text-white max-w-2xl">
+                            {# {{ term.description|raw }} #}
+                            All Products
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <h1 class="text-4xl text-white font-medium">All Products</h1>
                 {% endif %}
-            </header>
-        {% else %}
-            <header class="mb-8 mt-8 container mx-auto px-4 sm:px-6 lg:px-8">
-                <h1 class="text-3xl font-bold text-gray-900">Shop</h1>
-            </header>
-        {% endif %}
-
-        {% if posts %}
-            <div class="woocommerce-products container mx-auto px-4 sm:px-6 lg:px-8 sm:mb-6 lg:mb-10">
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-12">
-                    {% for post in posts %}
-                        {% include 'woocommerce/product-card.twig' with {
-                            'post': post,
-                            'show_brand': true,
-                            'show_sale_badge': true
-                        } %}
-                    {% endfor %}
-                </div>
             </div>
+        </header>
 
-            {% include 'partial/pagination.twig' %}
-        {% else %}
-            <div class="text-center py-12">
-                <p class="text-gray-600 text-lg">{{ function('__', 'No products were found matching your selection.', 'woocommerce') }}</p>
+        <!-- Breadcrumbs -->
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <nav class="flex items-center text-sm text-gray-600" aria-label="Breadcrumb">
+                <a href="{{ function('home_url') }}" class="hover:text-gray-900 transition-colors">
+                    Home
+                </a>
+                <span class="mx-2">/</span>
+                {% if term %}
+                    <a href="{{ function('wc_get_page_permalink', 'shop') }}" class="hover:text-gray-900 transition-colors">
+                        All Products
+                    </a>
+                    <span class="mx-2">/</span>
+                    <span class="text-gray-900 font-medium">{{ title }}</span>
+                {% else %}
+                    <span class="text-gray-900 font-medium">All Products</span>
+                {% endif %}
+            </nav>
+        </div>
+
+        <div class="container mx-auto mt-10 mb-10 px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Left Sidebar (1/4 width) -->
+                <aside class="w-full lg:w-1/4">
+                    <div class="bg-gray-50 p-6 rounded-lg">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Filters</h2>
+                        <p class="text-gray-600">
+                            This is the sidebar area. Product filters, categories, and other shop widgets will be placed here.
+                        </p>
+                    </div>
+                </aside>
+
+                <!-- Main Content (3/4 width) -->
+                <main class="w-full lg:w-3/4">
+                    {% if posts %}
+                        <div class="woocommerce-products sm:mb-6 lg:mb-10">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {% for post in posts %}
+                                    {% include 'woocommerce/product-card.twig' with {
+                                        'post': post,
+                                        'show_brand': true,
+                                        'show_sale_badge': true
+                                    } %}
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        {% include 'partial/pagination.twig' %}
+                    {% else %}
+                        <div class="text-center py-12">
+                            <p class="text-gray-600 text-lg">{{ function('__', 'No products were found matching your selection.', 'woocommerce') }}</p>
+                        </div>
+                    {% endif %}
+                </main>
             </div>
-        {% endif %}
+        </div>
     </div>
 {% endblock %}
