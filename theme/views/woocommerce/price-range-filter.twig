@@ -1,0 +1,126 @@
+{#
+    Price Range Filter Component
+    
+    Creates a dual-range slider for price filtering from $0 to $1000
+    with Clear option matching the design pattern of other filters
+#}
+
+<div class="filter-section mb-8" x-data="priceRangeFilter()">
+    
+    <!-- Filter Header -->
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900 mt-0 mb-0">Price Range</h3>
+        <div class="flex items-center space-x-2 text-xs">
+            <button @click="clearRange()" 
+                    class="text-[#7D8184]">
+                Clear
+            </button>
+        </div>
+    </div>
+
+    <!-- Price Range Display -->
+    <div class="flex justify-between items-center mb-4">
+        <span class="text-sm font-medium text-gray-700" x-text="'$' + minPrice"></span>
+        <span class="text-sm font-medium text-gray-700" x-text="'$' + maxPrice"></span>
+    </div>
+
+    <!-- Dual Range Slider -->
+    <div class="relative mb-6">
+        <!-- Range Track -->
+        <div class="relative h-2 bg-gray-200 rounded-lg">
+            <!-- Active Range Track -->
+            <div class="absolute h-2 bg-[#363738] rounded-lg" 
+                 :style="'left: ' + ((minPrice - 0) / (1000 - 0)) * 100 + '%; width: ' + ((maxPrice - minPrice) / (1000 - 0)) * 100 + '%'"></div>
+        </div>
+        
+        <!-- Min Range Input -->
+        <input type="range" 
+               min="0" 
+               max="1000" 
+               step="10"
+               x-model.number="minPrice"
+               @input="updateMinPrice($event.target.value)"
+               class="absolute top-0 left-0 w-full h-2 bg-transparent appearance-none cursor-pointer range-slider-thumb">
+        
+        <!-- Max Range Input -->
+        <input type="range" 
+               min="0" 
+               max="1000" 
+               step="10"
+               x-model.number="maxPrice"
+               @input="updateMaxPrice($event.target.value)"
+               class="absolute top-0 left-0 w-full h-2 bg-transparent appearance-none cursor-pointer range-slider-thumb">
+    </div>
+
+    <!-- Price Input Fields -->
+    <div class="grid grid-cols-2 gap-3">
+        <div>
+            <label class="block text-xs text-gray-600 mb-1">Min Price</label>
+            <div class="relative">
+                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">$</span>
+                <input type="number" 
+                       x-model.number="minPrice"
+                       @input="updateMinPrice($event.target.value)"
+                       min="0" 
+                       max="1000" 
+                       step="10"
+                       class="w-full pl-6 pr-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#363738] focus:border-transparent">
+            </div>
+        </div>
+        <div>
+            <label class="block text-xs text-gray-600 mb-1">Max Price</label>
+            <div class="relative">
+                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">$</span>
+                <input type="number" 
+                       x-model.number="maxPrice"
+                       @input="updateMaxPrice($event.target.value)"
+                       min="0" 
+                       max="1000" 
+                       step="10"
+                       class="w-full pl-6 pr-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#363738] focus:border-transparent">
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Custom styles for range slider thumbs */
+.range-slider-thumb::-webkit-slider-thumb {
+    appearance: none;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #363738;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    pointer-events: all;
+    position: relative;
+    z-index: 1;
+}
+
+.range-slider-thumb::-moz-range-thumb {
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #363738;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    pointer-events: all;
+    position: relative;
+    z-index: 1;
+}
+
+.range-slider-thumb::-webkit-slider-track {
+    background: transparent;
+}
+
+.range-slider-thumb::-moz-range-track {
+    background: transparent;
+}
+
+.range-slider-thumb:nth-of-type(2)::-webkit-slider-thumb {
+    z-index: 2;
+}
+</style>

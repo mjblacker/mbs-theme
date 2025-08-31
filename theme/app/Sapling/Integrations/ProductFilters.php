@@ -54,6 +54,7 @@ class ProductFilters implements SaplingPlugin
             // Get filter parameters
             $categories = isset($_POST['categories']) ? json_decode(stripslashes($_POST['categories']), true) : array();
             $brands = isset($_POST['brands']) ? json_decode(stripslashes($_POST['brands']), true) : array();
+            $price_range = isset($_POST['price_range']) ? json_decode(stripslashes($_POST['price_range']), true) : array('min' => 0, 'max' => 1000);
             $sort_order = isset($_POST['sort_order']) ? sanitize_text_field($_POST['sort_order']) : 'date_desc';
 
             // Build WP_Query arguments
@@ -120,6 +121,34 @@ class ProductFilters implements SaplingPlugin
                 $tax_query['relation'] = 'AND';
             }
             $args['tax_query'] = $tax_query;
+        }
+
+        // Add price range meta query
+        $meta_query = array();
+        if (!empty($price_range) && is_array($price_range)) {
+            $min_price = isset($price_range['min']) ? floatval($price_range['min']) : 0;
+            $max_price = isset($price_range['max']) ? floatval($price_range['max']) : 1000;
+            
+            // Only add price filter if it's not the default full range
+            if ($min_price > 0 || $max_price < 1000) {
+                $meta_query[] = array(
+                    'key' => '_price',
+                    'value' => array($min_price, $max_price),
+                    'type' => 'NUMERIC',
+                    'compare' => 'BETWEEN'
+                );
+            }
+        }
+
+        // Combine with existing meta_query if needed (for sorting by price)
+        if (!empty($meta_query)) {
+            if (isset($args['meta_key']) && $args['meta_key'] === '_price') {
+                // If we're also sorting by price, we need to handle the meta_query differently
+                $args['meta_query'] = $meta_query;
+                // For sorting, we still need the meta_key and orderby
+            } else {
+                $args['meta_query'] = $meta_query;
+            }
         }
 
         // Execute query

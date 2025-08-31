@@ -30,7 +30,7 @@
                 <div class="flex flex-col lg:flex-row gap-8">
                     <!-- Left Sidebar (1/4 width) -->
                 <aside class="w-full lg:w-1/4">
-                    <div class="p-0">
+                    <div class="pr-4 pl-4">
                         
                         <!-- Categories Filter -->
                         {% if shop_filters.categories %}
@@ -50,6 +50,9 @@
                                 'show_collapse': false
                             } %}
                         {% endif %}
+
+                        <!-- Price Range Filter -->
+                        {% include 'woocommerce/price-range-filter.twig' %}
 
                         {% include 'woocommerce/apply-filters-button.twig' %}
 

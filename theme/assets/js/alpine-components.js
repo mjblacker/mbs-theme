@@ -31,6 +31,10 @@ document.addEventListener("alpine:init", () => {
     activeFilters: {
       categories: [],
       brands: [],
+      priceRange: {
+        min: 0,
+        max: 1000
+      }
     },
     sortOrder: 'date_desc',
 
@@ -90,6 +94,20 @@ document.addEventListener("alpine:init", () => {
             brandComponent._x_dataStack[0].selectedItems || [];
         }
       }
+
+      // Get price range from price range component
+      const priceRangeComponents = document.querySelectorAll(
+        "[x-data*=\"priceRangeFilter\"]"
+      );
+      if (priceRangeComponents.length > 0) {
+        const priceComponent = priceRangeComponents[0];
+        if (priceComponent._x_dataStack && priceComponent._x_dataStack[0]) {
+          this.activeFilters.priceRange = {
+            min: priceComponent._x_dataStack[0].minPrice || 0,
+            max: priceComponent._x_dataStack[0].maxPrice || 1000
+          };
+        }
+      }
     },
 
     async filterProducts() {
@@ -113,6 +131,7 @@ document.addEventListener("alpine:init", () => {
           JSON.stringify(this.activeFilters.categories)
         );
         formData.append("brands", JSON.stringify(this.activeFilters.brands));
+        formData.append("price_range", JSON.stringify(this.activeFilters.priceRange));
         formData.append("sort_order", this.sortOrder);
         formData.append("current_url", window.location.href);
 
@@ -168,6 +187,8 @@ document.addEventListener("alpine:init", () => {
       // Clear existing filter params
       params.delete("filter_categories");
       params.delete("filter_brands");
+      params.delete("price_min");
+      params.delete("price_max");
       params.delete("sort_order");
 
       // Add new filter params
@@ -180,6 +201,10 @@ document.addEventListener("alpine:init", () => {
       if (this.activeFilters.brands.length > 0) {
         params.set("filter_brands", this.activeFilters.brands.join(","));
       }
+      if (this.activeFilters.priceRange.min > 0 || this.activeFilters.priceRange.max < 1000) {
+        params.set("price_min", this.activeFilters.priceRange.min);
+        params.set("price_max", this.activeFilters.priceRange.max);
+      }
       if (this.sortOrder !== 'date_desc') {
         params.set("sort_order", this.sortOrder);
       }
@@ -187,6 +212,35 @@ document.addEventListener("alpine:init", () => {
       url.search = params.toString();
       return url.toString();
     },
+  }));
+
+  // Price Range Filter functionality
+  Alpine.data("priceRangeFilter", () => ({
+    minPrice: 0,
+    maxPrice: 1000,
+
+    init() {
+      // Initialize with default values
+    },
+
+    updateMinPrice(value) {
+      const numValue = parseInt(value);
+      if (numValue >= 0 && numValue <= this.maxPrice) {
+        this.minPrice = numValue;
+      }
+    },
+
+    updateMaxPrice(value) {
+      const numValue = parseInt(value);
+      if (numValue >= this.minPrice && numValue <= 1000) {
+        this.maxPrice = numValue;
+      }
+    },
+
+    clearRange() {
+      this.minPrice = 0;
+      this.maxPrice = 1000;
+    }
   }));
 
   // Filter Component functionality
