@@ -30,14 +30,13 @@
                 <div class="flex flex-col lg:flex-row gap-8">
                     <!-- Left Sidebar (1/4 width) -->
                 <aside class="w-full lg:w-1/4">
-                    <div class="pr-4 pl-4">
+                    <div class="pr-6 pl-0">
                         
                         <!-- Categories Filter -->
                         {% if shop_filters.categories %}
-                            {% include 'woocommerce/filter-component.twig' with {
+                            {% include 'woocommerce/category-dropdown-filter.twig' with {
                                 'title': 'Categories',
-                                'items': shop_filters.categories,
-                                'filter_type': 'category'
+                                'items': shop_filters.categories
                             } %}
                         {% endif %}
 

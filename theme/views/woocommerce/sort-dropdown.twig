@@ -1,9 +1,9 @@
-<div class="flex justify-end items-center mb-6">
+<div class="flex justify-end items-center mb-2">
     <div class="relative flex items-center" x-data="{ open: false }">
         <label class="text-sm text-gray-700 mr-2">Sort by:</label>
         <button 
             @click="open = !open" 
-            class="flex items-center justify-between px-4 py-2 min-w-[100px] text-right"
+            class="flex items-center justify-between px-4 pr-0 py-2 min-w-[100px] text-right"
         >
             <span x-text="getCurrentSortLabel()">Latest</span>
             <svg class="w-4 h-4 ml-2 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">

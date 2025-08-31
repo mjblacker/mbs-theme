@@ -68,18 +68,33 @@ document.addEventListener("alpine:init", () => {
     },
 
     collectFilterSelections() {
-      // Get categories from category filter component
-      const categoryComponents = document.querySelectorAll(
-        "[x-data*=\"filterComponent('category'\"]"
+      // Get categories from category dropdown filter component
+      const categoryDropdownComponents = document.querySelectorAll(
+        "[x-data*=\"categoryDropdownFilter\"]"
       );
-      if (categoryComponents.length > 0) {
-        const categoryComponent = categoryComponents[0];
+      if (categoryDropdownComponents.length > 0) {
+        const categoryComponent = categoryDropdownComponents[0];
         if (
           categoryComponent._x_dataStack &&
           categoryComponent._x_dataStack[0]
         ) {
           this.activeFilters.categories =
-            categoryComponent._x_dataStack[0].selectedItems || [];
+            categoryComponent._x_dataStack[0].selectedCategories || [];
+        }
+      } else {
+        // Fallback to old checkbox filter component if dropdown not found
+        const categoryComponents = document.querySelectorAll(
+          "[x-data*=\"filterComponent('category'\"]"
+        );
+        if (categoryComponents.length > 0) {
+          const categoryComponent = categoryComponents[0];
+          if (
+            categoryComponent._x_dataStack &&
+            categoryComponent._x_dataStack[0]
+          ) {
+            this.activeFilters.categories =
+              categoryComponent._x_dataStack[0].selectedItems || [];
+          }
         }
       }
 
@@ -213,6 +228,120 @@ document.addEventListener("alpine:init", () => {
       return url.toString();
     },
   }));
+
+  // Category Dropdown Filter functionality
+  window.categoryDropdownFilter = function (items) {
+    return {
+      items: items,
+      selectedCategories: [],
+      expandedCategories: [],
+      allExpanded: false,
+
+      init() {
+        // Initialize expanded state for parent categories that have selected children
+        this.updateExpandAllState();
+      },
+
+      toggleCategory(categoryId) {
+        const category = this.findCategoryById(categoryId);
+        const index = this.selectedCategories.indexOf(categoryId);
+        
+        if (index > -1) {
+          // Remove this category
+          this.selectedCategories.splice(index, 1);
+          
+          // If removing a parent category, also remove all its children
+          if (category && category.children && category.children.length > 0) {
+            category.children.forEach(child => {
+              const childIndex = this.selectedCategories.indexOf(child.id);
+              if (childIndex > -1) {
+                this.selectedCategories.splice(childIndex, 1);
+              }
+            });
+          }
+        } else {
+          // Add this category
+          this.selectedCategories.push(categoryId);
+          
+          // If this is a parent category, toggle expansion but don't auto-select children
+          if (category && category.children && category.children.length > 0) {
+            this.toggleExpansion(categoryId);
+          } else {
+            // If this is a child category, remove its parent from selection if it was selected
+            const parentCategory = this.findParentCategory(categoryId);
+            if (parentCategory) {
+              const parentIndex = this.selectedCategories.indexOf(parentCategory.id);
+              if (parentIndex > -1) {
+                this.selectedCategories.splice(parentIndex, 1);
+              }
+            }
+          }
+        }
+      },
+
+      toggleExpansion(categoryId) {
+        const index = this.expandedCategories.indexOf(categoryId);
+        if (index > -1) {
+          this.expandedCategories.splice(index, 1);
+        } else {
+          this.expandedCategories.push(categoryId);
+        }
+        this.updateExpandAllState();
+      },
+
+      toggleExpandAll() {
+        const parentCategories = this.items.filter(item => 
+          item.children && item.children.length > 0
+        );
+
+        if (this.allExpanded) {
+          // Collapse all
+          this.expandedCategories = [];
+        } else {
+          // Expand all
+          this.expandedCategories = parentCategories.map(item => item.id);
+        }
+        this.allExpanded = !this.allExpanded;
+      },
+
+      updateExpandAllState() {
+        const parentCategories = this.items.filter(item => 
+          item.children && item.children.length > 0
+        );
+        this.allExpanded = parentCategories.length > 0 && 
+          parentCategories.every(item => this.expandedCategories.includes(item.id));
+      },
+
+      findCategoryById(id) {
+        for (const item of this.items) {
+          if (item.id == id) return item;
+          if (item.children) {
+            for (const child of item.children) {
+              if (child.id == id) return child;
+            }
+          }
+        }
+        return null;
+      },
+
+      findParentCategory(childId) {
+        for (const item of this.items) {
+          if (item.children) {
+            for (const child of item.children) {
+              if (child.id == childId) return item;
+            }
+          }
+        }
+        return null;
+      },
+
+      clearAll() {
+        this.selectedCategories = [];
+        this.expandedCategories = [];
+        this.allExpanded = false;
+      }
+    };
+  };
 
   // Price Range Filter functionality
   Alpine.data("priceRangeFilter", () => ({
