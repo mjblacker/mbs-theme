@@ -10,6 +10,8 @@ class ProductFilters implements SaplingPlugin
     {
         add_action('wp_ajax_filter_products', array($this, 'filter_products'));
         add_action('wp_ajax_nopriv_filter_products', array($this, 'filter_products'));
+        add_action('wp_ajax_update_filter_counts', array($this, 'update_filter_counts_only'));
+        add_action('wp_ajax_nopriv_update_filter_counts', array($this, 'update_filter_counts_only'));
         add_action('wp_enqueue_scripts', array($this, 'localize_filter_script'));
     }
 
@@ -218,11 +220,178 @@ class ProductFilters implements SaplingPlugin
         // Reset global post data
         wp_reset_postdata();
 
+            // Get updated filter counts based on current selection
+            $updated_filters = $this->get_updated_filter_counts($categories, $brands, $price_range);
+
             // Return JSON response
             wp_send_json_success(array(
                 'html' => $html,
                 'found_posts' => $products_query->found_posts,
-                'max_pages' => $products_query->max_num_pages
+                'max_pages' => $products_query->max_num_pages,
+                'updated_filters' => $updated_filters
+            ));
+
+        } catch (\Exception $e) {
+            wp_send_json_error('Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get updated filter counts based on current filter selections
+     */
+    private function get_updated_filter_counts($current_categories, $current_brands, $current_price_range)
+    {
+        $updated_filters = array(
+            'categories' => array(),
+            'brands' => array()
+        );
+
+        // Get all categories
+        $all_categories = get_terms(array(
+            'taxonomy' => 'product_cat',
+            'hide_empty' => false,
+            'hierarchical' => true,
+            'parent' => 0
+        ));
+
+        if ($all_categories && !is_wp_error($all_categories)) {
+            foreach ($all_categories as $category) {
+                // Count products for this category with current brand and price filters applied
+                $count = $this->count_products_with_filters(
+                    array($category->term_id), // This category
+                    $current_brands,            // Current brand selection
+                    $current_price_range        // Current price range
+                );
+
+                $updated_filters['categories'][$category->term_id] = $count;
+
+                // Get child categories
+                $children = get_terms(array(
+                    'taxonomy' => 'product_cat',
+                    'hide_empty' => false,
+                    'parent' => $category->term_id
+                ));
+
+                if ($children && !is_wp_error($children)) {
+                    foreach ($children as $child) {
+                        $child_count = $this->count_products_with_filters(
+                            array($child->term_id), // This child category
+                            $current_brands,         // Current brand selection
+                            $current_price_range     // Current price range
+                        );
+                        $updated_filters['categories'][$child->term_id] = $child_count;
+                    }
+                }
+            }
+        }
+
+        // Get all brands
+        $all_brands = get_terms(array(
+            'taxonomy' => 'product_brand',
+            'hide_empty' => false
+        ));
+
+        if ($all_brands && !is_wp_error($all_brands)) {
+            foreach ($all_brands as $brand) {
+                // Count products for this brand with current category and price filters applied
+                $count = $this->count_products_with_filters(
+                    $current_categories,        // Current category selection
+                    array($brand->term_id),     // This brand
+                    $current_price_range        // Current price range
+                );
+
+                $updated_filters['brands'][$brand->term_id] = $count;
+            }
+        }
+
+        return $updated_filters;
+    }
+
+    /**
+     * Count products with specific filter combinations
+     */
+    private function count_products_with_filters($categories, $brands, $price_range)
+    {
+        $args = array(
+            'post_type' => 'product',
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+            'fields' => 'ids'
+        );
+
+        // Add tax query if filters are selected
+        $tax_query = array();
+        
+        if (!empty($categories)) {
+            $tax_query[] = array(
+                'taxonomy' => 'product_cat',
+                'field' => 'term_id',
+                'terms' => array_map('intval', $categories),
+                'operator' => 'IN'
+            );
+        }
+
+        if (!empty($brands)) {
+            $tax_query[] = array(
+                'taxonomy' => 'product_brand',
+                'field' => 'term_id',
+                'terms' => array_map('intval', $brands),
+                'operator' => 'IN'
+            );
+        }
+
+        if (!empty($tax_query)) {
+            if (count($tax_query) > 1) {
+                $tax_query['relation'] = 'AND';
+            }
+            $args['tax_query'] = $tax_query;
+        }
+
+        // Add price range meta query
+        if (!empty($price_range) && is_array($price_range)) {
+            $min_price = isset($price_range['min']) ? floatval($price_range['min']) : 0;
+            $max_price = isset($price_range['max']) ? floatval($price_range['max']) : 1000;
+            
+            // Only add price filter if it's not the default full range
+            if ($min_price > 0 || $max_price < 1000) {
+                $args['meta_query'] = array(
+                    array(
+                        'key' => '_price',
+                        'value' => array($min_price, $max_price),
+                        'type' => 'NUMERIC',
+                        'compare' => 'BETWEEN'
+                    )
+                );
+            }
+        }
+
+        $query = new \WP_Query($args);
+        return $query->found_posts;
+    }
+
+    /**
+     * AJAX handler for updating filter counts only (no product filtering)
+     */
+    public function update_filter_counts_only()
+    {
+        try {
+            // Verify nonce
+            if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'filter_products_nonce')) {
+                wp_send_json_error('Security check failed');
+                return;
+            }
+
+            // Get filter parameters
+            $categories = isset($_POST['categories']) ? json_decode(stripslashes($_POST['categories']), true) : array();
+            $brands = isset($_POST['brands']) ? json_decode(stripslashes($_POST['brands']), true) : array();
+            $price_range = isset($_POST['price_range']) ? json_decode(stripslashes($_POST['price_range']), true) : array('min' => 0, 'max' => 1000);
+
+            // Get updated filter counts based on current selection
+            $updated_filters = $this->get_updated_filter_counts($categories, $brands, $price_range);
+
+            // Return only the updated counts
+            wp_send_json_success(array(
+                'updated_filters' => $updated_filters
             ));
 
         } catch (\Exception $e) {

@@ -198,6 +198,11 @@ document.addEventListener("alpine:init", () => {
           // Update product results
           document.getElementById("product-results").innerHTML = data.data.html;
 
+          // Update filter counts if provided
+          if (data.data.updated_filters) {
+            this.updateFilterCounts(data.data.updated_filters);
+          }
+
           // Update URL without page refresh
           const newUrl = this.buildFilterUrl();
           window.history.pushState({}, "", newUrl);
@@ -243,6 +248,99 @@ document.addEventListener("alpine:init", () => {
 
       url.search = params.toString();
       return url.toString();
+    },
+
+    updateFilterCounts(updatedFilters) {
+      // Update category filter counts
+      const categoryComponents = document.querySelectorAll(
+        "[x-data*=\"categoryDropdownFilter\"]"
+      );
+      if (categoryComponents.length > 0) {
+        const categoryComponent = categoryComponents[0];
+        if (categoryComponent._x_dataStack && categoryComponent._x_dataStack[0]) {
+          const categoryData = categoryComponent._x_dataStack[0];
+          if (categoryData.items) {
+            this.updateItemCounts(categoryData.items, updatedFilters.categories);
+          }
+        }
+      }
+
+      // Update brand filter counts
+      const brandComponents = document.querySelectorAll(
+        "[x-data*=\"filterComponent('brand'\"]"
+      );
+      if (brandComponents.length > 0) {
+        const brandComponent = brandComponents[0];
+        if (brandComponent._x_dataStack && brandComponent._x_dataStack[0]) {
+          const brandData = brandComponent._x_dataStack[0];
+          if (brandData.items) {
+            this.updateItemCounts(brandData.items, updatedFilters.brands);
+          }
+        }
+      }
+    },
+
+    updateItemCounts(items, updatedCounts) {
+      items.forEach(item => {
+        if (updatedCounts[item.id] !== undefined) {
+          item.count = updatedCounts[item.id];
+        }
+        // Update child items if they exist
+        if (item.children && item.children.length > 0) {
+          item.children.forEach(child => {
+            if (updatedCounts[child.id] !== undefined) {
+              child.count = updatedCounts[child.id];
+            }
+          });
+        }
+      });
+    },
+
+    async updateCountsOnly() {
+      // Collect current filter selections
+      this.collectFilterSelections();
+
+      try {
+        // Check if AJAX data is available
+        if (typeof shopFiltersAjax === "undefined") {
+          console.error("shopFiltersAjax is not defined.");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("action", "update_filter_counts");
+        formData.append("nonce", shopFiltersAjax.nonce);
+        
+        // Filter out empty categories before sending
+        const validCategories = this.activeFilters.categories.filter(cat => cat && cat !== "");
+        formData.append("categories", JSON.stringify(validCategories));
+        
+        formData.append("brands", JSON.stringify(this.activeFilters.brands));
+        formData.append("price_range", JSON.stringify(this.activeFilters.priceRange));
+        formData.append("current_url", window.location.href);
+
+        const response = await fetch(shopFiltersAjax.ajaxUrl, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Network response was not ok: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Update filter counts only (no product results)
+          if (data.data.updated_filters) {
+            this.updateFilterCounts(data.data.updated_filters);
+          }
+        } else {
+          console.error("Count update request failed:", data.data);
+        }
+      } catch (error) {
+        console.error("Error updating counts:", error);
+      }
     },
   }));
 
@@ -294,6 +392,9 @@ document.addEventListener("alpine:init", () => {
             }
           }
         }
+        
+        // Update counts when category selection changes
+        this.updateCountsOnly();
       },
 
       toggleExpansion(categoryId) {
@@ -356,6 +457,14 @@ document.addEventListener("alpine:init", () => {
         this.selectedCategories = [];
         this.expandedCategories = [];
         this.allExpanded = false;
+      },
+
+      updateCountsOnly() {
+        // Call the main shopFilters updateCountsOnly method
+        const shopFiltersElement = document.querySelector('[x-data*="shopFilters"]');
+        if (shopFiltersElement && shopFiltersElement._x_dataStack && shopFiltersElement._x_dataStack[0]) {
+          shopFiltersElement._x_dataStack[0].updateCountsOnly();
+        }
       }
     };
   };
@@ -373,6 +482,8 @@ document.addEventListener("alpine:init", () => {
       const numValue = parseInt(value);
       if (numValue >= 0 && numValue <= this.maxPrice) {
         this.minPrice = numValue;
+        // Update counts when price changes
+        this.updateCountsOnly();
       }
     },
 
@@ -380,12 +491,22 @@ document.addEventListener("alpine:init", () => {
       const numValue = parseInt(value);
       if (numValue >= this.minPrice && numValue <= 1000) {
         this.maxPrice = numValue;
+        // Update counts when price changes
+        this.updateCountsOnly();
       }
     },
 
     clearRange() {
       this.minPrice = 0;
       this.maxPrice = 1000;
+    },
+
+    updateCountsOnly() {
+      // Call the main shopFilters updateCountsOnly method
+      const shopFiltersElement = document.querySelector('[x-data*="shopFilters"]');
+      if (shopFiltersElement && shopFiltersElement._x_dataStack && shopFiltersElement._x_dataStack[0]) {
+        shopFiltersElement._x_dataStack[0].updateCountsOnly();
+      }
     }
   }));
 
@@ -445,6 +566,14 @@ document.addEventListener("alpine:init", () => {
       clearAll() {
         this.selectedItems = [];
       },
+
+      updateCountsOnly() {
+        // Call the main shopFilters updateCountsOnly method
+        const shopFiltersElement = document.querySelector('[x-data*="shopFilters"]');
+        if (shopFiltersElement && shopFiltersElement._x_dataStack && shopFiltersElement._x_dataStack[0]) {
+          shopFiltersElement._x_dataStack[0].updateCountsOnly();
+        }
+      }
     };
   };
 });
