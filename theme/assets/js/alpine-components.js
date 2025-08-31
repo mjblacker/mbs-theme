@@ -32,9 +32,27 @@ document.addEventListener("alpine:init", () => {
       categories: [],
       brands: [],
     },
+    sortOrder: 'date_desc',
 
     init() {
       // No automatic filtering on init
+    },
+
+    getCurrentSortLabel() {
+      const sortLabels = {
+        'date_desc': 'Latest',
+        'date_asc': 'Oldest',
+        'price_asc': 'Price: Low to High',
+        'price_desc': 'Price: High to Low',
+        'name_asc': 'Product Name: A-Z',
+        'name_desc': 'Product Name: Z-A'
+      };
+      return sortLabels[this.sortOrder] || 'Latest';
+    },
+
+    setSortOrder(order) {
+      this.sortOrder = order;
+      this.filterProducts();
     },
 
     applyFilters() {
@@ -95,6 +113,7 @@ document.addEventListener("alpine:init", () => {
           JSON.stringify(this.activeFilters.categories)
         );
         formData.append("brands", JSON.stringify(this.activeFilters.brands));
+        formData.append("sort_order", this.sortOrder);
         formData.append("current_url", window.location.href);
 
         // console.log('Sending AJAX data:', {
@@ -149,6 +168,7 @@ document.addEventListener("alpine:init", () => {
       // Clear existing filter params
       params.delete("filter_categories");
       params.delete("filter_brands");
+      params.delete("sort_order");
 
       // Add new filter params
       if (this.activeFilters.categories.length > 0) {
@@ -159,6 +179,9 @@ document.addEventListener("alpine:init", () => {
       }
       if (this.activeFilters.brands.length > 0) {
         params.set("filter_brands", this.activeFilters.brands.join(","));
+      }
+      if (this.sortOrder !== 'date_desc') {
+        params.set("sort_order", this.sortOrder);
       }
 
       url.search = params.toString();

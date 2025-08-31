@@ -54,6 +54,7 @@ class ProductFilters implements SaplingPlugin
             // Get filter parameters
             $categories = isset($_POST['categories']) ? json_decode(stripslashes($_POST['categories']), true) : array();
             $brands = isset($_POST['brands']) ? json_decode(stripslashes($_POST['brands']), true) : array();
+            $sort_order = isset($_POST['sort_order']) ? sanitize_text_field($_POST['sort_order']) : 'date_desc';
 
             // Build WP_Query arguments
             $args = array(
@@ -61,6 +62,37 @@ class ProductFilters implements SaplingPlugin
                 'post_status' => 'publish',
                 'posts_per_page' => get_option('posts_per_page', 12)
             );
+
+            // Add sorting logic
+            switch ($sort_order) {
+                case 'date_asc':
+                    $args['orderby'] = 'date';
+                    $args['order'] = 'ASC';
+                    break;
+                case 'price_asc':
+                    $args['meta_key'] = '_price';
+                    $args['orderby'] = 'meta_value_num';
+                    $args['order'] = 'ASC';
+                    break;
+                case 'price_desc':
+                    $args['meta_key'] = '_price';
+                    $args['orderby'] = 'meta_value_num';
+                    $args['order'] = 'DESC';
+                    break;
+                case 'name_asc':
+                    $args['orderby'] = 'title';
+                    $args['order'] = 'ASC';
+                    break;
+                case 'name_desc':
+                    $args['orderby'] = 'title';
+                    $args['order'] = 'DESC';
+                    break;
+                case 'date_desc':
+                default:
+                    $args['orderby'] = 'date';
+                    $args['order'] = 'DESC';
+                    break;
+            }
 
         // Add tax query if filters are selected
         $tax_query = array();
