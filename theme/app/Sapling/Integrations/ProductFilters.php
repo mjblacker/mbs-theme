@@ -41,8 +41,8 @@ class ProductFilters implements SaplingPlugin
     {
         try {
             // Debug logging
-            error_log('ProductFilters: filter_products called');
-            error_log('POST data: ' . print_r($_POST, true));
+            // error_log('ProductFilters: filter_products called');
+            // error_log('POST data: ' . print_r($_POST, true));
 
             // Verify nonce
             if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'filter_products_nonce')) {
