@@ -33,10 +33,10 @@ document.addEventListener("alpine:init", () => {
       brands: [],
       priceRange: {
         min: 0,
-        max: 1000
-      }
+        max: 1000,
+      },
     },
-    sortOrder: 'date_desc',
+    sortOrder: "date_desc",
     currentCategoryId: null,
 
     init() {
@@ -47,18 +47,19 @@ document.addEventListener("alpine:init", () => {
       // When on a category page, initialize with that category pre-selected
       this.activeFilters.categories = [categoryId];
       this.currentCategoryId = categoryId;
+      //    console.log("Category page initialized with category ID:", categoryId);
     },
 
     getCurrentSortLabel() {
       const sortLabels = {
-        'date_desc': 'Latest',
-        'date_asc': 'Oldest',
-        'price_asc': 'Price: Low to High',
-        'price_desc': 'Price: High to Low',
-        'name_asc': 'Product Name: A-Z',
-        'name_desc': 'Product Name: Z-A'
+        date_desc: "Latest",
+        date_asc: "Oldest",
+        price_asc: "Price: Low to High",
+        price_desc: "Price: High to Low",
+        name_asc: "Product Name: A-Z",
+        name_desc: "Product Name: Z-A",
       };
-      return sortLabels[this.sortOrder] || 'Latest';
+      return sortLabels[this.sortOrder] || "Latest";
     },
 
     setSortOrder(order) {
@@ -81,7 +82,7 @@ document.addEventListener("alpine:init", () => {
       } else {
         // Get categories from category dropdown filter component (only on shop page)
         const categoryDropdownComponents = document.querySelectorAll(
-          "[x-data*=\"categoryDropdownFilter\"]"
+          '[x-data*="categoryDropdownFilter"]'
         );
         if (categoryDropdownComponents.length > 0) {
           const categoryComponent = categoryDropdownComponents[0];
@@ -127,14 +128,14 @@ document.addEventListener("alpine:init", () => {
 
       // Get price range from price range component
       const priceRangeComponents = document.querySelectorAll(
-        "[x-data*=\"priceRangeFilter\"]"
+        '[x-data*="priceRangeFilter"]'
       );
       if (priceRangeComponents.length > 0) {
         const priceComponent = priceRangeComponents[0];
         if (priceComponent._x_dataStack && priceComponent._x_dataStack[0]) {
           this.activeFilters.priceRange = {
             min: priceComponent._x_dataStack[0].minPrice || 0,
-            max: priceComponent._x_dataStack[0].maxPrice || 1000
+            max: priceComponent._x_dataStack[0].maxPrice || 1000,
           };
         }
       }
@@ -156,13 +157,18 @@ document.addEventListener("alpine:init", () => {
         const formData = new FormData();
         formData.append("action", "filter_products");
         formData.append("nonce", shopFiltersAjax.nonce);
-        
+
         // Filter out empty categories before sending
-        const validCategories = this.activeFilters.categories.filter(cat => cat && cat !== "");
+        const validCategories = this.activeFilters.categories.filter(
+          (cat) => cat && cat !== ""
+        );
         formData.append("categories", JSON.stringify(validCategories));
-        
+
         formData.append("brands", JSON.stringify(this.activeFilters.brands));
-        formData.append("price_range", JSON.stringify(this.activeFilters.priceRange));
+        formData.append(
+          "price_range",
+          JSON.stringify(this.activeFilters.priceRange)
+        );
         formData.append("sort_order", this.sortOrder);
         formData.append("current_url", window.location.href);
 
@@ -230,7 +236,9 @@ document.addEventListener("alpine:init", () => {
       // Add new filter params (only add category filter if not on a category page and has categories)
       if (this.activeFilters.categories.length > 0 && !this.currentCategoryId) {
         // Filter out any empty values
-        const validCategories = this.activeFilters.categories.filter(cat => cat && cat !== "");
+        const validCategories = this.activeFilters.categories.filter(
+          (cat) => cat && cat !== ""
+        );
         if (validCategories.length > 0) {
           params.set("filter_categories", validCategories.join(","));
         }
@@ -238,11 +246,14 @@ document.addEventListener("alpine:init", () => {
       if (this.activeFilters.brands.length > 0) {
         params.set("filter_brands", this.activeFilters.brands.join(","));
       }
-      if (this.activeFilters.priceRange.min > 0 || this.activeFilters.priceRange.max < 1000) {
+      if (
+        this.activeFilters.priceRange.min > 0 ||
+        this.activeFilters.priceRange.max < 1000
+      ) {
         params.set("price_min", this.activeFilters.priceRange.min);
         params.set("price_max", this.activeFilters.priceRange.max);
       }
-      if (this.sortOrder !== 'date_desc') {
+      if (this.sortOrder !== "date_desc") {
         params.set("sort_order", this.sortOrder);
       }
 
@@ -253,14 +264,20 @@ document.addEventListener("alpine:init", () => {
     updateFilterCounts(updatedFilters) {
       // Update category filter counts
       const categoryComponents = document.querySelectorAll(
-        "[x-data*=\"categoryDropdownFilter\"]"
+        '[x-data*="categoryDropdownFilter"]'
       );
       if (categoryComponents.length > 0) {
         const categoryComponent = categoryComponents[0];
-        if (categoryComponent._x_dataStack && categoryComponent._x_dataStack[0]) {
+        if (
+          categoryComponent._x_dataStack &&
+          categoryComponent._x_dataStack[0]
+        ) {
           const categoryData = categoryComponent._x_dataStack[0];
           if (categoryData.items) {
-            this.updateItemCounts(categoryData.items, updatedFilters.categories);
+            this.updateItemCounts(
+              categoryData.items,
+              updatedFilters.categories
+            );
           }
         }
       }
@@ -281,13 +298,13 @@ document.addEventListener("alpine:init", () => {
     },
 
     updateItemCounts(items, updatedCounts) {
-      items.forEach(item => {
+      items.forEach((item) => {
         if (updatedCounts[item.id] !== undefined) {
           item.count = updatedCounts[item.id];
         }
         // Update child items if they exist
         if (item.children && item.children.length > 0) {
-          item.children.forEach(child => {
+          item.children.forEach((child) => {
             if (updatedCounts[child.id] !== undefined) {
               child.count = updatedCounts[child.id];
             }
@@ -300,6 +317,8 @@ document.addEventListener("alpine:init", () => {
       // Collect current filter selections
       this.collectFilterSelections();
 
+      //console.log('Updating counts with filters:', this.activeFilters);
+
       try {
         // Check if AJAX data is available
         if (typeof shopFiltersAjax === "undefined") {
@@ -310,13 +329,18 @@ document.addEventListener("alpine:init", () => {
         const formData = new FormData();
         formData.append("action", "update_filter_counts");
         formData.append("nonce", shopFiltersAjax.nonce);
-        
+
         // Filter out empty categories before sending
-        const validCategories = this.activeFilters.categories.filter(cat => cat && cat !== "");
+        const validCategories = this.activeFilters.categories.filter(
+          (cat) => cat && cat !== ""
+        );
         formData.append("categories", JSON.stringify(validCategories));
-        
+
         formData.append("brands", JSON.stringify(this.activeFilters.brands));
-        formData.append("price_range", JSON.stringify(this.activeFilters.priceRange));
+        formData.append(
+          "price_range",
+          JSON.stringify(this.activeFilters.priceRange)
+        );
         formData.append("current_url", window.location.href);
 
         const response = await fetch(shopFiltersAjax.ajaxUrl, {
@@ -360,14 +384,14 @@ document.addEventListener("alpine:init", () => {
       toggleCategory(categoryId) {
         const category = this.findCategoryById(categoryId);
         const index = this.selectedCategories.indexOf(categoryId);
-        
+
         if (index > -1) {
           // Remove this category
           this.selectedCategories.splice(index, 1);
-          
+
           // If removing a parent category, also remove all its children
           if (category && category.children && category.children.length > 0) {
-            category.children.forEach(child => {
+            category.children.forEach((child) => {
               const childIndex = this.selectedCategories.indexOf(child.id);
               if (childIndex > -1) {
                 this.selectedCategories.splice(childIndex, 1);
@@ -377,7 +401,7 @@ document.addEventListener("alpine:init", () => {
         } else {
           // Add this category
           this.selectedCategories.push(categoryId);
-          
+
           // If this is a parent category, toggle expansion but don't auto-select children
           if (category && category.children && category.children.length > 0) {
             this.toggleExpansion(categoryId);
@@ -385,14 +409,16 @@ document.addEventListener("alpine:init", () => {
             // If this is a child category, remove its parent from selection if it was selected
             const parentCategory = this.findParentCategory(categoryId);
             if (parentCategory) {
-              const parentIndex = this.selectedCategories.indexOf(parentCategory.id);
+              const parentIndex = this.selectedCategories.indexOf(
+                parentCategory.id
+              );
               if (parentIndex > -1) {
                 this.selectedCategories.splice(parentIndex, 1);
               }
             }
           }
         }
-        
+
         // Update counts when category selection changes
         this.updateCountsOnly();
       },
@@ -408,8 +434,8 @@ document.addEventListener("alpine:init", () => {
       },
 
       toggleExpandAll() {
-        const parentCategories = this.items.filter(item => 
-          item.children && item.children.length > 0
+        const parentCategories = this.items.filter(
+          (item) => item.children && item.children.length > 0
         );
 
         if (this.allExpanded) {
@@ -417,17 +443,20 @@ document.addEventListener("alpine:init", () => {
           this.expandedCategories = [];
         } else {
           // Expand all
-          this.expandedCategories = parentCategories.map(item => item.id);
+          this.expandedCategories = parentCategories.map((item) => item.id);
         }
         this.allExpanded = !this.allExpanded;
       },
 
       updateExpandAllState() {
-        const parentCategories = this.items.filter(item => 
-          item.children && item.children.length > 0
+        const parentCategories = this.items.filter(
+          (item) => item.children && item.children.length > 0
         );
-        this.allExpanded = parentCategories.length > 0 && 
-          parentCategories.every(item => this.expandedCategories.includes(item.id));
+        this.allExpanded =
+          parentCategories.length > 0 &&
+          parentCategories.every((item) =>
+            this.expandedCategories.includes(item.id)
+          );
       },
 
       findCategoryById(id) {
@@ -461,11 +490,17 @@ document.addEventListener("alpine:init", () => {
 
       updateCountsOnly() {
         // Call the main shopFilters updateCountsOnly method
-        const shopFiltersElement = document.querySelector('[x-data*="shopFilters"]');
-        if (shopFiltersElement && shopFiltersElement._x_dataStack && shopFiltersElement._x_dataStack[0]) {
+        const shopFiltersElement = document.querySelector(
+          '[x-data*="shopFilters"]'
+        );
+        if (
+          shopFiltersElement &&
+          shopFiltersElement._x_dataStack &&
+          shopFiltersElement._x_dataStack[0]
+        ) {
           shopFiltersElement._x_dataStack[0].updateCountsOnly();
         }
-      }
+      },
     };
   };
 
@@ -503,11 +538,17 @@ document.addEventListener("alpine:init", () => {
 
     updateCountsOnly() {
       // Call the main shopFilters updateCountsOnly method
-      const shopFiltersElement = document.querySelector('[x-data*="shopFilters"]');
-      if (shopFiltersElement && shopFiltersElement._x_dataStack && shopFiltersElement._x_dataStack[0]) {
+      const shopFiltersElement = document.querySelector(
+        '[x-data*="shopFilters"]'
+      );
+      if (
+        shopFiltersElement &&
+        shopFiltersElement._x_dataStack &&
+        shopFiltersElement._x_dataStack[0]
+      ) {
         shopFiltersElement._x_dataStack[0].updateCountsOnly();
       }
-    }
+    },
   }));
 
   // Filter Component functionality
@@ -569,11 +610,17 @@ document.addEventListener("alpine:init", () => {
 
       updateCountsOnly() {
         // Call the main shopFilters updateCountsOnly method
-        const shopFiltersElement = document.querySelector('[x-data*="shopFilters"]');
-        if (shopFiltersElement && shopFiltersElement._x_dataStack && shopFiltersElement._x_dataStack[0]) {
+        const shopFiltersElement = document.querySelector(
+          '[x-data*="shopFilters"]'
+        );
+        if (
+          shopFiltersElement &&
+          shopFiltersElement._x_dataStack &&
+          shopFiltersElement._x_dataStack[0]
+        ) {
           shopFiltersElement._x_dataStack[0].updateCountsOnly();
         }
-      }
+      },
     };
   };
 });

@@ -15,9 +15,15 @@ class ShopFiltersData implements SaplingPlugin
     {
         // Only add filter data on shop/archive pages
         if (is_shop() || is_product_category() || is_product_tag()) {
+            // Get current category context if on category page
+            $current_category = null;
+            if (is_product_category()) {
+                $current_category = get_queried_object();
+            }
+            
             $context['shop_filters'] = array(
                 'categories' => $this->get_category_filter_data(),
-                'brands' => $this->get_brand_filter_data()
+                'brands' => $this->get_brand_filter_data($current_category)
             );
         }
 
@@ -77,9 +83,10 @@ class ShopFiltersData implements SaplingPlugin
 
     /**
      * Get formatted brand data for filters
+     * @param WP_Term|null $current_category Current category context (if on category page)
      * @return array
      */
-    private function get_brand_filter_data()
+    private function get_brand_filter_data($current_category = null)
     {
         $brands = get_terms(array(
             'taxonomy' => 'product_brand',
@@ -93,8 +100,14 @@ class ShopFiltersData implements SaplingPlugin
         $brand_items = array();
         
         foreach ($brands as $brand) {
-            // Manually count products for this brand
-            $product_count = $this->get_product_count_for_term($brand->term_id, 'product_brand');
+            // Manually count products for this brand, considering category context
+            if ($current_category) {
+                // On category page - count products in this brand AND current category
+                $product_count = $this->get_product_count_with_category_context($brand->term_id, $current_category->term_id);
+            } else {
+                // On shop page - count all products for this brand
+                $product_count = $this->get_product_count_for_term($brand->term_id, 'product_brand');
+            }
             
             // Only include brands that have products
             if ($product_count > 0) {
@@ -129,6 +142,38 @@ class ShopFiltersData implements SaplingPlugin
                     'taxonomy' => $taxonomy,
                     'field' => 'term_id',
                     'terms' => $term_id
+                )
+            )
+        );
+
+        $query = new \WP_Query($args);
+        return $query->found_posts;
+    }
+
+    /**
+     * Count products for a brand within a specific category context
+     * @param int $brand_term_id
+     * @param int $category_term_id
+     * @return int
+     */
+    private function get_product_count_with_category_context($brand_term_id, $category_term_id)
+    {
+        $args = array(
+            'post_type' => 'product',
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+            'fields' => 'ids',
+            'tax_query' => array(
+                'relation' => 'AND',
+                array(
+                    'taxonomy' => 'product_brand',
+                    'field' => 'term_id',
+                    'terms' => $brand_term_id
+                ),
+                array(
+                    'taxonomy' => 'product_cat',
+                    'field' => 'term_id',
+                    'terms' => $category_term_id
                 )
             )
         );
