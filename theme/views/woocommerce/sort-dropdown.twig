@@ -1,6 +1,6 @@
 <div class="flex justify-end items-center mb-2">
     <div class="relative flex items-center" x-data="{ open: false }">
-        <label class="text-sm text-gray-700 mr-2">Sort by:</label>
+        <label class="text-sm text-gray-700 mr-4">Sort by:</label>
         <button 
             @click="open = !open" 
             class="flex items-center justify-between px-4 pr-0 py-2 min-w-[100px] text-right"
@@ -20,7 +20,7 @@
             x-transition:leave="transition ease-in duration-75"
             x-transition:leave-start="transform opacity-100 scale-100"
             x-transition:leave-end="transform opacity-0 scale-95"
-            class="absolute right-0 top-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg z-50"
+            class="absolute right-0 top-8 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg z-50"
         >
             <div class="py-1">
                 <button 

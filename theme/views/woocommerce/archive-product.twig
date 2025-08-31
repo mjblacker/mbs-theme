@@ -23,7 +23,7 @@
         {% include 'woocommerce/breadcrumbs.twig' %}
 
         <div class="container mx-auto mt-0 mb-10 px-4 sm:px-6 lg:px-8">
-            <div x-data="shopFilters">
+            <div x-data="shopFilters" {% if term %}x-init="initializeCategoryPage({{ term.term_id }})"{% endif %} @filter-changed="applyFilters()">
                 <!-- Sort Dropdown -->
                 {% include 'woocommerce/sort-dropdown.twig' %}
 
@@ -32,8 +32,8 @@
                 <aside class="w-full lg:w-1/4">
                     <div class="pr-6 pl-0">
                         
-                        <!-- Categories Filter -->
-                        {% if shop_filters.categories %}
+                        <!-- Categories Filter (show only on main shop page) -->
+                        {% if shop_filters.categories and function('is_shop') %}
                             {% include 'woocommerce/category-dropdown-filter.twig' with {
                                 'title': 'Categories',
                                 'items': shop_filters.categories
@@ -42,7 +42,7 @@
 
                         <!-- Brands Filter -->
                         {% if shop_filters.brands %}
-                            {% include 'woocommerce/filter-component.twig' with {
+                            {% include 'woocommerce/brand-filter-component.twig' with {
                                 'title': 'Brands',
                                 'items': shop_filters.brands,
                                 'filter_type': 'brand',

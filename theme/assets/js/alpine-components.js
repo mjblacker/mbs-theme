@@ -37,9 +37,16 @@ document.addEventListener("alpine:init", () => {
       }
     },
     sortOrder: 'date_desc',
+    currentCategoryId: null,
 
     init() {
       // No automatic filtering on init
+    },
+
+    initializeCategoryPage(categoryId) {
+      // When on a category page, initialize with that category pre-selected
+      this.activeFilters.categories = [categoryId];
+      this.currentCategoryId = categoryId;
     },
 
     getCurrentSortLabel() {
@@ -68,32 +75,40 @@ document.addEventListener("alpine:init", () => {
     },
 
     collectFilterSelections() {
-      // Get categories from category dropdown filter component
-      const categoryDropdownComponents = document.querySelectorAll(
-        "[x-data*=\"categoryDropdownFilter\"]"
-      );
-      if (categoryDropdownComponents.length > 0) {
-        const categoryComponent = categoryDropdownComponents[0];
-        if (
-          categoryComponent._x_dataStack &&
-          categoryComponent._x_dataStack[0]
-        ) {
-          this.activeFilters.categories =
-            categoryComponent._x_dataStack[0].selectedCategories || [];
-        }
+      // If on a category page, maintain the category context
+      if (this.currentCategoryId) {
+        this.activeFilters.categories = [this.currentCategoryId];
       } else {
-        // Fallback to old checkbox filter component if dropdown not found
-        const categoryComponents = document.querySelectorAll(
-          "[x-data*=\"filterComponent('category'\"]"
+        // Get categories from category dropdown filter component (only on shop page)
+        const categoryDropdownComponents = document.querySelectorAll(
+          "[x-data*=\"categoryDropdownFilter\"]"
         );
-        if (categoryComponents.length > 0) {
-          const categoryComponent = categoryComponents[0];
+        if (categoryDropdownComponents.length > 0) {
+          const categoryComponent = categoryDropdownComponents[0];
           if (
             categoryComponent._x_dataStack &&
             categoryComponent._x_dataStack[0]
           ) {
             this.activeFilters.categories =
-              categoryComponent._x_dataStack[0].selectedItems || [];
+              categoryComponent._x_dataStack[0].selectedCategories || [];
+          }
+        } else {
+          // Fallback to old checkbox filter component if dropdown not found
+          const categoryComponents = document.querySelectorAll(
+            "[x-data*=\"filterComponent('category'\"]"
+          );
+          if (categoryComponents.length > 0) {
+            const categoryComponent = categoryComponents[0];
+            if (
+              categoryComponent._x_dataStack &&
+              categoryComponent._x_dataStack[0]
+            ) {
+              this.activeFilters.categories =
+                categoryComponent._x_dataStack[0].selectedItems || [];
+            }
+          } else {
+            // If no category components found, ensure categories is empty array
+            this.activeFilters.categories = [];
           }
         }
       }
@@ -141,10 +156,11 @@ document.addEventListener("alpine:init", () => {
         const formData = new FormData();
         formData.append("action", "filter_products");
         formData.append("nonce", shopFiltersAjax.nonce);
-        formData.append(
-          "categories",
-          JSON.stringify(this.activeFilters.categories)
-        );
+        
+        // Filter out empty categories before sending
+        const validCategories = this.activeFilters.categories.filter(cat => cat && cat !== "");
+        formData.append("categories", JSON.stringify(validCategories));
+        
         formData.append("brands", JSON.stringify(this.activeFilters.brands));
         formData.append("price_range", JSON.stringify(this.activeFilters.priceRange));
         formData.append("sort_order", this.sortOrder);
@@ -206,12 +222,13 @@ document.addEventListener("alpine:init", () => {
       params.delete("price_max");
       params.delete("sort_order");
 
-      // Add new filter params
-      if (this.activeFilters.categories.length > 0) {
-        params.set(
-          "filter_categories",
-          this.activeFilters.categories.join(",")
-        );
+      // Add new filter params (only add category filter if not on a category page and has categories)
+      if (this.activeFilters.categories.length > 0 && !this.currentCategoryId) {
+        // Filter out any empty values
+        const validCategories = this.activeFilters.categories.filter(cat => cat && cat !== "");
+        if (validCategories.length > 0) {
+          params.set("filter_categories", validCategories.join(","));
+        }
       }
       if (this.activeFilters.brands.length > 0) {
         params.set("filter_brands", this.activeFilters.brands.join(","));

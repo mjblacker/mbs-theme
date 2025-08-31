@@ -34,7 +34,7 @@
             {% endif %}
             {% if show_clear %}
                 <span class="text-gray-400">|</span>
-                <button @click="clearAll()" 
+                <button @click="clearAll(); $dispatch('filter-changed')" 
                         class="text-[#7D8184]">
                     Clear
                 </button>
@@ -54,7 +54,7 @@
                                x-model="selectedItems"
                                class="w-4 h-4 text-[#363738] bg-gray-100 border-gray-300 rounded focus:ring-[#363738] focus:ring-2 mr-3">
                         <span class="text-sm text-gray-700" x-text="item.name"></span>
-                        <span class="text-xs text-gray-400 ml-1" x-text="'(' + item.count + ')'" x-show="item.count"></span>
+                        <span class="text-xs text-gray-400 ml-2" x-text="'(' + (item.count || 0) + ')'"></span>
                     </label>
                     <!-- Collapse Toggle for items with children -->
                     <button x-show="item.children && item.children.length > 0" 
@@ -84,7 +84,7 @@
                                    x-model="selectedItems"
                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 mr-3">
                             <span class="text-sm text-gray-600" x-text="child.name"></span>
-                            <span class="text-xs text-gray-400 ml-1" x-text="'(' + child.count + ')'" x-show="child.count"></span>
+                            <span class="text-xs text-gray-400 ml-2" x-text="'(' + (child.count || 0) + ')'"></span>
                         </label>
                     </template>
                 </div>
