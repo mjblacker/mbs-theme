@@ -1,6 +1,9 @@
 // Alpine.js Single Product Components
 
 document.addEventListener("alpine:init", () => {
+  // Initialize cart count store
+  Alpine.store("initialCartCount", 0);
+
   // Single Product Main Component
   Alpine.data("singleProduct", () => ({
     hasVariations: false,
@@ -540,6 +543,9 @@ document.addEventListener("alpine:init", () => {
             })
           );
 
+          // Update cart badge
+          this.updateCartBadge();
+
           // Show success feedback
           this.showSuccessMessage();
         } else {
@@ -576,8 +582,10 @@ document.addEventListener("alpine:init", () => {
       });
 
       // Also check for hidden inputs as fallback
-      const hiddenInputs = document.querySelectorAll('input[name^="attribute_"]');
-      hiddenInputs.forEach(input => {
+      const hiddenInputs = document.querySelectorAll(
+        'input[name^="attribute_"]'
+      );
+      hiddenInputs.forEach((input) => {
         if (input.value && !variations[input.name]) {
           variations[input.name] = input.value;
         }
@@ -593,7 +601,7 @@ document.addEventListener("alpine:init", () => {
 
       try {
         const variations = JSON.parse(variationScript.dataset.variations);
-        
+
         // Find matching variation based on selected attributes
         const matchingVariation = variations.find((variation) => {
           if (!variation.attributes || !selectedVariations) return false;
@@ -601,17 +609,17 @@ document.addEventListener("alpine:init", () => {
           // Check if all selected attributes match this variation
           return Object.entries(selectedVariations).every(([attr, value]) => {
             const variationValue = variation.attributes[attr];
-            
+
             // Handle empty variation attributes (means any value)
             if (variationValue === "" || variationValue === null) return true;
-            
+
             return variationValue.toLowerCase() === value.toLowerCase();
           });
         });
 
         return matchingVariation ? matchingVariation.variation_id : null;
       } catch (e) {
-        console.error('Error parsing variation data:', e);
+        console.error("Error parsing variation data:", e);
         return null;
       }
     },
@@ -643,19 +651,22 @@ document.addEventListener("alpine:init", () => {
     showValidationError() {
       // Show validation message for missing variations
       const missingVariations = [];
-      
+
       // Check all variation elements
-      const allVariationElements = document.querySelectorAll('[x-data*="sizeDropdown"], [x-data*="colorSelection"]');
-      
-      allVariationElements.forEach(element => {
-        const attributeName = element.dataset.attribute || 'size';
-        const label = element.querySelector('label')?.textContent?.trim() || attributeName;
-        
+      const allVariationElements = document.querySelectorAll(
+        '[x-data*="sizeDropdown"], [x-data*="colorSelection"]'
+      );
+
+      allVariationElements.forEach((element) => {
+        const attributeName = element.dataset.attribute || "size";
+        const label =
+          element.querySelector("label")?.textContent?.trim() || attributeName;
+
         if (!this.selectedVariations[attributeName]) {
           missingVariations.push(label.toLowerCase());
         }
       });
-      
+
       if (missingVariations.length > 0) {
         const variationText = missingVariations.join(" and ");
         alert(`Please select a ${variationText} before adding to cart.`);
@@ -665,11 +676,19 @@ document.addEventListener("alpine:init", () => {
     checkForVariations() {
       // Check if product has any variations (size, color, or generic)
       const sizeDropdown = document.querySelector('[x-data*="sizeDropdown"]');
-      const colorSelection = document.querySelector('[x-data*="colorSelection"]');
-      const genericVariations = document.querySelectorAll('.generic-variation-selection');
-      
-      this.hasVariations = !!(sizeDropdown || colorSelection || genericVariations.length > 0);
-      
+      const colorSelection = document.querySelector(
+        '[x-data*="colorSelection"]'
+      );
+      const genericVariations = document.querySelectorAll(
+        ".generic-variation-selection"
+      );
+
+      this.hasVariations = !!(
+        sizeDropdown ||
+        colorSelection ||
+        genericVariations.length > 0
+      );
+
       // If no variations, allow add to cart
       if (!this.hasVariations) {
         this.canAddToCart = true;
@@ -681,17 +700,17 @@ document.addEventListener("alpine:init", () => {
       document.addEventListener("variation-changed", (event) => {
         const attribute = event.detail.attribute;
         const value = event.detail.value;
-        
+
         // Update tracked variations
         this.selectedVariations[attribute] = value;
-        
+
         // Also update specific properties for size and color for backward compatibility
         if (attribute === "size") {
           this.selectedSize = value;
         } else if (attribute === "colour") {
           this.selectedColor = value;
         }
-        
+
         this.validateCanAddToCart();
       });
     },
@@ -703,20 +722,71 @@ document.addEventListener("alpine:init", () => {
       }
 
       let canAdd = true;
-      
+
       // Check all variation dropdowns
-      const allVariationElements = document.querySelectorAll('[x-data*="sizeDropdown"], [x-data*="colorSelection"]');
-      
-      allVariationElements.forEach(element => {
-        const attributeName = element.dataset.attribute || 'size';
-        
+      const allVariationElements = document.querySelectorAll(
+        '[x-data*="sizeDropdown"], [x-data*="colorSelection"]'
+      );
+
+      allVariationElements.forEach((element) => {
+        const attributeName = element.dataset.attribute || "size";
+
         // Check if this variation has a value selected
         if (!this.selectedVariations[attributeName]) {
           canAdd = false;
         }
       });
-      
+
       this.canAddToCart = canAdd;
+    },
+
+    async updateCartBadge() {
+      // Try to get the actual cart count from WooCommerce API
+      try {
+        const response = await fetch("/wp-json/wc/store/cart", {
+          credentials: "same-origin",
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const actualCartCount = data.items_count || 0;
+
+          // Trigger cart update event with actual count
+          document.dispatchEvent(
+            new CustomEvent("cart-updated", {
+              detail: {
+                cartCount: actualCartCount,
+                addedQuantity: this.quantity,
+              },
+            })
+          );
+          return;
+        }
+      } catch (error) {
+        console.log(
+          "Could not fetch actual cart count, using fallback:",
+          error
+        );
+      }
+
+      // Fallback: increment current count
+      const existingBadge = document.querySelector(".cart-badge");
+      let currentCount = Alpine.store("initialCartCount") || 0;
+
+      if (existingBadge && existingBadge.textContent) {
+        currentCount = parseInt(existingBadge.textContent) || 0;
+      }
+
+      const newCount = currentCount + this.quantity;
+
+      // Trigger cart update event
+      document.dispatchEvent(
+        new CustomEvent("cart-updated", {
+          detail: {
+            cartCount: newCount,
+            addedQuantity: this.quantity,
+          },
+        })
+      );
     },
 
     get addToCartButtonClasses() {
@@ -831,7 +901,10 @@ document.addEventListener("alpine:init", () => {
     triggerVariationChange() {
       // Notify parent component of variation change
       const event = new CustomEvent("variation-changed", {
-        detail: { attribute: this.attributeName, value: this.selectedSize?.value },
+        detail: {
+          attribute: this.attributeName,
+          value: this.selectedSize?.value,
+        },
       });
       document.dispatchEvent(event);
     },
@@ -944,7 +1017,7 @@ document.addEventListener("alpine:init", () => {
 
       // Update hidden input
       if (this.$refs.colorInput) {
-        this.$refs.colorInput.value = this.selectedColor || '';
+        this.$refs.colorInput.value = this.selectedColor || "";
       }
 
       this.triggerVariationChange();
@@ -956,6 +1029,264 @@ document.addEventListener("alpine:init", () => {
         detail: { attribute: "colour", value: this.selectedColor },
       });
       document.dispatchEvent(event);
+    },
+  }));
+
+  // Product Card Cart Component (for Simple Products)
+  Alpine.data("productCardCart", () => ({
+    loading: false,
+    showSuccess: false,
+    successMessage: "",
+    isViewCartLink: false,
+
+    async addToCart(productId) {
+      this.loading = true;
+
+      try {
+        // Prepare form data
+        const formData = new FormData();
+        formData.append("add-to-cart", productId);
+        formData.append("quantity", 1);
+
+        // Submit to WooCommerce
+        const response = await fetch(window.location.href, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (response.ok) {
+          // Update cart badge
+          await this.updateCartBadge();
+
+          // Show success feedback
+          this.showSuccessMessage();
+        } else {
+          throw new Error("Failed to add to cart");
+        }
+      } catch (error) {
+        // Handle add to cart error silently
+        this.showErrorMessage();
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    showSuccessMessage() {
+      // Show success message next to add to cart button
+      this.showSuccess = true;
+      this.successMessage = "Added!";
+      this.isViewCartLink = false;
+
+      // After 2 seconds, change to "View Cart" message
+      setTimeout(() => {
+        if (this.showSuccess) {
+          this.successMessage = "View Cart";
+          this.isViewCartLink = true;
+        }
+      }, 2000);
+
+      // Hide success message after 8 seconds total (6 seconds for "View Cart")
+      setTimeout(() => {
+        this.showSuccess = false;
+        this.successMessage = "";
+        this.isViewCartLink = false;
+      }, 8000);
+    },
+
+    goToCart() {
+      if (this.isViewCartLink) {
+        window.location.href = this.getCartUrl();
+      }
+    },
+
+    getCartUrl() {
+      // Try to get cart URL from WooCommerce
+      return window.wc_cart_params?.cart_url || "/cart";
+    },
+
+    showErrorMessage() {
+      // You can customize this error feedback
+      alert("Failed to add product to cart. Please try again.");
+    },
+
+    async updateCartBadge() {
+      // Try to get the actual cart count from WooCommerce API
+      try {
+        const response = await fetch("/wp-json/wc/store/cart", {
+          credentials: "same-origin",
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const actualCartCount = data.items_count || 0;
+
+          // Trigger cart update event with actual count
+          document.dispatchEvent(
+            new CustomEvent("cart-updated", {
+              detail: {
+                cartCount: actualCartCount,
+                addedQuantity: 1,
+              },
+            })
+          );
+          return;
+        }
+      } catch (error) {
+        console.log(
+          "Could not fetch actual cart count, using fallback:",
+          error
+        );
+      }
+
+      // Fallback: increment current count
+      const existingBadge = document.querySelector(".cart-badge");
+      let currentCount = Alpine.store("initialCartCount") || 0;
+
+      if (existingBadge && existingBadge.textContent) {
+        currentCount = parseInt(existingBadge.textContent) || 0;
+      }
+
+      const newCount = currentCount + 1;
+
+      // Trigger cart update event
+      document.dispatchEvent(
+        new CustomEvent("cart-updated", {
+          detail: {
+            cartCount: newCount,
+            addedQuantity: 1,
+          },
+        })
+      );
+    },
+
+    get addToCartButtonClasses() {
+      return {
+        "hover:bg-yellow-300": !this.loading,
+        "opacity-75": this.loading,
+        "cursor-wait": this.loading,
+      };
+    },
+  }));
+
+  // Cart Badge Component
+  Alpine.data("cartBadge", () => ({
+    cartCount: 0,
+
+    init() {
+      // Initialize from data attribute (server-side count)
+      const initialCount = parseInt(this.$el.dataset.initialCount) || 0;
+      this.cartCount = initialCount;
+
+      // Listen for cart update events
+      document.addEventListener("cart-updated", (event) => {
+        if (event.detail && event.detail.cartCount !== undefined) {
+          this.cartCount = event.detail.cartCount;
+        } else {
+          // Fallback: try to get cart count from WooCommerce
+          this.fetchCartCount();
+        }
+      });
+
+      // Listen for WooCommerce cart events (cart page updates)
+      document.addEventListener("wc_fragments_refreshed", () => {
+        this.fetchCartCount();
+      });
+
+      // Listen for cart item removal (WooCommerce native events)
+      document.addEventListener("removed_from_cart", () => {
+        this.fetchCartCount();
+      });
+
+      // Listen for cart quantity changes
+      document.addEventListener("updated_cart_totals", () => {
+        this.fetchCartCount();
+      });
+
+      // Set up cart page monitoring
+      if (this.isCartPage()) {
+        this.startCartPagePolling();
+        this.setupCartPageObserver();
+      }
+
+      // Listen for AJAX complete events (for cart updates)
+      if (typeof jQuery !== "undefined") {
+        jQuery(document).ajaxComplete((event, xhr, settings) => {
+          // Check if the AJAX request was cart-related
+          if (
+            settings.url &&
+            (settings.url.includes("wc-ajax=update_shipping_method") ||
+              settings.url.includes("wc-ajax=apply_coupon") ||
+              settings.url.includes("wc-ajax=remove_coupon") ||
+              settings.url.includes("update-cart") ||
+              settings.url.includes("cart"))
+          ) {
+            setTimeout(() => this.fetchCartCount(), 500);
+          }
+        });
+      }
+    },
+
+    updateCartCount() {
+      // Get current cart count from the existing badge
+      const existingBadge = document.querySelector(".cart-badge");
+      if (existingBadge) {
+        const currentCount = parseInt(existingBadge.textContent) || 0;
+        this.cartCount = currentCount;
+      }
+    },
+
+    async fetchCartCount() {
+      // Try to get cart count via AJAX if available
+      try {
+        const response = await fetch("/wp-json/wc/store/cart", {
+          credentials: "same-origin",
+        });
+        if (response.ok) {
+          const data = await response.json();
+          this.cartCount = data.items_count || 0;
+        }
+      } catch (error) {
+        console.log("Could not fetch cart count:", error);
+      }
+    },
+
+    get showBadge() {
+      return this.cartCount > 0;
+    },
+
+    isCartPage() {
+      // Check if we're on the cart page
+      return (
+        window.location.pathname.includes("/cart") ||
+        document.body.classList.contains("woocommerce-cart") ||
+        document.querySelector(".woocommerce-cart") !== null
+      );
+    },
+
+    startCartPagePolling() {
+      // Poll for cart changes every 2 seconds when on cart page
+      setInterval(() => {
+        this.fetchCartCount();
+      }, 2000);
+    },
+
+    setupCartPageObserver() {
+      // Watch for changes in cart items
+      const cartTable = document.querySelector(
+        ".woocommerce-cart-form, .cart-collaterals, .woocommerce-cart"
+      );
+      if (cartTable) {
+        const observer = new MutationObserver(() => {
+          // Delay to allow DOM updates to complete
+          setTimeout(() => this.fetchCartCount(), 300);
+        });
+
+        observer.observe(cartTable, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ["class"],
+        });
+      }
     },
   }));
 });

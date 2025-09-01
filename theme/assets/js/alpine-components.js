@@ -165,7 +165,7 @@ document.addEventListener("alpine:init", () => {
     initializeCategoryPage(categoryId) {
       this.activeFilters.categories = [categoryId];
       this.currentCategoryId = categoryId;
-      console.log("Category page initialized with ID:", categoryId);
+      // console.log("Category page initialized with ID:", categoryId);
     },
 
     // Getters
@@ -267,7 +267,7 @@ document.addEventListener("alpine:init", () => {
 
     async updateCountsOnly() {
       this.collectFilterSelections();
-      console.log("Updating counts with filters:", this.activeFilters);
+      // console.log("Updating counts with filters:", this.activeFilters);
 
       try {
         const validCategories = FilterUtils.filterValidItems(
