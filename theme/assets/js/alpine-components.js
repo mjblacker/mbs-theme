@@ -36,6 +36,14 @@ document.addEventListener("alpine:init", () => {
         max: 1000,
       },
     },
+    appliedFilters: {
+      categories: [],
+      brands: [],
+      priceRange: {
+        min: 0,
+        max: 1000,
+      },
+    },
     sortOrder: "date_desc",
     currentCategoryId: null,
 
@@ -70,6 +78,9 @@ document.addEventListener("alpine:init", () => {
     applyFilters() {
       // Collect current selections from all filter components
       this.collectFilterSelections();
+
+      // Save current filters as applied filters before filtering
+      this.appliedFilters = JSON.parse(JSON.stringify(this.activeFilters));
 
       // Trigger product filtering
       this.filterProducts();
@@ -259,6 +270,130 @@ document.addEventListener("alpine:init", () => {
 
       url.search = params.toString();
       return url.toString();
+    },
+
+    hasUnappliedChanges() {
+      // Check if current selections differ from what's actually applied to results
+      return (
+        JSON.stringify(this.activeFilters.categories.sort()) !== JSON.stringify(this.appliedFilters.categories.sort()) ||
+        JSON.stringify(this.activeFilters.brands.sort()) !== JSON.stringify(this.appliedFilters.brands.sort()) ||
+        this.activeFilters.priceRange.min !== this.appliedFilters.priceRange.min ||
+        this.activeFilters.priceRange.max !== this.appliedFilters.priceRange.max
+      );
+    },
+
+    async updateCountsAfterClear() {
+      // Update counts based on default/cleared state (no current filter selections)
+      const defaultFilters = {
+        categories: this.currentCategoryId ? [this.currentCategoryId] : [],
+        brands: [],
+        priceRange: { min: 0, max: 1000 }
+      };
+
+      try {
+        // Check if AJAX data is available
+        if (typeof shopFiltersAjax === "undefined") {
+          console.error("shopFiltersAjax is not defined.");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("action", "update_filter_counts");
+        formData.append("nonce", shopFiltersAjax.nonce);
+        formData.append("categories", JSON.stringify(defaultFilters.categories));
+        formData.append("brands", JSON.stringify(defaultFilters.brands));
+        formData.append("price_range", JSON.stringify(defaultFilters.priceRange));
+        formData.append("current_url", window.location.href);
+
+        const response = await fetch(shopFiltersAjax.ajaxUrl, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Network response was not ok: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Update filter counts to default values
+          if (data.data.updated_filters) {
+            this.updateFilterCounts(data.data.updated_filters);
+          }
+        } else {
+          console.error("Count update request failed:", data.data);
+        }
+      } catch (error) {
+        console.error("Error updating counts:", error);
+      }
+    },
+
+    async updateCountsAfterPartialClear(clearedFilterType) {
+      // Collect current filter selections
+      this.collectFilterSelections();
+      
+      // Create a modified filter state with only the specified filter type cleared
+      const modifiedFilters = {
+        categories: this.activeFilters.categories,
+        brands: this.activeFilters.brands,
+        priceRange: this.activeFilters.priceRange
+      };
+
+      // Clear only the specified filter type
+      switch (clearedFilterType) {
+        case 'categories':
+          modifiedFilters.categories = this.currentCategoryId ? [this.currentCategoryId] : [];
+          break;
+        case 'brands':
+          modifiedFilters.brands = [];
+          break;
+        case 'priceRange':
+          modifiedFilters.priceRange = { min: 0, max: 1000 };
+          break;
+      }
+
+      try {
+        // Check if AJAX data is available
+        if (typeof shopFiltersAjax === "undefined") {
+          console.error("shopFiltersAjax is not defined.");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("action", "update_filter_counts");
+        formData.append("nonce", shopFiltersAjax.nonce);
+        
+        // Filter out empty categories before sending
+        const validCategories = modifiedFilters.categories.filter(cat => cat && cat !== "");
+        formData.append("categories", JSON.stringify(validCategories));
+        
+        formData.append("brands", JSON.stringify(modifiedFilters.brands));
+        formData.append("price_range", JSON.stringify(modifiedFilters.priceRange));
+        formData.append("current_url", window.location.href);
+
+        const response = await fetch(shopFiltersAjax.ajaxUrl, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Network response was not ok: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Update filter counts with partial clear applied
+          if (data.data.updated_filters) {
+            this.updateFilterCounts(data.data.updated_filters);
+          }
+        } else {
+          console.error("Count update request failed:", data.data);
+        }
+      } catch (error) {
+        console.error("Error updating counts:", error);
+      }
     },
 
     updateFilterCounts(updatedFilters) {
@@ -483,9 +618,27 @@ document.addEventListener("alpine:init", () => {
       },
 
       clearAll() {
+        // Get the main shopFilters instance to check applied state
+        const shopFiltersElement = document.querySelector('[x-data*="shopFilters"]');
+        const shopFilters = shopFiltersElement?._x_dataStack?.[0];
+        
+        // Clear the selections
         this.selectedCategories = [];
         this.expandedCategories = [];
         this.allExpanded = false;
+        
+        // Update counts with only categories cleared (maintain other filters)
+        if (shopFilters) {
+          shopFilters.updateCountsAfterPartialClear('categories');
+        }
+        
+        // Only trigger reload if there are actually applied category filters to clear
+        if (shopFilters) {
+          const hasAppliedCategories = shopFilters.appliedFilters.categories.length > 0;
+          return hasAppliedCategories;
+        }
+        
+        return false;
       },
 
       updateCountsOnly() {
@@ -532,8 +685,28 @@ document.addEventListener("alpine:init", () => {
     },
 
     clearRange() {
+      // Get the main shopFilters instance to check applied state
+      const shopFiltersElement = document.querySelector('[x-data*="shopFilters"]');
+      const shopFilters = shopFiltersElement?._x_dataStack?.[0];
+      
+      // Clear the price range
       this.minPrice = 0;
       this.maxPrice = 1000;
+      
+      // Update counts with only price range cleared (maintain other filters)
+      if (shopFilters) {
+        shopFilters.updateCountsAfterPartialClear('priceRange');
+      }
+      
+      // Only trigger reload if there are actually applied price filters to clear
+      if (shopFilters) {
+        const hasAppliedPriceFilter = 
+          shopFilters.appliedFilters.priceRange.min > 0 || 
+          shopFilters.appliedFilters.priceRange.max < 1000;
+        return hasAppliedPriceFilter;
+      }
+      
+      return false;
     },
 
     updateCountsOnly() {
@@ -605,7 +778,25 @@ document.addEventListener("alpine:init", () => {
       },
 
       clearAll() {
+        // Get the main shopFilters instance to check applied state
+        const shopFiltersElement = document.querySelector('[x-data*="shopFilters"]');
+        const shopFilters = shopFiltersElement?._x_dataStack?.[0];
+        
+        // Clear the selections
         this.selectedItems = [];
+        
+        // Update counts with only brands cleared (maintain other filters)
+        if (shopFilters) {
+          shopFilters.updateCountsAfterPartialClear('brands');
+        }
+        
+        // Only trigger reload if there are actually applied brand filters to clear
+        if (shopFilters) {
+          const hasAppliedBrands = shopFilters.appliedFilters.brands.length > 0;
+          return hasAppliedBrands;
+        }
+        
+        return false;
       },
 
       updateCountsOnly() {

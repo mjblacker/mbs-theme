@@ -11,7 +11,7 @@
     <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-semibold text-gray-900 mt-0 mb-0">Price Range</h3>
         <div class="flex items-center space-x-2 text-xs">
-            <button @click="clearRange(); $dispatch('filter-changed')" 
+            <button @click="if(clearRange()) $dispatch('filter-changed')" 
                     class="text-[#7D8184]">
                 Clear
             </button>
@@ -82,45 +82,3 @@
         </div>
     </div>
 </div>
-
-<style>
-/* Custom styles for range slider thumbs */
-.range-slider-thumb::-webkit-slider-thumb {
-    appearance: none;
-    height: 20px;
-    width: 20px;
-    border-radius: 50%;
-    background: #363738;
-    cursor: pointer;
-    border: 2px solid #fff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    pointer-events: all;
-    position: relative;
-    z-index: 1;
-}
-
-.range-slider-thumb::-moz-range-thumb {
-    height: 20px;
-    width: 20px;
-    border-radius: 50%;
-    background: #363738;
-    cursor: pointer;
-    border: 2px solid #fff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    pointer-events: all;
-    position: relative;
-    z-index: 1;
-}
-
-.range-slider-thumb::-webkit-slider-track {
-    background: transparent;
-}
-
-.range-slider-thumb::-moz-range-track {
-    background: transparent;
-}
-
-.range-slider-thumb:nth-of-type(2)::-webkit-slider-thumb {
-    z-index: 2;
-}
-</style>

@@ -24,7 +24,7 @@
                     x-text="allExpanded ? 'Collapse All' : 'Expand All'">
             </button>
             <span class="text-gray-400">|</span>
-            <button @click="clearAll(); $dispatch('filter-changed')" 
+            <button @click="if(clearAll()) $dispatch('filter-changed')" 
                     class="text-[#7D8184]">
                 Clear
             </button>
