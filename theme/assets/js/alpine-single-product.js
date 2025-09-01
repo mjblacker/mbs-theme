@@ -139,16 +139,19 @@ document.addEventListener("alpine:init", () => {
       if (variation.price_html && !regularPrice) {
         // Use WooCommerce formatted price if available and no sale
         priceHtml = variation.price_html;
-        priceHtml += '<span class="text-sm text-gray-500 font-normal ml-2">INC GST</span>';
+        priceHtml +=
+          '<span class="text-sm text-gray-500 font-normal ml-2">INC GST</span>';
       } else if (salePrice) {
         // Format price manually with custom layout
         const formattedSale = this.formatPrice(salePrice);
-        
+
         if (regularPrice && regularPrice > salePrice) {
           // On sale - show sale price, regular price, INC GST, and savings percentage
           const formattedRegular = this.formatPrice(regularPrice);
-          const savingsPercent = Math.round(((regularPrice - salePrice) / regularPrice) * 100);
-          
+          const savingsPercent = Math.round(
+            ((regularPrice - salePrice) / regularPrice) * 100
+          );
+
           priceHtml = `
             <div class="flex items-center gap-3 flex-wrap">
               <div class="text-2xl font-bold text-gray-900">${formattedSale}</div>
@@ -255,7 +258,7 @@ document.addEventListener("alpine:init", () => {
 
   // Coverage Calculator Component
   Alpine.data("coverageCalculator", () => ({
-    totalArea: 0,
+    totalArea: "",
     requiredQuantity: 0,
     productCoverage: 0, // Coverage per unit from product data
 
@@ -449,10 +452,20 @@ document.addEventListener("alpine:init", () => {
   Alpine.data("productCart", () => ({
     quantity: 1,
     loading: false,
-    canAddToCart: true,
+    canAddToCart: false,
+    showSuccess: false,
+    successMessage: "",
+    selectedSize: null,
+    selectedColor: null,
+    hasVariations: false,
 
     init() {
-      // Initialize cart functionality
+      // Check if product has variations
+      this.checkForVariations();
+      // Listen for variation selection changes
+      this.listenForVariationChanges();
+      // Initial validation
+      this.validateCanAddToCart();
     },
 
     increaseQuantity() {
@@ -476,6 +489,12 @@ document.addEventListener("alpine:init", () => {
     },
 
     async addToCart() {
+      // Validate variations before proceeding
+      if (!this.canAddToCart) {
+        this.showValidationError();
+        return;
+      }
+
       this.loading = true;
 
       try {
@@ -483,10 +502,19 @@ document.addEventListener("alpine:init", () => {
         const productId = this.getProductId();
         const variationData = this.getSelectedVariations();
 
+        // Find variation ID if this is a variable product
+        const variationId = this.findVariationId(variationData);
+
         // Prepare form data
         const formData = new FormData();
-        formData.append("add-to-cart", productId);
+        formData.append("add-to-cart", variationId || productId);
         formData.append("quantity", this.quantity);
+
+        // Add variation ID for variable products
+        if (variationId) {
+          formData.append("variation_id", variationId);
+          formData.append("product_id", productId);
+        }
 
         // Add variation data
         Object.entries(variationData).forEach(([key, value]) => {
@@ -539,24 +567,76 @@ document.addEventListener("alpine:init", () => {
     getSelectedVariations() {
       const variations = {};
 
-      // Get size selection
+      // Use tracked variation values from our validation logic
+      if (this.selectedSize) {
+        variations["attribute_size"] = this.selectedSize;
+      }
+
+      if (this.selectedColor) {
+        variations["attribute_colour"] = this.selectedColor;
+      }
+
+      // Also check for hidden inputs as fallback
       const sizeInput = document.querySelector('[name="attribute_size"]');
-      if (sizeInput && sizeInput.value) {
+      if (sizeInput && sizeInput.value && !variations["attribute_size"]) {
         variations["attribute_size"] = sizeInput.value;
       }
 
-      // Get color selection (note: using 'colour' to match WooCommerce attribute)
       const colorInput = document.querySelector('[name="attribute_colour"]');
-      if (colorInput && colorInput.value) {
+      if (colorInput && colorInput.value && !variations["attribute_colour"]) {
         variations["attribute_colour"] = colorInput.value;
       }
 
       return variations;
     },
 
+    findVariationId(selectedVariations) {
+      // Get variation data from the page
+      const variationScript = document.querySelector("script[data-variations]");
+      if (!variationScript) return null;
+
+      try {
+        const variations = JSON.parse(variationScript.dataset.variations);
+        
+        // Find matching variation based on selected attributes
+        const matchingVariation = variations.find((variation) => {
+          if (!variation.attributes || !selectedVariations) return false;
+
+          // Check if all selected attributes match this variation
+          return Object.entries(selectedVariations).every(([attr, value]) => {
+            const variationValue = variation.attributes[attr];
+            
+            // Handle empty variation attributes (means any value)
+            if (variationValue === "" || variationValue === null) return true;
+            
+            return variationValue.toLowerCase() === value.toLowerCase();
+          });
+        });
+
+        return matchingVariation ? matchingVariation.variation_id : null;
+      } catch (e) {
+        console.error('Error parsing variation data:', e);
+        return null;
+      }
+    },
+
     showSuccessMessage() {
-      // You can customize this success feedback
-      alert("Product added to cart successfully!");
+      // Show success message next to add to cart button
+      this.showSuccess = true;
+      this.successMessage = "Product added to cart";
+
+      // After 2 seconds, change to "View Cart" message
+      setTimeout(() => {
+        if (this.showSuccess) {
+          this.successMessage = "View Cart";
+        }
+      }, 2000);
+
+      // Hide success message after 8 seconds total (6 seconds for "View Cart")
+      setTimeout(() => {
+        this.showSuccess = false;
+        this.successMessage = "";
+      }, 8000);
     },
 
     showErrorMessage() {
@@ -564,10 +644,82 @@ document.addEventListener("alpine:init", () => {
       alert("Failed to add product to cart. Please try again.");
     },
 
+    showValidationError() {
+      // Show validation message for missing variations
+      const missingVariations = [];
+      
+      const sizeDropdown = document.querySelector('[x-data*="sizeDropdown"]');
+      const colorSelection = document.querySelector('[x-data*="colorSelection"]');
+      
+      if (sizeDropdown && !this.selectedSize) {
+        missingVariations.push("size");
+      }
+      
+      if (colorSelection && !this.selectedColor) {
+        missingVariations.push("color");
+      }
+      
+      if (missingVariations.length > 0) {
+        const variationText = missingVariations.join(" and ");
+        alert(`Please select a ${variationText} before adding to cart.`);
+      }
+    },
+
+    checkForVariations() {
+      // Check if product has size or color variations
+      const sizeDropdown = document.querySelector('[x-data*="sizeDropdown"]');
+      const colorSelection = document.querySelector('[x-data*="colorSelection"]');
+      this.hasVariations = !!(sizeDropdown || colorSelection);
+      
+      // If no variations, allow add to cart
+      if (!this.hasVariations) {
+        this.canAddToCart = true;
+      }
+    },
+
+    listenForVariationChanges() {
+      // Listen for variation changes from size and color components
+      document.addEventListener("variation-changed", (event) => {
+        if (event.detail.attribute === "size") {
+          this.selectedSize = event.detail.value;
+        } else if (event.detail.attribute === "colour") {
+          this.selectedColor = event.detail.value;
+        }
+        this.validateCanAddToCart();
+      });
+    },
+
+    validateCanAddToCart() {
+      if (!this.hasVariations) {
+        this.canAddToCart = true;
+        return;
+      }
+
+      // Check if we have size and color dropdowns
+      const sizeDropdown = document.querySelector('[x-data*="sizeDropdown"]');
+      const colorSelection = document.querySelector('[x-data*="colorSelection"]');
+      
+      let canAdd = true;
+      
+      // If size dropdown exists, require size selection
+      if (sizeDropdown && !this.selectedSize) {
+        canAdd = false;
+      }
+      
+      // If color selection exists, require color selection
+      if (colorSelection && !this.selectedColor) {
+        canAdd = false;
+      }
+      
+      this.canAddToCart = canAdd;
+    },
+
     get addToCartButtonClasses() {
       return {
         "hover:bg-yellow-300": !this.loading && this.canAddToCart,
         "opacity-75": this.loading,
+        "opacity-50": !this.loading && !this.canAddToCart,
+        "cursor-not-allowed": !this.canAddToCart,
       };
     },
   }));
@@ -780,6 +932,11 @@ document.addEventListener("alpine:init", () => {
         this.selectedColor = null; // Deselect if clicking the same color
       } else {
         this.selectedColor = color.value;
+      }
+
+      // Update hidden input
+      if (this.$refs.colorInput) {
+        this.$refs.colorInput.value = this.selectedColor || '';
       }
 
       this.triggerVariationChange();

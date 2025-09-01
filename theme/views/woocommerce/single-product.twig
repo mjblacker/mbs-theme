@@ -74,7 +74,7 @@
                             <div class="flex items-end gap-4 mb-6">
                                 <!-- Quantity Input -->
                                 <div class="flex-shrink-0">
-                                    <label for="quantity" class="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                                    {# <label for="quantity" class="block text-sm font-medium text-gray-700 mb-2">Quantity</label> #}
                                     <input type="number" 
                                            id="quantity" 
                                            name="quantity" 
@@ -90,16 +90,40 @@
                                             @click="addToCart()" 
                                             :disabled="!canAddToCart" 
                                             :class="addToCartButtonClasses" 
-                                            class="w-auto bg-[#FFF200] text-black font-semibold py-3 px-6 text-sm uppercase transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed h-12">
+                                            class="w-auto bg-[#FFF200] text-black font-semibold py-3 px-6 text-center text-sm uppercase transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed h-12">
                                         <span x-show="!loading">Add To Cart</span>
                                         <span x-show="loading" class="flex items-center justify-center">
                                             <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                             </svg>
                                             Adding...
                                         </span>
                                     </button>
+                                </div>
+                                
+                                <!-- Success Message - Right side of button -->
+                                <div x-show="showSuccess" 
+                                     x-transition:enter="transition ease-out duration-300"
+                                     x-transition:enter-start="opacity-0 transform translate-x-4"
+                                     x-transition:enter-end="opacity-100 transform translate-x-0"
+                                     x-transition:leave="transition ease-in duration-300"
+                                     x-transition:leave-start="opacity-100 transform translate-x-0"
+                                     x-transition:leave-end="opacity-0 transform translate-x-4"
+                                     class="flex items-center h-12">
+                                    <div class="bg-green-50 border border-green-200 rounded-lg px-3 py-2 ml-2">
+                                        <div class="flex items-center">
+                                            <svg class="w-4 h-4 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                            <span x-show="successMessage !== 'View Cart'" x-text="successMessage" class="text-xs font-medium text-green-800 whitespace-nowrap"></span>
+                                            <a x-show="successMessage === 'View Cart'" 
+                                               href="/cart" 
+                                               class="text-xs font-medium text-green-600 hover:text-green-800 whitespace-nowrap">
+                                                View Cart →
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -127,9 +151,9 @@
 
                         <!-- 8. Product Description -->
                         {% if product.get_description() %}
-                            <div class="product-description sm:mt-10 md:mt-15">
+                            <div class="product-description sm:mt-5 md:mt-10">
                                 {# <h3 class="text-lg font-semibold mb-3">Description</h3> #}
-                                <div class="prose prose-sm max-w-none text-gray-600">
+                                <div class="prose prose-sm max-w-none text-base font-normal text-gray-600">
                                     {{ product.get_description()|raw }}
                                 </div>
                             </div>
@@ -159,23 +183,23 @@
                         </div>
 
                         <!-- Product Details -->
-                        <div class="product-meta space-y-4 pt-6 border-t">
+                        <div class="product-meta space-y-4 pt-6 border-t border-[#F5F5F5]">
                             <!-- 9. SKU -->
                             {% if product.get_sku() %}
-                                <div class="flex justify-between">
-                                    <span class="font-medium text-gray-700">SKU:</span>
-                                    <span class="text-gray-600">{{ product.get_sku() }}</span>
+                                <div class="flex">
+                                    <span class="text-[11px] font-medium text-gray-700 mr-3">SKU:</span>
+                                    <span class="text-[11px] font-light text-gray-600 ">{{ product.get_sku() }}</span>
                                 </div>
                             {% endif %}
 
                             <!-- 10. Categories -->
                             {% set product_categories = function('get_the_terms', post.ID, 'product_cat') %}
                             {% if product_categories and product_categories is not same as(false) %}
-                                <div class="flex justify-between">
-                                    <span class="font-medium text-gray-700">Categories:</span>
-                                    <span class="text-gray-600">
+                                <div class="flex py-3 mb-0 border-t border-[#F5F5F5]">
+                                    <span class="text-[11px] font-light text-gray-700 mr-3">Categories:</span>
+                                    <span class="text-gray-600 text-[11px] font-light">
                                         {% for category in product_categories %}
-                                            {{ category.name }}{% if not loop.last %}, {% endif %}
+                                            <a href="{{ function('get_term_link', category.term_id) }}" class="hover:text-gray-900 underline transition-colors">{{ category.name }}</a>{% if not loop.last %}, {% endif %}
                                         {% endfor %}
                                     </span>
                                 </div>
@@ -183,9 +207,12 @@
 
                             <!-- 11. Weight -->
                             {% if product.get_weight() %}
-                                <div class="flex justify-between">
-                                    <span class="font-medium text-gray-700">Weight:</span>
-                                    <span class="text-gray-600">{{ product.get_weight() }} kg</span>
+                                <div class="flex items-center py-1 mb-0 border-t border-[#F5F5F5]">
+                                    <img src="{{ function('get_template_directory_uri') }}/assets/images/weight.svg" 
+                                         alt="Weight Icon" 
+                                         class="w-6 h-6 mr-2">
+                                    <span class="text-[11px] font-light text-gray-700 mr-3">Weight:</span>
+                                    <span class="text-[11px] font-medium text-gray-600">{{ product.get_weight() }} kg</span>
                                 </div>
                             {% endif %}
 
@@ -193,32 +220,44 @@
                             {% set custom_dimensions = function('get_field', 'dimensions', post.ID) %}
                             {% set wc_dimensions_formatted = product.get_dimensions() %}
                             {% if custom_dimensions and custom_dimensions|trim != '' %}
-                                <div class="flex justify-between">
-                                    <span class="font-medium text-gray-700">Dimensions:</span>
-                                    <span class="text-gray-600">{{ custom_dimensions }}</span>
+                                <div class="flex items-center py-1 mb-0">
+                                    <img src="{{ function('get_template_directory_uri') }}/assets/images/ruler.svg" 
+                                         alt="Dimensions Icon" 
+                                         class="w-6 h-6 mr-2">
+                                    <span class="text-[11px] font-light text-gray-700 mr-3">Dimensions:</span>
+                                    <span class="text-[11px] font-medium text-gray-600">{{ custom_dimensions }}</span>
                                 </div>
                             {% elseif wc_dimensions_formatted and wc_dimensions_formatted|trim != '' and wc_dimensions_formatted != 'N/A' %}
-                                <div class="flex justify-between">
-                                    <span class="font-medium text-gray-700">Dimensions:</span>
-                                    <span class="text-gray-600">{{ wc_dimensions_formatted }}</span>
+                                <div class="flex items-center py-1 mb-0">
+                                    <img src="{{ function('get_template_directory_uri') }}/assets/images/ruler.svg" 
+                                         alt="Dimensions Icon" 
+                                         class="w-6 h-6 mr-2">
+                                    <span class="text-[11px] font-light text-gray-700 mr-3">Dimensions:</span>
+                                    <span class="text-[11px] font-medium text-gray-600">{{ wc_dimensions_formatted }}</span>
                                 </div>
                             {% endif %}
 
                             <!-- 13. Coverage (M2) - Custom ACF Field -->
                             {% set coverage = function('get_field', 'coverage_m2', post.ID) %}
                             {% if coverage %}
-                                <div class="flex justify-between" data-product-coverage="{{ coverage }}">
-                                    <span class="font-medium text-gray-700">Coverage:</span>
-                                    <span class="text-gray-600" data-coverage-field>{{ coverage }} M²</span>
+                                <div class="flex items-center py-1 mb-0" data-product-coverage="{{ coverage }}">
+                                    <img src="{{ function('get_template_directory_uri') }}/assets/images/maximize.svg" 
+                                         alt="Coverage Icon" 
+                                         class="w-6 h-6 mr-2">
+                                    <span class="text-[11px] font-light text-gray-700 mr-3">Coverage:</span>
+                                    <span class="text-[11px] font-medium text-gray-600" data-coverage-field>{{ coverage }} M²</span>
                                 </div>
                             {% endif %}
 
                             <!-- 14. Panel Weight (kg) - Custom ACF Field -->
                             {% set panel_weight = function('get_field', 'panel_weight_kg', post.ID) %}
                             {% if panel_weight %}
-                                <div class="flex justify-between">
-                                    <span class="font-medium text-gray-700">Panel Weight:</span>
-                                    <span class="text-gray-600" data-panel-weight-field>{{ panel_weight }} kg</span>
+                                <div class="flex items-center py-1 mb-0">
+                                    <img src="{{ function('get_template_directory_uri') }}/assets/images/weight.svg" 
+                                         alt="Panel Weight Icon" 
+                                         class="w-6 h-6 mr-2">
+                                    <span class="text-[11px] font-light text-gray-700 mr-3">Panel Weight:</span>
+                                    <span class="text-[11px] font-medium text-gray-600" data-panel-weight-field>{{ panel_weight }} kg</span>
                                 </div>
                             {% endif %}
 
@@ -227,10 +266,20 @@
                                 <div class="flex items-center justify-center mb-2">
                                     <img src="{{ function('get_template_directory_uri') }}/assets/images/icon-delivery.svg" 
                                          alt="Delivery Icon" 
-                                         class="w-5 h-5 mr-2">
-                                    <span class="text-sm font-medium text-yellow-800">Fast Metro Delivery Available</span>
+                                         class="w-7 h-7 mr-2">
+                                    <span class="text-base font-medium text-yellow-800">Fast Metro Delivery Available</span>
                                 </div>
-                                <p class="text-sm text-yellow-700">Express delivery options available for metro areas. Contact us for details.</p>
+                                <p class="text-sm font-light text-yellow-700">Need it asap? Please call <span class="underline">1300 xxx xxx</span>.</p>
+                            </div>
+
+                            <!-- 16. Local Pick Up Info -->
+                            <div class="p-4 mt-4 text-center">
+                                <div class="flex items-center justify-center">
+                                    <img src="{{ function('get_template_directory_uri') }}/assets/images/Icon-Shop.svg" 
+                                         alt="Shop Icon" 
+                                         class="w-7 h-7 mr-2">
+                                    <span class="text-base font-medium text-gray-800">Local pick up available. <a href="/locations" class="underline hover:text-gray-900 transition-colors font-light">View Locations</a></span>
+                                </div>
                             </div>
                         </div>
                     {% endif %}
@@ -241,7 +290,7 @@
             {% set related_products = function('wc_get_related_products', post.ID, 4) %}
             {% if related_products %}
                 <div class="related-products-section mb-12">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Related Products</h2>
+                    <h2 class="text-4xl font-medium text-gray-900 mb-6">Related Products</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {% for related_id in related_products %}
                             {% set related_post = function('get_post', related_id) %}
