@@ -2,6 +2,28 @@
 
 {% block content %}
     <div class="woocommerce-single-product" x-data="singleProduct()">
+        <!-- Hidden variation data for Alpine.js -->
+        {% if product.is_type('variable') %}
+            {% set variations = function('wc_get_product_variation_attributes', product.get_id()) %}
+            {% set available_variations = [] %}
+            {% for variation_id in product.get_children() %}
+                {% set variation = function('wc_get_product', variation_id) %}
+                {% if variation and variation.is_purchasable() %}
+                    {% set variation_data = {
+                        variation_id: variation.get_id(),
+                        attributes: variation.get_variation_attributes(),
+                        display_price: variation.get_price(),
+                        display_regular_price: variation.get_regular_price(),
+                        price_html: function('wc_price', variation.get_price()),
+                        is_purchasable: variation.is_purchasable(),
+                        is_in_stock: variation.is_in_stock(),
+                        variation_is_visible: variation.variation_is_visible()
+                    } %}
+                    {% set available_variations = available_variations|merge([variation_data]) %}
+                {% endif %}
+            {% endfor %}
+            <script data-variations="{{ available_variations|json_encode|e('html_attr') }}" type="application/json"></script>
+        {% endif %}
         <!-- Breadcrumbs -->
         {% include "woocommerce/breadcrumbs.twig" with {title: post.title} %}
         
@@ -28,19 +50,58 @@
                         <h1 class="text-3xl font-bold text-gray-900 leading-tight">{{ post.title }}</h1>
                         
                         <!-- 3. Price -->
-                        <div class="text-2xl font-bold text-gray-900">
-                            {{ function('wc_price', product.get_price())|raw }}
-                            {% if product.is_on_sale() and product.get_regular_price() %}
-                                <span class="text-lg text-gray-500 line-through ml-2">
-                                    {{ function('wc_price', product.get_regular_price())|raw }}
-                                </span>
+                        <div class="product-price">
+                            {% if product.is_on_sale() and product.get_sale_price() and product.get_regular_price() %}
+                                {% set sale_price = product.get_sale_price() %}
+                                {% set regular_price = product.get_regular_price() %}
+                                {% set savings_percent = ((regular_price - sale_price) / regular_price * 100)|round %}
+                                <div class="flex items-center gap-3 flex-wrap">
+                                    <div class="text-2xl font-bold text-gray-900">{{ function('wc_price', sale_price)|raw }}</div>
+                                    <div class="text-lg text-gray-500 line-through">{{ function('wc_price', regular_price)|raw }}</div>
+                                    <span class="text-sm text-gray-500 font-normal">INC GST</span>
+                                    <div class="bg-green-600 text-white px-2 py-1 rounded text-sm font-medium">-{{ savings_percent }}%</div>
+                                </div>
+                            {% else %}
+                                <div class="flex items-center gap-3">
+                                    <div class="text-2xl font-bold text-gray-900">{{ function('wc_price', product.get_price())|raw }}</div>
+                                    <span class="text-sm text-gray-500 font-normal">INC GST</span>
+                                </div>
                             {% endif %}
-                            <span class="text-sm text-gray-500 font-normal ml-2">INC GST</span>
                         </div>
 
-                        <!-- 4. Add to Cart -->
-                        <div class="add-to-cart-section">
-                            {{ function('woocommerce_template_single_add_to_cart') }}
+                        <!-- 4. Quantity and Add to Cart -->
+                        <div class="quantity-and-cart-section" x-data="productCart()">
+                            <div class="flex items-end gap-4 mb-6">
+                                <!-- Quantity Input -->
+                                <div class="flex-shrink-0">
+                                    <label for="quantity" class="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                                    <input type="number" 
+                                           id="quantity" 
+                                           name="quantity" 
+                                           x-model="quantity" 
+                                           min="1" 
+                                           class="w-20 h-12 text-center border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                           value="1">
+                                </div>
+
+                                <!-- Add to Cart Button -->
+                                <div class="flex-1">
+                                    <button type="button" 
+                                            @click="addToCart()" 
+                                            :disabled="!canAddToCart" 
+                                            :class="addToCartButtonClasses" 
+                                            class="w-auto bg-[#FFF200] text-black font-semibold py-3 px-6 text-sm uppercase transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed h-12">
+                                        <span x-show="!loading">Add To Cart</span>
+                                        <span x-show="loading" class="flex items-center justify-center">
+                                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Adding...
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- 5. Coverage Calculator -->
@@ -48,15 +109,26 @@
                             {% include "components/coverage-calculator.twig" %}
                         {% endif %}
 
-                        <!-- 6. Variations (Size and Colour) -->
-                        <div class="variations-section" x-show="hasVariations">
-                            <!-- This will be handled by WooCommerce variations -->
-                        </div>
+                        <!-- 6. Size Dropdown -->
+                        {% set sizes = product.get_attribute('size') ? product.get_attribute('size')|split(' | ') : [] %}
+                        {% if sizes|length > 0 %}
+                            <div class="size-selection mb-6">
+                                {% include "components/size-dropdown.twig" with {sizes: sizes} %}
+                            </div>
+                        {% endif %}
 
-                        <!-- 7. Product Description -->
+                        <!-- 7. Color Selection -->
+                        {% set colors = product.get_attribute('colour') ? product.get_attribute('colour')|split(' | ') : [] %}
+                        {% if colors|length > 0 %}
+                            <div class="color-selection mb-6">
+                                {% include "components/color-selection.twig" with {colors: colors} %}
+                            </div>
+                        {% endif %}
+
+                        <!-- 8. Product Description -->
                         {% if product.get_description() %}
-                            <div class="product-description">
-                                <h3 class="text-lg font-semibold mb-3">Description</h3>
+                            <div class="product-description sm:mt-10 md:mt-15">
+                                {# <h3 class="text-lg font-semibold mb-3">Description</h3> #}
                                 <div class="prose prose-sm max-w-none text-gray-600">
                                     {{ product.get_description()|raw }}
                                 </div>
@@ -118,10 +190,17 @@
                             {% endif %}
 
                             <!-- 12. Dimensions -->
-                            {% if product.get_dimensions(false) %}
+                            {% set custom_dimensions = function('get_field', 'dimensions', post.ID) %}
+                            {% set wc_dimensions_formatted = product.get_dimensions() %}
+                            {% if custom_dimensions and custom_dimensions|trim != '' %}
                                 <div class="flex justify-between">
                                     <span class="font-medium text-gray-700">Dimensions:</span>
-                                    <span class="text-gray-600">{{ product.get_dimensions(false) }}</span>
+                                    <span class="text-gray-600">{{ custom_dimensions }}</span>
+                                </div>
+                            {% elseif wc_dimensions_formatted and wc_dimensions_formatted|trim != '' and wc_dimensions_formatted != 'N/A' %}
+                                <div class="flex justify-between">
+                                    <span class="font-medium text-gray-700">Dimensions:</span>
+                                    <span class="text-gray-600">{{ wc_dimensions_formatted }}</span>
                                 </div>
                             {% endif %}
 
@@ -144,14 +223,14 @@
                             {% endif %}
 
                             <!-- 15. Fast Metro Delivery Info -->
-                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-6">
-                                <div class="flex items-center">
-                                    <svg class="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-6 text-center">
+                                <div class="flex items-center justify-center mb-2">
+                                    <img src="{{ function('get_template_directory_uri') }}/assets/images/icon-delivery.svg" 
+                                         alt="Delivery Icon" 
+                                         class="w-5 h-5 mr-2">
                                     <span class="text-sm font-medium text-yellow-800">Fast Metro Delivery Available</span>
                                 </div>
-                                <p class="text-sm text-yellow-700 mt-1">Express delivery options available for metro areas. Contact us for details.</p>
+                                <p class="text-sm text-yellow-700">Express delivery options available for metro areas. Contact us for details.</p>
                             </div>
                         </div>
                     {% endif %}

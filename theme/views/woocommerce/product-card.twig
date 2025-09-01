@@ -70,7 +70,16 @@
                 
                 <!-- Price -->
                 <div class="flex items-center flex-wrap mb-2">
-                    {% if product.is_on_sale() %}
+                    {% if product.is_type('variable') %}
+                        <!-- Variable product - show price range -->
+                        {% set price_html = product.get_price_html() %}
+                        {% if price_html %}
+                            <span class="text-gray-900 text-product-title font-normal leading-tight">
+                                {{ price_html|raw }}
+                            </span>
+                        {% endif %}
+                    {% elseif product.is_on_sale() and product.get_sale_price() %}
+                        <!-- Simple product on sale -->
                         <span class="text-gray-900 text-product-title font-normal leading-tight">
                             {{ function('wc_price', product.get_sale_price())|raw }}
                         </span>
@@ -80,6 +89,7 @@
                             </span>
                         {% endif %}
                     {% else %}
+                        <!-- Regular product price -->
                         <span class="text-gray-900 text-product-title font-normal leading-tight">
                             {{ function('wc_price', product.get_price())|raw }}
                         </span>

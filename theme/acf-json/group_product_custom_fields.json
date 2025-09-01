@@ -87,6 +87,26 @@
       "step": 0.1
     },
     {
+      "key": "field_dimensions",
+      "label": "Dimensions",
+      "name": "dimensions",
+      "aria-label": "",
+      "type": "text",
+      "instructions": "Enter custom dimensions for this product (e.g. '120mm x 80mm x 15mm'). This field will override the WooCommerce dimensions if set.",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "50",
+        "class": "",
+        "id": ""
+      },
+      "default_value": "",
+      "placeholder": "e.g. 120mm x 80mm x 15mm",
+      "prepend": "",
+      "append": "",
+      "maxlength": ""
+    },
+    {
       "key": "field_show_coverage_calculator",
       "label": "Show Coverage Calculator",
       "name": "show_coverage_calculator",
