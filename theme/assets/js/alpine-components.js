@@ -1,7 +1,111 @@
 // Alpine.js Custom Components and Data
 
-// Header scroll functionality
+// =============================================================================
+// CONSTANTS AND UTILITIES
+// =============================================================================
+
+const FILTER_CONSTANTS = {
+  PRICE_MIN: 0,
+  PRICE_MAX: 1000,
+  DEFAULT_SORT: "date_desc",
+  ADMIN_BAR_THRESHOLD: 10,
+  REQUEST_TIMEOUT: 120000,
+};
+
+const SELECTORS = {
+  SHOP_FILTERS: '[x-data*="shopFilters"]',
+  CATEGORY_FILTER: '[x-data*="categoryDropdownFilter"]',
+  BRAND_FILTER: "[x-data*=\"filterComponent('brand'\"]",
+  PRICE_FILTER: '[x-data*="priceRangeFilter"]',
+  ADMIN_BAR: "#wpadminbar",
+  PRODUCT_RESULTS: "#product-results",
+};
+
+const SORT_LABELS = {
+  date_desc: "Latest",
+  date_asc: "Oldest",
+  price_asc: "Price: Low to High",
+  price_desc: "Price: High to Low",
+  name_asc: "Product Name: A-Z",
+  name_desc: "Product Name: Z-A",
+};
+
+// =============================================================================
+// UTILITY FUNCTIONS
+// =============================================================================
+
+const FilterUtils = {
+  // Get component data from DOM element
+  getComponentData(selector) {
+    const element = document.querySelector(selector);
+    return element?._x_dataStack?.[0] || null;
+  },
+
+  // Safe AJAX request wrapper
+  async makeAjaxRequest(action, data = {}) {
+    try {
+      if (typeof shopFiltersAjax === "undefined") {
+        throw new Error("shopFiltersAjax is not defined");
+      }
+
+      const formData = new FormData();
+      formData.append("action", action);
+      formData.append("nonce", shopFiltersAjax.nonce);
+
+      Object.entries(data).forEach(([key, value]) => {
+        const serializedValue =
+          typeof value === "object" ? JSON.stringify(value) : value;
+        formData.append(key, serializedValue);
+      });
+
+      const response = await fetch(shopFiltersAjax.ajaxUrl, {
+        method: "POST",
+        body: formData,
+        signal: AbortSignal.timeout(FILTER_CONSTANTS.REQUEST_TIMEOUT),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error(`AJAX request failed for ${action}:`, error);
+      throw error;
+    }
+  },
+
+  // Filter out empty values from array
+  filterValidItems(items) {
+    return Array.isArray(items)
+      ? items.filter((item) => item && item !== "")
+      : [];
+  },
+
+  // Deep clone object
+  deepClone(obj) {
+    return JSON.parse(JSON.stringify(obj));
+  },
+
+  // Compare filter states
+  compareFilters(filters1, filters2) {
+    return (
+      JSON.stringify(filters1.categories.sort()) ===
+        JSON.stringify(filters2.categories.sort()) &&
+      JSON.stringify(filters1.brands.sort()) ===
+        JSON.stringify(filters2.brands.sort()) &&
+      filters1.priceRange.min === filters2.priceRange.min &&
+      filters1.priceRange.max === filters2.priceRange.max
+    );
+  },
+};
+
+// =============================================================================
+// MAIN COMPONENTS
+// =============================================================================
+
 document.addEventListener("alpine:init", () => {
+  // Header Scroll Component
   Alpine.data("headerScroll", () => ({
     mobileMenuOpen: false,
     isScrolled: false,
@@ -9,222 +113,150 @@ document.addEventListener("alpine:init", () => {
     adminBarHeight: 0,
 
     init() {
-      // Detect admin bar height
-      const adminBar = document.getElementById("wpadminbar");
-      this.adminBarHeight = adminBar ? adminBar.offsetHeight : 0;
-
+      this.detectAdminBar();
       this.lastScrollY = window.scrollY;
       this.checkScroll();
     },
 
+    detectAdminBar() {
+      const adminBar = document.querySelector(SELECTORS.ADMIN_BAR);
+      this.adminBarHeight = adminBar ? adminBar.offsetHeight : 0;
+    },
+
     checkScroll() {
-      // Account for admin bar height in scroll detection
-      const scrollThreshold =
-        this.adminBarHeight > 0 ? this.adminBarHeight + 10 : 10;
-      this.isScrolled = window.scrollY > scrollThreshold;
+      const threshold =
+        this.adminBarHeight > 0
+          ? this.adminBarHeight + FILTER_CONSTANTS.ADMIN_BAR_THRESHOLD
+          : FILTER_CONSTANTS.ADMIN_BAR_THRESHOLD;
+      this.isScrolled = window.scrollY > threshold;
     },
   }));
 
-  // Shop Filters functionality
+  // Shop Filters Component
   Alpine.data("shopFilters", () => ({
+    // State
     loading: false,
+    sortOrder: FILTER_CONSTANTS.DEFAULT_SORT,
+    currentCategoryId: null,
+
     activeFilters: {
       categories: [],
       brands: [],
       priceRange: {
-        min: 0,
-        max: 1000,
+        min: FILTER_CONSTANTS.PRICE_MIN,
+        max: FILTER_CONSTANTS.PRICE_MAX,
       },
     },
+
     appliedFilters: {
       categories: [],
       brands: [],
       priceRange: {
-        min: 0,
-        max: 1000,
+        min: FILTER_CONSTANTS.PRICE_MIN,
+        max: FILTER_CONSTANTS.PRICE_MAX,
       },
     },
-    sortOrder: "date_desc",
-    currentCategoryId: null,
 
+    // Initialization
     init() {
-      // No automatic filtering on init
+      console.log("ShopFilters initialized");
     },
 
     initializeCategoryPage(categoryId) {
-      // When on a category page, initialize with that category pre-selected
       this.activeFilters.categories = [categoryId];
       this.currentCategoryId = categoryId;
-      //    console.log("Category page initialized with category ID:", categoryId);
+      console.log("Category page initialized with ID:", categoryId);
     },
 
+    // Getters
     getCurrentSortLabel() {
-      const sortLabels = {
-        date_desc: "Latest",
-        date_asc: "Oldest",
-        price_asc: "Price: Low to High",
-        price_desc: "Price: High to Low",
-        name_asc: "Product Name: A-Z",
-        name_desc: "Product Name: Z-A",
-      };
-      return sortLabels[this.sortOrder] || "Latest";
+      return SORT_LABELS[this.sortOrder] || "Latest";
     },
 
+    hasUnappliedChanges() {
+      return !FilterUtils.compareFilters(
+        this.activeFilters,
+        this.appliedFilters
+      );
+    },
+
+    // Filter Actions
     setSortOrder(order) {
       this.sortOrder = order;
       this.filterProducts();
     },
 
-    applyFilters() {
-      // Collect current selections from all filter components
+    async applyFilters() {
       this.collectFilterSelections();
-
-      // Save current filters as applied filters before filtering
-      this.appliedFilters = JSON.parse(JSON.stringify(this.activeFilters));
-
-      // Trigger product filtering
-      this.filterProducts();
+      this.appliedFilters = FilterUtils.deepClone(this.activeFilters);
+      await this.filterProducts();
     },
 
+    // Data Collection
     collectFilterSelections() {
-      // If on a category page, maintain the category context
       if (this.currentCategoryId) {
         this.activeFilters.categories = [this.currentCategoryId];
       } else {
-        // Get categories from category dropdown filter component (only on shop page)
-        const categoryDropdownComponents = document.querySelectorAll(
-          '[x-data*="categoryDropdownFilter"]'
+        this.collectCategorySelections();
+      }
+
+      this.collectBrandSelections();
+      this.collectPriceSelections();
+    },
+
+    collectCategorySelections() {
+      const categoryData = FilterUtils.getComponentData(
+        SELECTORS.CATEGORY_FILTER
+      );
+      if (categoryData) {
+        this.activeFilters.categories = categoryData.selectedCategories || [];
+      } else {
+        // Fallback for old checkbox filter
+        const oldCategoryData = FilterUtils.getComponentData(
+          SELECTORS.BRAND_FILTER.replace("brand", "category")
         );
-        if (categoryDropdownComponents.length > 0) {
-          const categoryComponent = categoryDropdownComponents[0];
-          if (
-            categoryComponent._x_dataStack &&
-            categoryComponent._x_dataStack[0]
-          ) {
-            this.activeFilters.categories =
-              categoryComponent._x_dataStack[0].selectedCategories || [];
-          }
-        } else {
-          // Fallback to old checkbox filter component if dropdown not found
-          const categoryComponents = document.querySelectorAll(
-            "[x-data*=\"filterComponent('category'\"]"
-          );
-          if (categoryComponents.length > 0) {
-            const categoryComponent = categoryComponents[0];
-            if (
-              categoryComponent._x_dataStack &&
-              categoryComponent._x_dataStack[0]
-            ) {
-              this.activeFilters.categories =
-                categoryComponent._x_dataStack[0].selectedItems || [];
-            }
-          } else {
-            // If no category components found, ensure categories is empty array
-            this.activeFilters.categories = [];
-          }
-        }
-      }
-
-      // Get brands from brand filter component
-      const brandComponents = document.querySelectorAll(
-        "[x-data*=\"filterComponent('brand'\"]"
-      );
-      if (brandComponents.length > 0) {
-        const brandComponent = brandComponents[0];
-        if (brandComponent._x_dataStack && brandComponent._x_dataStack[0]) {
-          this.activeFilters.brands =
-            brandComponent._x_dataStack[0].selectedItems || [];
-        }
-      }
-
-      // Get price range from price range component
-      const priceRangeComponents = document.querySelectorAll(
-        '[x-data*="priceRangeFilter"]'
-      );
-      if (priceRangeComponents.length > 0) {
-        const priceComponent = priceRangeComponents[0];
-        if (priceComponent._x_dataStack && priceComponent._x_dataStack[0]) {
-          this.activeFilters.priceRange = {
-            min: priceComponent._x_dataStack[0].minPrice || 0,
-            max: priceComponent._x_dataStack[0].maxPrice || 1000,
-          };
-        }
+        this.activeFilters.categories = oldCategoryData?.selectedItems || [];
       }
     },
 
+    collectBrandSelections() {
+      const brandData = FilterUtils.getComponentData(SELECTORS.BRAND_FILTER);
+      this.activeFilters.brands = brandData?.selectedItems || [];
+    },
+
+    collectPriceSelections() {
+      const priceData = FilterUtils.getComponentData(SELECTORS.PRICE_FILTER);
+      if (priceData) {
+        this.activeFilters.priceRange = {
+          min: priceData.minPrice || FILTER_CONSTANTS.PRICE_MIN,
+          max: priceData.maxPrice || FILTER_CONSTANTS.PRICE_MAX,
+        };
+      }
+    },
+
+    // AJAX Operations
     async filterProducts() {
       this.loading = true;
 
       try {
-        // Check if AJAX data is available
-        if (typeof shopFiltersAjax === "undefined") {
-          console.error(
-            "shopFiltersAjax is not defined. Make sure wp_localize_script is working."
-          );
-          this.loading = false;
-          return;
-        }
-
-        const formData = new FormData();
-        formData.append("action", "filter_products");
-        formData.append("nonce", shopFiltersAjax.nonce);
-
-        // Filter out empty categories before sending
-        const validCategories = this.activeFilters.categories.filter(
-          (cat) => cat && cat !== ""
+        const validCategories = FilterUtils.filterValidItems(
+          this.activeFilters.categories
         );
-        formData.append("categories", JSON.stringify(validCategories));
 
-        formData.append("brands", JSON.stringify(this.activeFilters.brands));
-        formData.append(
-          "price_range",
-          JSON.stringify(this.activeFilters.priceRange)
-        );
-        formData.append("sort_order", this.sortOrder);
-        formData.append("current_url", window.location.href);
-
-        // console.log('Sending AJAX data:', {
-        //     action: 'filter_products',
-        //     nonce: shopFiltersAjax.nonce,
-        //     categories: this.activeFilters.categories,
-        //     brands: this.activeFilters.brands,
-        //     ajaxUrl: shopFiltersAjax.ajaxUrl
-        // });
-
-        const response = await fetch(shopFiltersAjax.ajaxUrl, {
-          method: "POST",
-          body: formData,
+        const data = await FilterUtils.makeAjaxRequest("filter_products", {
+          categories: validCategories,
+          brands: this.activeFilters.brands,
+          price_range: this.activeFilters.priceRange,
+          sort_order: this.sortOrder,
+          current_url: window.location.href,
         });
 
-        // console.log('Response status:', response.status);
-        // console.log('Response headers:', response.headers);
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Server response:", errorText);
-          throw new Error(
-            `Network response was not ok: ${
-              response.status
-            } - ${errorText.substring(0, 200)}`
-          );
-        }
-
-        const data = await response.json();
-
         if (data.success) {
-          // Update product results
-          document.getElementById("product-results").innerHTML = data.data.html;
-
-          // Update filter counts if provided
-          if (data.data.updated_filters) {
-            this.updateFilterCounts(data.data.updated_filters);
-          }
-
-          // Update URL without page refresh
-          const newUrl = this.buildFilterUrl();
-          window.history.pushState({}, "", newUrl);
+          this.updateProductResults(data.data);
+          this.updateFilterCounts(data.data.updated_filters);
+          this.updateURL();
         } else {
-          console.error("Filter request failed:", data.data);
+          throw new Error(data.data || "Filter request failed");
         }
       } catch (error) {
         console.error("Error filtering products:", error);
@@ -233,96 +265,24 @@ document.addEventListener("alpine:init", () => {
       }
     },
 
-    buildFilterUrl() {
-      const url = new URL(window.location);
-      const params = new URLSearchParams(url.search);
-
-      // Clear existing filter params
-      params.delete("filter_categories");
-      params.delete("filter_brands");
-      params.delete("price_min");
-      params.delete("price_max");
-      params.delete("sort_order");
-
-      // Add new filter params (only add category filter if not on a category page and has categories)
-      if (this.activeFilters.categories.length > 0 && !this.currentCategoryId) {
-        // Filter out any empty values
-        const validCategories = this.activeFilters.categories.filter(
-          (cat) => cat && cat !== ""
-        );
-        if (validCategories.length > 0) {
-          params.set("filter_categories", validCategories.join(","));
-        }
-      }
-      if (this.activeFilters.brands.length > 0) {
-        params.set("filter_brands", this.activeFilters.brands.join(","));
-      }
-      if (
-        this.activeFilters.priceRange.min > 0 ||
-        this.activeFilters.priceRange.max < 1000
-      ) {
-        params.set("price_min", this.activeFilters.priceRange.min);
-        params.set("price_max", this.activeFilters.priceRange.max);
-      }
-      if (this.sortOrder !== "date_desc") {
-        params.set("sort_order", this.sortOrder);
-      }
-
-      url.search = params.toString();
-      return url.toString();
-    },
-
-    hasUnappliedChanges() {
-      // Check if current selections differ from what's actually applied to results
-      return (
-        JSON.stringify(this.activeFilters.categories.sort()) !== JSON.stringify(this.appliedFilters.categories.sort()) ||
-        JSON.stringify(this.activeFilters.brands.sort()) !== JSON.stringify(this.appliedFilters.brands.sort()) ||
-        this.activeFilters.priceRange.min !== this.appliedFilters.priceRange.min ||
-        this.activeFilters.priceRange.max !== this.appliedFilters.priceRange.max
-      );
-    },
-
-    async updateCountsAfterClear() {
-      // Update counts based on default/cleared state (no current filter selections)
-      const defaultFilters = {
-        categories: this.currentCategoryId ? [this.currentCategoryId] : [],
-        brands: [],
-        priceRange: { min: 0, max: 1000 }
-      };
+    async updateCountsOnly() {
+      this.collectFilterSelections();
+      console.log("Updating counts with filters:", this.activeFilters);
 
       try {
-        // Check if AJAX data is available
-        if (typeof shopFiltersAjax === "undefined") {
-          console.error("shopFiltersAjax is not defined.");
-          return;
-        }
+        const validCategories = FilterUtils.filterValidItems(
+          this.activeFilters.categories
+        );
 
-        const formData = new FormData();
-        formData.append("action", "update_filter_counts");
-        formData.append("nonce", shopFiltersAjax.nonce);
-        formData.append("categories", JSON.stringify(defaultFilters.categories));
-        formData.append("brands", JSON.stringify(defaultFilters.brands));
-        formData.append("price_range", JSON.stringify(defaultFilters.priceRange));
-        formData.append("current_url", window.location.href);
-
-        const response = await fetch(shopFiltersAjax.ajaxUrl, {
-          method: "POST",
-          body: formData,
+        const data = await FilterUtils.makeAjaxRequest("update_filter_counts", {
+          categories: validCategories,
+          brands: this.activeFilters.brands,
+          price_range: this.activeFilters.priceRange,
+          current_url: window.location.href,
         });
 
-        if (!response.ok) {
-          throw new Error(`Network response was not ok: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.success) {
-          // Update filter counts to default values
-          if (data.data.updated_filters) {
-            this.updateFilterCounts(data.data.updated_filters);
-          }
-        } else {
-          console.error("Count update request failed:", data.data);
+        if (data.success && data.data.updated_filters) {
+          this.updateFilterCounts(data.data.updated_filters);
         }
       } catch (error) {
         console.error("Error updating counts:", error);
@@ -330,105 +290,73 @@ document.addEventListener("alpine:init", () => {
     },
 
     async updateCountsAfterPartialClear(clearedFilterType) {
-      // Collect current filter selections
       this.collectFilterSelections();
-      
-      // Create a modified filter state with only the specified filter type cleared
-      const modifiedFilters = {
-        categories: this.activeFilters.categories,
-        brands: this.activeFilters.brands,
-        priceRange: this.activeFilters.priceRange
-      };
+
+      const modifiedFilters = FilterUtils.deepClone(this.activeFilters);
 
       // Clear only the specified filter type
       switch (clearedFilterType) {
-        case 'categories':
-          modifiedFilters.categories = this.currentCategoryId ? [this.currentCategoryId] : [];
+        case "categories":
+          modifiedFilters.categories = this.currentCategoryId
+            ? [this.currentCategoryId]
+            : [];
           break;
-        case 'brands':
+        case "brands":
           modifiedFilters.brands = [];
           break;
-        case 'priceRange':
-          modifiedFilters.priceRange = { min: 0, max: 1000 };
+        case "priceRange":
+          modifiedFilters.priceRange = {
+            min: FILTER_CONSTANTS.PRICE_MIN,
+            max: FILTER_CONSTANTS.PRICE_MAX,
+          };
           break;
       }
 
       try {
-        // Check if AJAX data is available
-        if (typeof shopFiltersAjax === "undefined") {
-          console.error("shopFiltersAjax is not defined.");
-          return;
-        }
+        const validCategories = FilterUtils.filterValidItems(
+          modifiedFilters.categories
+        );
 
-        const formData = new FormData();
-        formData.append("action", "update_filter_counts");
-        formData.append("nonce", shopFiltersAjax.nonce);
-        
-        // Filter out empty categories before sending
-        const validCategories = modifiedFilters.categories.filter(cat => cat && cat !== "");
-        formData.append("categories", JSON.stringify(validCategories));
-        
-        formData.append("brands", JSON.stringify(modifiedFilters.brands));
-        formData.append("price_range", JSON.stringify(modifiedFilters.priceRange));
-        formData.append("current_url", window.location.href);
-
-        const response = await fetch(shopFiltersAjax.ajaxUrl, {
-          method: "POST",
-          body: formData,
+        const data = await FilterUtils.makeAjaxRequest("update_filter_counts", {
+          categories: validCategories,
+          brands: modifiedFilters.brands,
+          price_range: modifiedFilters.priceRange,
+          current_url: window.location.href,
         });
 
-        if (!response.ok) {
-          throw new Error(`Network response was not ok: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.success) {
-          // Update filter counts with partial clear applied
-          if (data.data.updated_filters) {
-            this.updateFilterCounts(data.data.updated_filters);
-          }
-        } else {
-          console.error("Count update request failed:", data.data);
+        if (data.success && data.data.updated_filters) {
+          this.updateFilterCounts(data.data.updated_filters);
         }
       } catch (error) {
-        console.error("Error updating counts:", error);
+        console.error("Error updating counts after partial clear:", error);
+      }
+    },
+
+    // UI Updates
+    updateProductResults(data) {
+      const resultsContainer = document.querySelector(
+        SELECTORS.PRODUCT_RESULTS
+      );
+      if (resultsContainer && data.html) {
+        resultsContainer.innerHTML = data.html;
       }
     },
 
     updateFilterCounts(updatedFilters) {
+      if (!updatedFilters) return;
+
       // Update category filter counts
-      const categoryComponents = document.querySelectorAll(
-        '[x-data*="categoryDropdownFilter"]'
+      const categoryData = FilterUtils.getComponentData(
+        SELECTORS.CATEGORY_FILTER
       );
-      if (categoryComponents.length > 0) {
-        const categoryComponent = categoryComponents[0];
-        if (
-          categoryComponent._x_dataStack &&
-          categoryComponent._x_dataStack[0]
-        ) {
-          const categoryData = categoryComponent._x_dataStack[0];
-          if (categoryData.items) {
-            this.updateItemCounts(
-              categoryData.items,
-              updatedFilters.categories
-            );
-          }
-        }
+      if (categoryData?.items) {
+        this.updateItemCounts(categoryData.items, updatedFilters.categories);
       }
 
       // Update brand filter counts
-      const brandComponents = document.querySelectorAll(
-        "[x-data*=\"filterComponent('brand'\"]"
-      );
-      if (brandComponents.length > 0) {
-        const brandComponent = brandComponents[0];
-        if (brandComponent._x_dataStack && brandComponent._x_dataStack[0]) {
-          const brandData = brandComponent._x_dataStack[0];
-          if (brandData.items) {
-            this.updateItemCounts(brandData.items, updatedFilters.brands);
-          }
-        }
+      const brandData = FilterUtils.getComponentData(SELECTORS.BRAND_FILTER);
+      if (brandData?.items) {
+        this.updateItemCounts(brandData.items, updatedFilters.brands);
       }
     },
 
@@ -437,8 +365,9 @@ document.addEventListener("alpine:init", () => {
         if (updatedCounts[item.id] !== undefined) {
           item.count = updatedCounts[item.id];
         }
-        // Update child items if they exist
-        if (item.children && item.children.length > 0) {
+
+        // Update child items
+        if (item.children?.length > 0) {
           item.children.forEach((child) => {
             if (updatedCounts[child.id] !== undefined) {
               child.count = updatedCounts[child.id];
@@ -448,62 +377,50 @@ document.addEventListener("alpine:init", () => {
       });
     },
 
-    async updateCountsOnly() {
-      // Collect current filter selections
-      this.collectFilterSelections();
+    updateURL() {
+      const url = new URL(window.location);
+      const params = new URLSearchParams(url.search);
 
-      //console.log('Updating counts with filters:', this.activeFilters);
+      // Clear existing filter params
+      [
+        "filter_categories",
+        "filter_brands",
+        "price_min",
+        "price_max",
+        "sort_order",
+      ].forEach((param) => params.delete(param));
 
-      try {
-        // Check if AJAX data is available
-        if (typeof shopFiltersAjax === "undefined") {
-          console.error("shopFiltersAjax is not defined.");
-          return;
-        }
+      // Add new filter params
+      const validCategories = FilterUtils.filterValidItems(
+        this.activeFilters.categories
+      );
 
-        const formData = new FormData();
-        formData.append("action", "update_filter_counts");
-        formData.append("nonce", shopFiltersAjax.nonce);
-
-        // Filter out empty categories before sending
-        const validCategories = this.activeFilters.categories.filter(
-          (cat) => cat && cat !== ""
-        );
-        formData.append("categories", JSON.stringify(validCategories));
-
-        formData.append("brands", JSON.stringify(this.activeFilters.brands));
-        formData.append(
-          "price_range",
-          JSON.stringify(this.activeFilters.priceRange)
-        );
-        formData.append("current_url", window.location.href);
-
-        const response = await fetch(shopFiltersAjax.ajaxUrl, {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error(`Network response was not ok: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.success) {
-          // Update filter counts only (no product results)
-          if (data.data.updated_filters) {
-            this.updateFilterCounts(data.data.updated_filters);
-          }
-        } else {
-          console.error("Count update request failed:", data.data);
-        }
-      } catch (error) {
-        console.error("Error updating counts:", error);
+      if (validCategories.length > 0 && !this.currentCategoryId) {
+        params.set("filter_categories", validCategories.join(","));
       }
+
+      if (this.activeFilters.brands.length > 0) {
+        params.set("filter_brands", this.activeFilters.brands.join(","));
+      }
+
+      if (
+        this.activeFilters.priceRange.min > FILTER_CONSTANTS.PRICE_MIN ||
+        this.activeFilters.priceRange.max < FILTER_CONSTANTS.PRICE_MAX
+      ) {
+        params.set("price_min", this.activeFilters.priceRange.min);
+        params.set("price_max", this.activeFilters.priceRange.max);
+      }
+
+      if (this.sortOrder !== FILTER_CONSTANTS.DEFAULT_SORT) {
+        params.set("sort_order", this.sortOrder);
+      }
+
+      url.search = params.toString();
+      window.history.pushState({}, "", url.toString());
     },
   }));
 
-  // Category Dropdown Filter functionality
+  // Category Dropdown Filter Component
   window.categoryDropdownFilter = function (items) {
     return {
       items: items,
@@ -512,50 +429,60 @@ document.addEventListener("alpine:init", () => {
       allExpanded: false,
 
       init() {
-        // Initialize expanded state for parent categories that have selected children
         this.updateExpandAllState();
       },
 
       toggleCategory(categoryId) {
-        const category = this.findCategoryById(categoryId);
+        this.toggleSelection(categoryId);
+        this.handleParentChildLogic(categoryId);
+        this.updateCountsOnly();
+      },
+
+      toggleSelection(categoryId) {
         const index = this.selectedCategories.indexOf(categoryId);
-
         if (index > -1) {
-          // Remove this category
           this.selectedCategories.splice(index, 1);
-
-          // If removing a parent category, also remove all its children
-          if (category && category.children && category.children.length > 0) {
-            category.children.forEach((child) => {
-              const childIndex = this.selectedCategories.indexOf(child.id);
-              if (childIndex > -1) {
-                this.selectedCategories.splice(childIndex, 1);
-              }
-            });
-          }
+          this.removeChildSelections(categoryId);
         } else {
-          // Add this category
           this.selectedCategories.push(categoryId);
+          this.expandIfParent(categoryId);
+          this.removeParentIfChild(categoryId);
+        }
+      },
 
-          // If this is a parent category, toggle expansion but don't auto-select children
-          if (category && category.children && category.children.length > 0) {
-            this.toggleExpansion(categoryId);
-          } else {
-            // If this is a child category, remove its parent from selection if it was selected
-            const parentCategory = this.findParentCategory(categoryId);
-            if (parentCategory) {
-              const parentIndex = this.selectedCategories.indexOf(
-                parentCategory.id
-              );
-              if (parentIndex > -1) {
-                this.selectedCategories.splice(parentIndex, 1);
-              }
+      removeChildSelections(parentId) {
+        const category = this.findCategoryById(parentId);
+        if (category?.children?.length > 0) {
+          category.children.forEach((child) => {
+            const childIndex = this.selectedCategories.indexOf(child.id);
+            if (childIndex > -1) {
+              this.selectedCategories.splice(childIndex, 1);
             }
+          });
+        }
+      },
+
+      expandIfParent(categoryId) {
+        const category = this.findCategoryById(categoryId);
+        if (category?.children?.length > 0) {
+          this.toggleExpansion(categoryId);
+        }
+      },
+
+      removeParentIfChild(categoryId) {
+        const parentCategory = this.findParentCategory(categoryId);
+        if (parentCategory) {
+          const parentIndex = this.selectedCategories.indexOf(
+            parentCategory.id
+          );
+          if (parentIndex > -1) {
+            this.selectedCategories.splice(parentIndex, 1);
           }
         }
+      },
 
-        // Update counts when category selection changes
-        this.updateCountsOnly();
+      handleParentChildLogic(categoryId) {
+        // Additional logic if needed
       },
 
       toggleExpansion(categoryId) {
@@ -570,14 +497,12 @@ document.addEventListener("alpine:init", () => {
 
       toggleExpandAll() {
         const parentCategories = this.items.filter(
-          (item) => item.children && item.children.length > 0
+          (item) => item.children?.length > 0
         );
 
         if (this.allExpanded) {
-          // Collapse all
           this.expandedCategories = [];
         } else {
-          // Expand all
           this.expandedCategories = parentCategories.map((item) => item.id);
         }
         this.allExpanded = !this.allExpanded;
@@ -585,7 +510,7 @@ document.addEventListener("alpine:init", () => {
 
       updateExpandAllState() {
         const parentCategories = this.items.filter(
-          (item) => item.children && item.children.length > 0
+          (item) => item.children?.length > 0
         );
         this.allExpanded =
           parentCategories.length > 0 &&
@@ -618,49 +543,35 @@ document.addEventListener("alpine:init", () => {
       },
 
       clearAll() {
-        // Get the main shopFilters instance to check applied state
-        const shopFiltersElement = document.querySelector('[x-data*="shopFilters"]');
-        const shopFilters = shopFiltersElement?._x_dataStack?.[0];
-        
-        // Clear the selections
+        const shopFilters = FilterUtils.getComponentData(
+          SELECTORS.SHOP_FILTERS
+        );
+
         this.selectedCategories = [];
         this.expandedCategories = [];
         this.allExpanded = false;
-        
-        // Update counts with only categories cleared (maintain other filters)
+
         if (shopFilters) {
-          shopFilters.updateCountsAfterPartialClear('categories');
+          shopFilters.updateCountsAfterPartialClear("categories");
+          return shopFilters.appliedFilters.categories.length > 0;
         }
-        
-        // Only trigger reload if there are actually applied category filters to clear
-        if (shopFilters) {
-          const hasAppliedCategories = shopFilters.appliedFilters.categories.length > 0;
-          return hasAppliedCategories;
-        }
-        
+
         return false;
       },
 
       updateCountsOnly() {
-        // Call the main shopFilters updateCountsOnly method
-        const shopFiltersElement = document.querySelector(
-          '[x-data*="shopFilters"]'
+        const shopFilters = FilterUtils.getComponentData(
+          SELECTORS.SHOP_FILTERS
         );
-        if (
-          shopFiltersElement &&
-          shopFiltersElement._x_dataStack &&
-          shopFiltersElement._x_dataStack[0]
-        ) {
-          shopFiltersElement._x_dataStack[0].updateCountsOnly();
-        }
+        shopFilters?.updateCountsOnly();
       },
     };
   };
 
-  // Price Range Filter functionality
+  // Price Range Filter Component
   Alpine.data("priceRangeFilter", () => ({
-    minPrice: 0,
-    maxPrice: 1000,
+    minPrice: FILTER_CONSTANTS.PRICE_MIN,
+    maxPrice: FILTER_CONSTANTS.PRICE_MAX,
 
     init() {
       // Initialize with default values
@@ -668,63 +579,53 @@ document.addEventListener("alpine:init", () => {
 
     updateMinPrice(value) {
       const numValue = parseInt(value);
-      if (numValue >= 0 && numValue <= this.maxPrice) {
+      if (this.isValidMinPrice(numValue)) {
         this.minPrice = numValue;
-        // Update counts when price changes
         this.updateCountsOnly();
       }
     },
 
     updateMaxPrice(value) {
       const numValue = parseInt(value);
-      if (numValue >= this.minPrice && numValue <= 1000) {
+      if (this.isValidMaxPrice(numValue)) {
         this.maxPrice = numValue;
-        // Update counts when price changes
         this.updateCountsOnly();
       }
     },
 
+    isValidMinPrice(value) {
+      return value >= FILTER_CONSTANTS.PRICE_MIN && value <= this.maxPrice;
+    },
+
+    isValidMaxPrice(value) {
+      return value >= this.minPrice && value <= FILTER_CONSTANTS.PRICE_MAX;
+    },
+
     clearRange() {
-      // Get the main shopFilters instance to check applied state
-      const shopFiltersElement = document.querySelector('[x-data*="shopFilters"]');
-      const shopFilters = shopFiltersElement?._x_dataStack?.[0];
-      
-      // Clear the price range
-      this.minPrice = 0;
-      this.maxPrice = 1000;
-      
-      // Update counts with only price range cleared (maintain other filters)
+      const shopFilters = FilterUtils.getComponentData(SELECTORS.SHOP_FILTERS);
+
+      this.minPrice = FILTER_CONSTANTS.PRICE_MIN;
+      this.maxPrice = FILTER_CONSTANTS.PRICE_MAX;
+
       if (shopFilters) {
-        shopFilters.updateCountsAfterPartialClear('priceRange');
+        shopFilters.updateCountsAfterPartialClear("priceRange");
+        return (
+          shopFilters.appliedFilters.priceRange.min >
+            FILTER_CONSTANTS.PRICE_MIN ||
+          shopFilters.appliedFilters.priceRange.max < FILTER_CONSTANTS.PRICE_MAX
+        );
       }
-      
-      // Only trigger reload if there are actually applied price filters to clear
-      if (shopFilters) {
-        const hasAppliedPriceFilter = 
-          shopFilters.appliedFilters.priceRange.min > 0 || 
-          shopFilters.appliedFilters.priceRange.max < 1000;
-        return hasAppliedPriceFilter;
-      }
-      
+
       return false;
     },
 
     updateCountsOnly() {
-      // Call the main shopFilters updateCountsOnly method
-      const shopFiltersElement = document.querySelector(
-        '[x-data*="shopFilters"]'
-      );
-      if (
-        shopFiltersElement &&
-        shopFiltersElement._x_dataStack &&
-        shopFiltersElement._x_dataStack[0]
-      ) {
-        shopFiltersElement._x_dataStack[0].updateCountsOnly();
-      }
+      const shopFilters = FilterUtils.getComponentData(SELECTORS.SHOP_FILTERS);
+      shopFilters?.updateCountsOnly();
     },
   }));
 
-  // Filter Component functionality
+  // Generic Filter Component (for brands, etc.)
   window.filterComponent = function (filterType, items) {
     return {
       filterType: filterType,
@@ -734,16 +635,16 @@ document.addEventListener("alpine:init", () => {
       allCollapsed: false,
 
       init() {
-        // Initialize collapsed state for items with children
+        this.initializeCollapsedState();
+      },
+
+      initializeCollapsedState() {
         this.items.forEach((item) => {
-          if (item.children && item.children.length > 0) {
+          if (item.children?.length > 0) {
             this.collapsedItems.push(item.id);
           }
         });
-        this.allCollapsed =
-          this.collapsedItems.length ===
-          this.items.filter((item) => item.children && item.children.length > 0)
-            .length;
+        this.updateCollapseAllState();
       },
 
       toggleItemCollapse(itemId) {
@@ -758,7 +659,7 @@ document.addEventListener("alpine:init", () => {
 
       toggleCollapseAll() {
         const itemsWithChildren = this.items.filter(
-          (item) => item.children && item.children.length > 0
+          (item) => item.children?.length > 0
         );
 
         if (this.allCollapsed) {
@@ -771,46 +672,33 @@ document.addEventListener("alpine:init", () => {
 
       updateCollapseAllState() {
         const itemsWithChildren = this.items.filter(
-          (item) => item.children && item.children.length > 0
+          (item) => item.children?.length > 0
         );
         this.allCollapsed =
+          itemsWithChildren.length > 0 &&
           this.collapsedItems.length === itemsWithChildren.length;
       },
 
       clearAll() {
-        // Get the main shopFilters instance to check applied state
-        const shopFiltersElement = document.querySelector('[x-data*="shopFilters"]');
-        const shopFilters = shopFiltersElement?._x_dataStack?.[0];
-        
-        // Clear the selections
+        const shopFilters = FilterUtils.getComponentData(
+          SELECTORS.SHOP_FILTERS
+        );
+
         this.selectedItems = [];
-        
-        // Update counts with only brands cleared (maintain other filters)
+
         if (shopFilters) {
-          shopFilters.updateCountsAfterPartialClear('brands');
+          shopFilters.updateCountsAfterPartialClear("brands");
+          return shopFilters.appliedFilters.brands.length > 0;
         }
-        
-        // Only trigger reload if there are actually applied brand filters to clear
-        if (shopFilters) {
-          const hasAppliedBrands = shopFilters.appliedFilters.brands.length > 0;
-          return hasAppliedBrands;
-        }
-        
+
         return false;
       },
 
       updateCountsOnly() {
-        // Call the main shopFilters updateCountsOnly method
-        const shopFiltersElement = document.querySelector(
-          '[x-data*="shopFilters"]'
+        const shopFilters = FilterUtils.getComponentData(
+          SELECTORS.SHOP_FILTERS
         );
-        if (
-          shopFiltersElement &&
-          shopFiltersElement._x_dataStack &&
-          shopFiltersElement._x_dataStack[0]
-        ) {
-          shopFiltersElement._x_dataStack[0].updateCountsOnly();
-        }
+        shopFilters?.updateCountsOnly();
       },
     };
   };
