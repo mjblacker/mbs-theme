@@ -1,0 +1,26 @@
+{# Delivery Information Component #}
+<!-- Fast Metro Delivery Info -->
+<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-6 text-center">
+    <div class="flex items-center justify-center mb-2">
+        <img src="{{ function('get_template_directory_uri') }}/assets/images/icon-delivery.svg" 
+             alt="Delivery Icon" 
+             class="w-7 h-7 mr-2">
+        <span class="text-base font-medium text-yellow-800">Fast Metro Delivery Available</span>
+    </div>
+    <p class="text-sm font-light text-yellow-700">
+        Need it asap? Please call <span class="underline">1300 xxx xxx</span>.
+    </p>
+</div>
+
+<!-- Local Pick Up Info -->
+<div class="p-4 mt-4 text-center">
+    <div class="flex items-center justify-center">
+        <img src="{{ function('get_template_directory_uri') }}/assets/images/Icon-Shop.svg" 
+             alt="Shop Icon" 
+             class="w-7 h-7 mr-2">
+        <span class="text-base font-medium text-gray-800">
+            Local pick up available. 
+            <a href="/locations" class="underline hover:text-gray-900 transition-colors font-light">View Locations</a>
+        </span>
+    </div>
+</div>

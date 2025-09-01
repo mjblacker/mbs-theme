@@ -1,0 +1,81 @@
+{# Product Meta Component #}
+<div class="product-meta space-y-4 pt-6 border-t border-[#F5F5F5]">
+    <!-- SKU -->
+    {% if product.get_sku() %}
+        {% include "components/meta-field.twig" with {
+            label: "SKU:",
+            value: product.get_sku()
+        } %}
+    {% endif %}
+
+    <!-- Categories -->
+    {% set product_categories = function('get_the_terms', post.ID, 'product_cat') %}
+    {% if product_categories and product_categories is not same as(false) %}
+        <div class="flex py-3 mb-0 border-t border-[#F5F5F5]">
+            <span class="text-[11px] font-light text-gray-700 mr-3">Categories:</span>
+            <span class="text-gray-600 text-[11px] font-light">
+                {% for category in product_categories %}
+                    <a href="{{ function('get_term_link', category.term_id) }}" 
+                       class="hover:text-gray-900 underline transition-colors">{{ category.name }}</a>{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </span>
+        </div>
+    {% endif %}
+
+    <!-- Weight -->
+    {% if product.get_weight() %}
+        {% include "components/meta-field-with-icon.twig" with {
+            icon: "weight.svg",
+            icon_alt: "Weight Icon",
+            label: "Weight:",
+            value: product.get_weight() ~ " kg"
+        } %}
+    {% endif %}
+
+    <!-- Dimensions -->
+    {% set custom_dimensions = function('get_field', 'dimensions', post.ID) %}
+    {% set wc_dimensions_formatted = product.get_dimensions() %}
+    {% if custom_dimensions and custom_dimensions|trim != '' %}
+        {% include "components/meta-field-with-icon.twig" with {
+            icon: "ruler.svg",
+            icon_alt: "Dimensions Icon",
+            label: "Dimensions:",
+            value: custom_dimensions
+        } %}
+    {% elseif wc_dimensions_formatted and wc_dimensions_formatted|trim != '' and wc_dimensions_formatted != 'N/A' %}
+        {% include "components/meta-field-with-icon.twig" with {
+            icon: "ruler.svg",
+            icon_alt: "Dimensions Icon",
+            label: "Dimensions:",
+            value: wc_dimensions_formatted
+        } %}
+    {% endif %}
+
+    <!-- Coverage (M2) -->
+    {% set coverage = function('get_field', 'coverage_m2', post.ID) %}
+    {% if coverage %}
+        {% include "components/meta-field-with-icon.twig" with {
+            icon: "maximize.svg",
+            icon_alt: "Coverage Icon",
+            label: "Coverage:",
+            value: coverage ~ " M²",
+            data_attributes: 'data-product-coverage="' ~ coverage ~ '"',
+            value_attributes: 'data-coverage-field'
+        } %}
+    {% endif %}
+
+    <!-- Panel Weight -->
+    {% set panel_weight = function('get_field', 'panel_weight_kg', post.ID) %}
+    {% if panel_weight %}
+        {% include "components/meta-field-with-icon.twig" with {
+            icon: "weight.svg",
+            icon_alt: "Panel Weight Icon",
+            label: "Panel Weight:",
+            value: panel_weight ~ " kg",
+            value_attributes: 'data-panel-weight-field'
+        } %}
+    {% endif %}
+
+    <!-- Delivery Info -->
+    {% include "components/single-product/delivery-info.twig" %}
+</div>

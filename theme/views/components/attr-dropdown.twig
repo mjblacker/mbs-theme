@@ -1,14 +1,14 @@
 {#
-    Size Dropdown Component
+    Attribute Dropdown Component
     
-    Custom dropdown for product size variations matching the design
+    Generic dropdown for product attribute variations matching the design
     Can be used for any attribute by passing attribute_name and attribute_label
 #}
 
 {% set attribute_name = attribute_name|default('size') %}
 {% set attribute_label = attribute_label|default('Size') %}
 
-<div class="size-dropdown" 
+<div class="attr-dropdown" 
      x-data="sizeDropdown()" 
      data-sizes="{{ sizes|json_encode|e('html_attr') }}"
      data-attribute="{{ attribute_name }}">
@@ -80,7 +80,7 @@
 
 <style>
 /* Custom dropdown styles to match design */
-.size-dropdown .rotate-180 {
+.attr-dropdown .rotate-180 {
     transform: rotate(180deg);
 }
 </style>

@@ -1,0 +1,22 @@
+{# Product Page CTA Component #}
+{% include "blocks/cta/index.twig" with {
+    fields: {
+        background_type: 'image',
+        background_image_desktop: {
+            url: function('get_template_directory_uri') ~ '/assets/images/default-cta-bg.png'
+        },
+        background_image_mobile: {
+            url: function('get_template_directory_uri') ~ '/assets/images/mobile-cta.png.png'
+        },
+        heading: 'Need it fast? Call us today.',
+        sub_heading: "Haven't got time to wait? Call us today for a quote and to see if we can help.",
+        button_text: 'Contact us for a Quote',
+        button_link: {
+            url: function('home_url', '/contact'),
+            title: 'Contact Us',
+            target: '_self'
+        },
+        text_color: 'dark',
+        button_style: 'dark'
+    }
+} %}

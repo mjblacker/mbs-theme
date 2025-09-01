@@ -1,0 +1,8 @@
+{# Meta Field with Icon Component #}
+<div class="flex items-center py-1 mb-0{{ data_attributes ? ' ' ~ data_attributes : '' }}">
+    <img src="{{ function('get_template_directory_uri') }}/assets/images/{{ icon }}" 
+         alt="{{ icon_alt }}" 
+         class="w-6 h-6 mr-2">
+    <span class="text-[11px] font-light text-gray-700 mr-3">{{ label }}</span>
+    <span class="text-[11px] font-medium text-gray-600"{{ value_attributes ? ' ' ~ value_attributes : '' }}>{{ value }}</span>
+</div>
