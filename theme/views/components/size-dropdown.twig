@@ -2,13 +2,18 @@
     Size Dropdown Component
     
     Custom dropdown for product size variations matching the design
+    Can be used for any attribute by passing attribute_name and attribute_label
 #}
+
+{% set attribute_name = attribute_name|default('size') %}
+{% set attribute_label = attribute_label|default('Size') %}
 
 <div class="size-dropdown" 
      x-data="sizeDropdown()" 
-     data-sizes="{{ sizes|json_encode|e('html_attr') }}">
+     data-sizes="{{ sizes|json_encode|e('html_attr') }}"
+     data-attribute="{{ attribute_name }}">
     <label for="size-select" class="block text-sm font-medium text-gray-700 mb-2">
-        Size
+        {{ attribute_label }}
     </label>
     
     <div class="relative">
@@ -17,7 +22,7 @@
                 @click.away="closeDropdown()"
                 :class="{ 'border-blue-500': isOpen }"
                 class="w-full bg-white border border-gray-300 rounded px-4 py-3 text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent flex items-center justify-between">
-            <span class="block truncate" x-text="selectedSize ? selectedSize.name : 'Select Size'"></span>
+            <span class="block truncate" x-text="selectedSize ? selectedSize.name : 'Select {{ attribute_label }}'"></span>
             <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" 
                  :class="{ 'rotate-180': isOpen }" 
                  fill="none" 
@@ -68,7 +73,7 @@
     
     <!-- Hidden input for form submission -->
     <input type="hidden" 
-           name="attribute_size" 
+           name="attribute_{{ attribute_name }}" 
            :value="selectedSize ? selectedSize.value : ''" 
            x-ref="sizeInput">
 </div>

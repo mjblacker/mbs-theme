@@ -28,7 +28,7 @@
                      class="h-6 w-6">
                 {# Cart Badge #}
                 {% if function('WC') and function('WC').cart.get_cart_contents_count() > 0 %}
-                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                    <span class="absolute top-4.5 -right-1 bg-red-500 text-white text-[10px] rounded-full h-3.5 w-3.5 flex items-center justify-center font-medium">
                         {{ function('WC').cart.get_cart_contents_count() }}
                     </span>
                 {% endif %}

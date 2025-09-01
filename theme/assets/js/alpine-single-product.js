@@ -458,6 +458,7 @@ document.addEventListener("alpine:init", () => {
     selectedSize: null,
     selectedColor: null,
     hasVariations: false,
+    selectedVariations: {},
 
     init() {
       // Check if product has variations
@@ -567,25 +568,20 @@ document.addEventListener("alpine:init", () => {
     getSelectedVariations() {
       const variations = {};
 
-      // Use tracked variation values from our validation logic
-      if (this.selectedSize) {
-        variations["attribute_size"] = this.selectedSize;
-      }
-
-      if (this.selectedColor) {
-        variations["attribute_colour"] = this.selectedColor;
-      }
+      // Use all tracked variation values
+      Object.entries(this.selectedVariations).forEach(([attribute, value]) => {
+        if (value) {
+          variations[`attribute_${attribute}`] = value;
+        }
+      });
 
       // Also check for hidden inputs as fallback
-      const sizeInput = document.querySelector('[name="attribute_size"]');
-      if (sizeInput && sizeInput.value && !variations["attribute_size"]) {
-        variations["attribute_size"] = sizeInput.value;
-      }
-
-      const colorInput = document.querySelector('[name="attribute_colour"]');
-      if (colorInput && colorInput.value && !variations["attribute_colour"]) {
-        variations["attribute_colour"] = colorInput.value;
-      }
+      const hiddenInputs = document.querySelectorAll('input[name^="attribute_"]');
+      hiddenInputs.forEach(input => {
+        if (input.value && !variations[input.name]) {
+          variations[input.name] = input.value;
+        }
+      });
 
       return variations;
     },
@@ -648,16 +644,17 @@ document.addEventListener("alpine:init", () => {
       // Show validation message for missing variations
       const missingVariations = [];
       
-      const sizeDropdown = document.querySelector('[x-data*="sizeDropdown"]');
-      const colorSelection = document.querySelector('[x-data*="colorSelection"]');
+      // Check all variation elements
+      const allVariationElements = document.querySelectorAll('[x-data*="sizeDropdown"], [x-data*="colorSelection"]');
       
-      if (sizeDropdown && !this.selectedSize) {
-        missingVariations.push("size");
-      }
-      
-      if (colorSelection && !this.selectedColor) {
-        missingVariations.push("color");
-      }
+      allVariationElements.forEach(element => {
+        const attributeName = element.dataset.attribute || 'size';
+        const label = element.querySelector('label')?.textContent?.trim() || attributeName;
+        
+        if (!this.selectedVariations[attributeName]) {
+          missingVariations.push(label.toLowerCase());
+        }
+      });
       
       if (missingVariations.length > 0) {
         const variationText = missingVariations.join(" and ");
@@ -666,10 +663,12 @@ document.addEventListener("alpine:init", () => {
     },
 
     checkForVariations() {
-      // Check if product has size or color variations
+      // Check if product has any variations (size, color, or generic)
       const sizeDropdown = document.querySelector('[x-data*="sizeDropdown"]');
       const colorSelection = document.querySelector('[x-data*="colorSelection"]');
-      this.hasVariations = !!(sizeDropdown || colorSelection);
+      const genericVariations = document.querySelectorAll('.generic-variation-selection');
+      
+      this.hasVariations = !!(sizeDropdown || colorSelection || genericVariations.length > 0);
       
       // If no variations, allow add to cart
       if (!this.hasVariations) {
@@ -678,13 +677,21 @@ document.addEventListener("alpine:init", () => {
     },
 
     listenForVariationChanges() {
-      // Listen for variation changes from size and color components
+      // Listen for variation changes from all variation components
       document.addEventListener("variation-changed", (event) => {
-        if (event.detail.attribute === "size") {
-          this.selectedSize = event.detail.value;
-        } else if (event.detail.attribute === "colour") {
-          this.selectedColor = event.detail.value;
+        const attribute = event.detail.attribute;
+        const value = event.detail.value;
+        
+        // Update tracked variations
+        this.selectedVariations[attribute] = value;
+        
+        // Also update specific properties for size and color for backward compatibility
+        if (attribute === "size") {
+          this.selectedSize = value;
+        } else if (attribute === "colour") {
+          this.selectedColor = value;
         }
+        
         this.validateCanAddToCart();
       });
     },
@@ -695,21 +702,19 @@ document.addEventListener("alpine:init", () => {
         return;
       }
 
-      // Check if we have size and color dropdowns
-      const sizeDropdown = document.querySelector('[x-data*="sizeDropdown"]');
-      const colorSelection = document.querySelector('[x-data*="colorSelection"]');
-      
       let canAdd = true;
       
-      // If size dropdown exists, require size selection
-      if (sizeDropdown && !this.selectedSize) {
-        canAdd = false;
-      }
+      // Check all variation dropdowns
+      const allVariationElements = document.querySelectorAll('[x-data*="sizeDropdown"], [x-data*="colorSelection"]');
       
-      // If color selection exists, require color selection
-      if (colorSelection && !this.selectedColor) {
-        canAdd = false;
-      }
+      allVariationElements.forEach(element => {
+        const attributeName = element.dataset.attribute || 'size';
+        
+        // Check if this variation has a value selected
+        if (!this.selectedVariations[attributeName]) {
+          canAdd = false;
+        }
+      });
       
       this.canAddToCart = canAdd;
     },
@@ -729,8 +734,11 @@ document.addEventListener("alpine:init", () => {
     isOpen: false,
     selectedSize: null,
     sizeOptions: [],
+    attributeName: "size",
 
     init() {
+      // Get attribute name from data attribute
+      this.attributeName = this.$el.dataset.attribute || "size";
       this.loadSizeOptions();
     },
 
@@ -823,7 +831,7 @@ document.addEventListener("alpine:init", () => {
     triggerVariationChange() {
       // Notify parent component of variation change
       const event = new CustomEvent("variation-changed", {
-        detail: { attribute: "size", value: this.selectedSize?.value },
+        detail: { attribute: this.attributeName, value: this.selectedSize?.value },
       });
       document.dispatchEvent(event);
     },
