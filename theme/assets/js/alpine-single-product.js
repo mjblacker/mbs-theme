@@ -252,9 +252,9 @@ document.addEventListener("alpine:init", () => {
     },
 
     handleAddToCart() {
-      document.addEventListener("added_to_cart", (event) => {
+      document.addEventListener("added_to_cart", (_event) => {
         // Custom handling after item is added to cart
-        console.log("Product added to cart:", event.detail);
+        // Event detail contains: { productId, quantity, variations }
       });
     },
   }));
@@ -509,7 +509,7 @@ document.addEventListener("alpine:init", () => {
         // Find variation ID if this is a variable product
         const variationId = this.findVariationId(variationData);
 
-        // Prepare form data
+        // Prepare form data - use original working approach
         const formData = new FormData();
         formData.append("add-to-cart", variationId || productId);
         formData.append("quantity", this.quantity);
@@ -525,10 +525,11 @@ document.addEventListener("alpine:init", () => {
           formData.append(key, value);
         });
 
-        // Submit to WooCommerce
+        // Submit to current page (original working approach)
         const response = await fetch(window.location.href, {
           method: "POST",
           body: formData,
+          credentials: 'same-origin'
         });
 
         if (response.ok) {
@@ -552,6 +553,7 @@ document.addEventListener("alpine:init", () => {
           throw new Error("Failed to add to cart");
         }
       } catch (error) {
+        console.error("Add to cart error:", error);
         // Handle add to cart error silently
         this.showErrorMessage();
       } finally {
@@ -560,15 +562,31 @@ document.addEventListener("alpine:init", () => {
     },
 
     getProductId() {
-      // Get product ID from various sources
+      // Try data attribute from the component element first
+      const componentElement = this.$el;
+      if (componentElement?.dataset.productId) {
+        return componentElement.dataset.productId;
+      }
+      
+      // Try hidden input
+      const hiddenInput = document.querySelector('input[name="add-to-cart"]');
+      if (hiddenInput?.value) {
+        return hiddenInput.value;
+      }
+      
+      // Try WooCommerce form
       const form = document.querySelector(".variations_form, .cart");
       if (form) {
-        return (
-          form.dataset.product_id ||
-          form.querySelector('[name="add-to-cart"]')?.value
-        );
+        const formProductId = form.dataset.product_id || form.querySelector('[name="add-to-cart"]')?.value;
+        if (formProductId) {
+          return formProductId;
+        }
       }
-      return window.wc_add_to_cart_params?.product_id || "";
+      
+      // Try window params as fallback
+      return window.wc_add_to_cart_params?.product_id || 
+             window.wc_single_product_params?.product_id || 
+             "";
     },
 
     getSelectedVariations() {
@@ -762,10 +780,7 @@ document.addEventListener("alpine:init", () => {
           return;
         }
       } catch (error) {
-        console.log(
-          "Could not fetch actual cart count, using fallback:",
-          error
-        );
+        // Could not fetch actual cart count, using fallback
       }
 
       // Fallback: increment current count
@@ -1043,18 +1058,30 @@ document.addEventListener("alpine:init", () => {
       this.loading = true;
 
       try {
+        // Use WooCommerce AJAX endpoint for add to cart
+        const ajaxUrl = window.wc_add_to_cart_params?.ajax_url || '/wp-admin/admin-ajax.php';
+        
         // Prepare form data
         const formData = new FormData();
-        formData.append("add-to-cart", productId);
+        formData.append("action", "woocommerce_add_to_cart");
+        formData.append("product_id", productId);
         formData.append("quantity", 1);
 
-        // Submit to WooCommerce
-        const response = await fetch(window.location.href, {
+        // Submit to WooCommerce AJAX endpoint
+        const response = await fetch(ajaxUrl, {
           method: "POST",
           body: formData,
+          credentials: 'same-origin'
         });
 
         if (response.ok) {
+          const responseText = await response.text();
+          
+          // Check if the response contains error
+          if (responseText.includes('error') || responseText === '0') {
+            throw new Error("WooCommerce add to cart failed");
+          }
+
           // Update cart badge
           await this.updateCartBadge();
 
@@ -1064,6 +1091,7 @@ document.addEventListener("alpine:init", () => {
           throw new Error("Failed to add to cart");
         }
       } catch (error) {
+        console.error("Product card add to cart error:", error);
         // Handle add to cart error silently
         this.showErrorMessage();
       } finally {
@@ -1131,10 +1159,7 @@ document.addEventListener("alpine:init", () => {
           return;
         }
       } catch (error) {
-        console.log(
-          "Could not fetch actual cart count, using fallback:",
-          error
-        );
+        // Could not fetch actual cart count, using fallback
       }
 
       // Fallback: increment current count
@@ -1209,7 +1234,7 @@ document.addEventListener("alpine:init", () => {
 
       // Listen for AJAX complete events (for cart updates)
       if (typeof jQuery !== "undefined") {
-        jQuery(document).ajaxComplete((event, xhr, settings) => {
+        jQuery(document).ajaxComplete((_event, _xhr, settings) => {
           // Check if the AJAX request was cart-related
           if (
             settings.url &&

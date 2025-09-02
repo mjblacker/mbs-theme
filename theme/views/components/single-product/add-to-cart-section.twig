@@ -1,6 +1,9 @@
 {# Add to Cart Section Component #}
-<div class="quantity-and-cart-section" x-data="productCart()">
+<div class="quantity-and-cart-section" x-data="productCart()" data-product-id="{{ post.ID }}">
     <div class="flex items-end gap-4 mb-6 relative">
+        <!-- Hidden WooCommerce add-to-cart input -->
+        <input type="hidden" name="add-to-cart" value="{{ post.ID }}" />
+        
         <!-- Quantity Input -->
         <div class="flex-shrink-0">
             <input type="number" 
