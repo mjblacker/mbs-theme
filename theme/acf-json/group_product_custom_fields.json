@@ -121,7 +121,7 @@
         "id": ""
       },
       "message": "",
-      "default_value": 1,
+      "default_value": 0,
       "ui_on_text": "Show",
       "ui_off_text": "Hide",
       "ui": 1

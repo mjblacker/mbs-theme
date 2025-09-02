@@ -1,25 +1,40 @@
 {#
     Breadcrumbs Component
     
-    Dynamic breadcrumbs for shop pages
+    Dynamic breadcrumbs for shop/cart/checkout pages
     Shows: Home / Shop / Category (if on category page)
            Home / All Products (if on main shop page)
+           Home / Cart (if on cart page)
+           Home / Checkout (if on checkout page)
 #}
 
 <!-- Breadcrumbs -->
-<div class="container mx-auto mt-4 px-4 sm:px-6 lg:px-8 py-4">
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
     <nav class="flex items-center text-sm text-gray-600" aria-label="Breadcrumb">
         <a href="{{ function('home_url') }}" class="hover:text-gray-900 transition-colors">
             Home
         </a>
         <span class="mx-2">/</span>
-        {% if term %}
+        
+        {% if function('is_cart') %}
+            {# Cart page breadcrumb #}
+            <span class="text-gray-900 font-medium">Cart</span>
+        {% elseif function('is_checkout') %}
+            {# Checkout page breadcrumb #}
+            <a href="{{ function('wc_get_cart_url') }}" class="hover:text-gray-900 transition-colors">
+                Cart
+            </a>
+            <span class="mx-2">/</span>
+            <span class="text-gray-900 font-medium">Checkout</span>
+        {% elseif term %}
+            {# Product category page #}
             <a href="{{ function('wc_get_page_permalink', 'shop') }}" class="hover:text-gray-900 transition-colors">
                 All Products
             </a>
             <span class="mx-2">/</span>
             <span class="text-gray-900 font-medium">{{ title }}</span>
         {% else %}
+            {# Shop page or fallback #}
             <span class="text-gray-900 font-medium">All Products</span>
         {% endif %}
     </nav>

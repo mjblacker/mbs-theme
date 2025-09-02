@@ -19,7 +19,7 @@
 {% set show_clear = show_clear is defined ? show_clear : true %}
 {% set show_collapse = show_collapse is defined ? show_collapse : true %}
 
-<div class="filter-section mb-8" 
+<div class="filter-section mb-4" 
      x-data="filterComponent('{{ filter_type }}', {{ items|json_encode|e('html_attr') }})">
     
     <!-- Filter Header -->

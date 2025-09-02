@@ -1,0 +1,292 @@
+{% extends "base.twig" %}
+
+{% block content %}
+    <div class="woocommerce-cart mb-10">
+        <!-- Breadcrumbs -->
+        {% include 'woocommerce/breadcrumbs.twig' %}
+
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Check if WooCommerce cart is available -->
+            {% if function('WC') and function('WC').cart %}
+                {% set wc_cart = function('WC').cart %}
+                {% set cart_items = function('WC').cart.get_cart() %}
+                
+                <!-- Main Cart Layout -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- Cart Content - 60% (7.2/12 cols) -->
+                    <div class="lg:col-span-7">
+                        <div class="cart-content">
+                            <!-- Cart Table Header -->
+                            <div class="hidden md:grid md:grid-cols-12 gap-4 pb-4 mb-6 border-b border-gray-200 text-sm font-medium text-gray-700">
+                                <div class="md:col-span-1"></div>
+                                <div class="md:col-span-5">Product</div>
+                                <div class="md:col-span-2 text-center">Qty</div>
+                                <div class="md:col-span-4 text-right">Subtotal</div>
+                            </div>
+
+                            <!-- Cart Items -->
+                            {% if not wc_cart.is_empty() %}
+                                {% for cart_item_key, cart_item in cart_items %}
+                                    {% set product = cart_item.data %}
+                                    {% set product_post = function('get_post', product.get_id()) %}
+                                    
+                                    {# For variations, get parent product for image and brand #}
+                                    {% if product.is_type('variation') %}
+                                        {% set parent_id = product.get_parent_id() %}
+                                        {% set image_id = parent_id %}
+                                        {% set brand_id = parent_id %}
+                                    {% else %}
+                                        {% set image_id = product.get_id() %}
+                                        {% set brand_id = product.get_id() %}
+                                    {% endif %}
+                                    
+                                    <div class="cart-item grid grid-cols-1 md:grid-cols-12 gap-4 py-6 border-b border-gray-100 last:border-b-0">
+                                        <!-- Remove Button -->
+                                        <div class="md:col-span-1 flex items-center justify-center">
+                                            <a href="{{ function('wc_get_cart_remove_url', cart_item_key) }}"
+                                               class="remove-item text-gray-400 hover:text-red-500 focus:outline-none"
+                                               data-key="{{ cart_item_key }}">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                            </a>
+                                        </div>
+
+                                        <!-- Product Info -->
+                                        <div class="md:col-span-5 flex items-start space-x-4">
+                                            <!-- Product Image -->
+                                            <div class="flex-shrink-0 w-20 h-20 bg-gray-100 rounded">
+                                                {% set product_image = function('wp_get_attachment_image_url', function('get_post_thumbnail_id', image_id), 'thumbnail') %}
+                                                {% if product_image %}
+                                                    <img src="{{ product_image }}" 
+                                                         alt="{{ product.get_name() }}" 
+                                                         class="w-full h-full object-cover rounded">
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- Product Details -->
+                                            <div class="flex-1 min-w-0">
+                                                <div class="text-sm text-gray-500 uppercase tracking-wide mb-0">
+                                                    {% set brands = function('get_the_terms', brand_id, 'product_brand') %}
+                                                    {% if brands and brands is not same as(false) %}
+                                                        {{ brands[0].name }}
+                                                    {% else %}
+                                                        BRAND NAME
+                                                    {% endif %}
+                                                </div>
+                                                <h3 class="text-base font-medium text-gray-900 mb-0">
+                                                    {% if product.is_type('variation') %}
+                                                        {% set parent_product = function('wc_get_product', product.get_parent_id()) %}
+                                                        {{ parent_product.get_name() }}
+                                                    {% else %}
+                                                        {{ product.get_name() }}
+                                                    {% endif %}
+                                                </h3>
+                                                <div class="text-sm text-gray-600">
+                                                    {% if cart_item.variation %}
+                                                        {% for attribute, value in cart_item.variation %}
+                                                            {% set attr_name = attribute|replace({'attribute_': ''}) %}
+                                                            {{ attr_name|title }}: {{ value }}<br>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Quantity -->
+                                        <div class="md:col-span-2 flex items-center justify-center md:justify-center">
+                                            <input type="number" 
+                                                   class="cart-qty-input w-16 text-center border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                                   value="{{ cart_item.quantity }}" 
+                                                   min="1"
+                                                   data-key="{{ cart_item_key }}">
+                                        </div>
+
+                                        <!-- Subtotal -->
+                                        <div class="md:col-span-4 flex items-center justify-end">
+                                            {% if product.is_on_sale() %}
+                                                {% set regular_price = product.get_regular_price() %}
+                                                {% set sale_price = product.get_sale_price() %}
+                                                {% if regular_price > 0 %}
+                                                    {% set sale_percentage = ((regular_price - sale_price) / regular_price * 100)|round %}
+                                                    <div class="flex items-center space-x-2">
+                                                        <!-- Sale percentage badge -->
+                                                        <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">
+                                                            -{{ sale_percentage }}%
+                                                        </span>
+                                                        <!-- Regular price (crossed out) -->
+                                                        <span class="text-sm text-gray-500 line-through">
+                                                            {{ function('wc_price', regular_price * cart_item.quantity)|raw }}
+                                                        </span>
+                                                        <!-- Sale price (actual total) -->
+                                                        <span class="text-lg font-medium text-gray-900">
+                                                            {{ function('wc_price', sale_price * cart_item.quantity)|raw }}
+                                                        </span>
+                                                    </div>
+                                                {% endif %}
+                                            {% else %}
+                                                <!-- Regular price for non-sale items -->
+                                                <span class="text-lg font-medium text-gray-900">
+                                                    {{ function('wc_price', cart_item.line_total)|raw }}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <!-- Empty Cart -->
+                                <div class="text-center py-12">
+                                    <p class="text-gray-600 text-lg mb-6">Your cart is empty</p>
+                                    <a href="{{ function('wc_get_page_permalink', 'shop') }}" 
+                                       class="inline-flex items-center bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 rounded font-medium transition-colors">
+                                        Continue Shopping
+                                    </a>
+                                </div>
+                            {% endif %}
+
+                            <!-- Cart Actions -->
+                            {% if not wc_cart.is_empty() %}
+                                <div class="flex flex-col sm:flex-row sm:justify-end items-center mt-8 pt-6 border-t border-gray-200 gap-4">
+                                    <a href="{{ function('wc_get_page_permalink', 'shop') }}" 
+                                       class="inline-flex items-center border border-gray-300 hover:border-gray-400 text-gray-700 px-6 py-3 rounded font-medium transition-colors">
+                                        Continue Shopping
+                                    </a>
+                                    <button type="button" 
+                                            class="update-cart inline-flex items-center bg-[#f5f5f5] hover:bg-#FFF200 text-black px-6 py-3 rounded font-medium transition-colors">
+                                        Update Cart
+                                    </button>
+                                </div>
+                            {% endif %}
+
+                            <!-- Do you also need? Section -->
+                            <div class="mt-20">
+                                <div class="mb-8">
+                                    <h2 class="text-3xl font-medium text-gray-900">Do you also need?</h2>
+                                </div>
+
+                                <!-- Related Products Grid -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                                    {% set related_products = function('wc_get_products', {
+                                        'limit': 3,
+                                        'orderby': 'rand',
+                                        'status': 'publish'
+                                    }) %}
+                                    
+                                    {% for product in related_products %}
+                                        {% set product_post = function('get_post', product.get_id()) %}
+                                        {% if product_post %}
+                                            {% include 'woocommerce/product-card.twig' with {
+                                                'post': product_post,
+                                                'show_brand': true,
+                                                'show_sale_badge': true
+                                            } %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cart Totals - 40% (5/12 cols) -->
+                    <div class="lg:col-span-5">
+                        <div class="cart-totals bg-gray-50 rounded-lg p-6">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-6">Cart Totals</h3>
+                            
+                            <!-- Subtotal -->
+                            <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                                <span class="text-gray-600">Subtotal <span class="text-xs">(inc GST)</span></span>
+                                <span class="font-medium text-gray-900">
+                                    {{ function('wc_price', wc_cart.get_subtotal())|raw }}
+                                </span>
+                            </div>
+
+                            <!-- Select Shipping Section -->
+                            <div class="py-6 border-b border-gray-200">
+                                <h4 class="font-medium text-gray-900 mb-4">Select Shipping</h4>
+                                
+                                <!-- Shipping Options (Plugin will handle this) -->
+                                <div class="space-y-3">
+                                    <label class="flex items-center">
+                                        <input type="radio" name="shipping" value="local_pickup_1" class="mr-3">
+                                        <div class="flex-1">
+                                            <div class="flex justify-between">
+                                                <span class="text-sm">Local Pickup</span>
+                                                <span class="text-sm font-medium">FREE</span>
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                Pakenham Office<br>
+                                                92-96 Port Street<br>
+                                                Pakenham VIC 3810
+                                            </div>
+                                        </div>
+                                    </label>
+
+                                    <label class="flex items-center">
+                                        <input type="radio" name="shipping" value="local_pickup_2" class="mr-3">
+                                        <div class="flex-1">
+                                            <div class="flex justify-between">
+                                                <span class="text-sm">Local Pickup</span>
+                                                <span class="text-sm font-medium">FREE</span>
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                Truganina Office<br>
+                                                52 National Drive<br>
+                                                Truganina VIC 3029
+                                            </div>
+                                        </div>
+                                    </label>
+
+                                    <label class="flex items-center">
+                                        <input type="radio" name="shipping" value="delivery" checked class="mr-3">
+                                        <div class="flex-1">
+                                            <div class="flex justify-between">
+                                                <span class="text-sm">Delivery To Victoria</span>
+                                                <span class="text-sm font-medium">$99</span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- Postcode Input -->
+                                <div class="mt-4">
+                                    <input type="text" 
+                                           placeholder="Enter postcode" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+
+                                <!-- Update Button -->
+                                <button type="button" 
+                                        class="w-full mt-3 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded font-medium transition-colors">
+                                    Update
+                                </button>
+
+                                <!-- Additional Option -->
+                                <label class="flex items-center justify-between mt-4 pt-3 border-t border-gray-200">
+                                    <input type="radio" name="option" value="additional" class="mr-3">
+                                    <span class="flex-1 text-sm">Option here</span>
+                                    <span class="text-sm font-medium">$199</span>
+                                </label>
+                            </div>
+
+                            <!-- Total -->
+                            <div class="flex justify-between items-center py-4 text-lg font-semibold">
+                                <span>Total <span class="text-xs font-normal">(inc GST)</span></span>
+                                <span>{{ function('wc_price', wc_cart.get_total('edit'))|raw }}</span>
+                            </div>
+
+                            <!-- Checkout Button -->
+                            <a href="{{ function('wc_get_checkout_url') }}" 
+                               class="w-full inline-block text-center bg-[#FFF200] text-black py-3 px-6 rounded-lg font-semibold transition-colors mt-4">
+                                Proceed to Checkout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-12">
+                    <p class="text-gray-600 text-lg">WooCommerce is not available.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
