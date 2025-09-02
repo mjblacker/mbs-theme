@@ -68,7 +68,7 @@
                     <div id="product-results" x-show="!loading">
                         {% if posts %}
                             <div class="woocommerce-products sm:mb-6 lg:mb-10">
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {% for post in posts %}
                                         {% include 'woocommerce/product-card.twig' with {
                                             'post': post,

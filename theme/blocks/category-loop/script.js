@@ -17,8 +17,8 @@ function initializeCategoryCarousels() {
 
         new window.Swiper(carousel, {
             modules: [window.SwiperNavigation],
-            slidesPerView: 1,
-            spaceBetween: 20,
+            slidesPerView: 2,
+            spaceBetween: 16,
             navigation: {
                 nextEl: carousel.closest('.category-loop-block').querySelector('.category-carousel-next'),
                 prevEl: carousel.closest('.category-loop-block').querySelector('.category-carousel-prev'),
