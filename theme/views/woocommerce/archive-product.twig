@@ -25,7 +25,7 @@
         <div class="container mx-auto mt-0 mb-10 px-4 sm:px-6 lg:px-8">
             <div x-data="shopFilters" {% if term %}x-init="initializeCategoryPage({{ term.term_id }})"{% endif %} @filter-changed="applyFilters()">
                 <!-- Sort Dropdown -->
-                {% include 'woocommerce/sort-dropdown.twig' %}
+                {% include 'components/archive-product/sort-dropdown.twig' %}
 
                 <div class="flex flex-col lg:flex-row gap-8">
                     <!-- Left Sidebar (1/4 width) -->
@@ -34,7 +34,7 @@
                         
                         <!-- Categories Filter (show only on main shop page) -->
                         {% if shop_filters.categories and function('is_shop') %}
-                            {% include 'woocommerce/category-dropdown-filter.twig' with {
+                            {% include 'components/archive-product/category-dropdown-filter.twig' with {
                                 'title': 'Categories',
                                 'items': shop_filters.categories
                             } %}
@@ -42,7 +42,7 @@
 
                         <!-- Brands Filter -->
                         {% if shop_filters.brands %}
-                            {% include 'woocommerce/brand-filter-component.twig' with {
+                            {% include 'components/archive-product/brand-filter-component.twig' with {
                                 'title': 'Brands',
                                 'items': shop_filters.brands,
                                 'filter_type': 'brand',
@@ -51,16 +51,16 @@
                         {% endif %}
 
                         <!-- Price Range Filter -->
-                        {% include 'woocommerce/price-range-filter.twig' %}
+                        {% include 'components/archive-product/price-range-filter.twig' %}
 
-                        {% include 'woocommerce/apply-filters-button.twig' %}
+                        {% include 'components/archive-product/apply-filters-button.twig' %}
 
                     </div>
                 </aside>
 
                 <!-- Main Content (3/4 width) -->
                 <main class="w-full lg:w-3/4">
-                    {% include 'woocommerce/loading-indicator.twig' %}
+                    {% include 'components/archive-product/loading-indicator.twig' %}
 
                    
 
