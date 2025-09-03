@@ -1,0 +1,111 @@
+{#
+  Cart Drawer Component
+  - Right sliding drawer with cart items
+  - WooCommerce integration for cart data
+  - Tailwind CSS styling matching design
+#}
+
+{% set wc_active = function('function_exists', 'wc_get_cart_url') and function('function_exists', 'WC') %}
+
+{% if wc_active %}
+<!-- Cart Drawer Overlay -->
+<div x-data="cartDrawer()" 
+     x-show="isOpen" 
+     x-transition:enter="transition-opacity ease-linear duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition-opacity ease-linear duration-300"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     class="fixed inset-0 z-50 bg-black bg-opacity-50"
+     style="display: none;"
+     @cart-drawer-open.window="openDrawer()"
+     @cart-drawer-close.window="closeDrawer()"
+     @click="closeDrawer()">
+     
+  <!-- Cart Drawer Panel -->
+  <div x-show="isOpen"
+       x-transition:enter="transform transition ease-in-out duration-300"
+       x-transition:enter-start="translate-x-full"
+       x-transition:enter-end="translate-x-0"
+       x-transition:leave="transform transition ease-in-out duration-300"
+       x-transition:leave-start="translate-x-0"
+       x-transition:leave-end="translate-x-full"
+       class="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl"
+       @click.stop>
+       
+    <!-- Drawer Header -->
+    <div class="flex items-center justify-between p-6 border-b border-gray-200">
+      <h2 class="text-xl font-semibold text-gray-900">Your Cart</h2>
+      <button @click="closeDrawer()" 
+              class="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    
+    <!-- Cart Items Container -->
+    <div class="flex flex-col h-full">
+      <!-- Cart Items List -->
+      <div class="flex-1 overflow-y-auto p-6">
+        <template x-if="cartItems && cartItems.length > 0">
+          <div class="space-y-4">
+            <template x-for="item in cartItems" :key="item.key">
+              <div class="cart-item">
+                {% include 'components/cart-drawer/cart-item.twig' %}
+              </div>
+            </template>
+          </div>
+        </template>
+        
+        <!-- Empty Cart Message -->
+        <template x-if="!cartItems || cartItems.length === 0">
+          <div class="text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6M20 13v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6m16 0H4" />
+            </svg>
+            <p class="text-gray-600 text-lg">Your cart is empty</p>
+            <p class="text-gray-500 text-sm mt-2">Start adding products to see them here!</p>
+          </div>
+        </template>
+      </div>
+      
+      <!-- Cart Footer -->
+      <template x-if="cartItems && cartItems.length > 0">
+        <div class="border-t border-gray-200 p-6 space-y-4">
+          <!-- Subtotal -->
+          <div class="flex items-center justify-between">
+            <span class="text-lg font-medium text-gray-900">Subtotal:</span>
+            <div class="text-right">
+              <span class="text-lg font-bold text-gray-900" x-text="cartTotal"></span>
+              <div class="text-xs text-gray-500">INC GST</div>
+            </div>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div class="space-y-3">
+            <!-- View Cart Button -->
+            <a :href="cartUrl" 
+               class="w-full bg-white border border-gray-300 text-gray-700 py-3 px-4 rounded-md text-center font-medium hover:bg-gray-50 transition-colors block">
+              View Cart
+            </a>
+            
+            <!-- Checkout Button -->
+            <a :href="checkoutUrl" 
+               class="w-full bg-[#FFF200] text-gray-900 py-3 px-4 rounded-md text-center font-medium hover:bg-yellow-300 transition-colors block">
+              Checkout
+            </a>
+            
+            <!-- Continue Shopping -->
+            <button @click="closeDrawer()" 
+                    class="w-full text-gray-600 py-2 text-center font-medium hover:text-gray-800 transition-colors underline">
+              Continue Shopping
+            </button>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>
+{% endif %}

@@ -21,6 +21,8 @@ class ProductFilters implements SaplingPlugin
         $script_data = array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'cartApiUrl' => rest_url('wc/store/cart'),
+            'cartUrl' => wc_get_cart_url(),
+            'checkoutUrl' => wc_get_checkout_url(),
             'nonce' => wp_create_nonce('filter_products_nonce')
         );
 

@@ -21,8 +21,8 @@
     {% if context == 'desktop' %}
         {# Desktop Cart Icon #}
         <div class="relative" x-data="cartBadge()" data-initial-count="{{ function('WC') ? function('WC').cart.get_cart_contents_count() : 0 }}">
-            <a href="{{ function('wc_get_cart_url') }}" 
-               class="text-gray-700 hover:text-gray-900 transition-colors p-2">
+            <button @click="$dispatch('cart-drawer-open')" 
+                    class="text-gray-700 hover:text-gray-900 transition-colors p-2">
                 <img src="{{ site.theme.uri }}/assets/images/Cart.svg" 
                      alt="Cart" 
                      class="h-6 w-6">
@@ -35,18 +35,17 @@
                       x-transition:leave="transition ease-in duration-150"
                       x-transition:leave-start="opacity-100 scale-100"
                       x-transition:leave-end="opacity-0 scale-50"
-                      class="cart-badge absolute top-4.5 -right-1 bg-red-500 text-white text-[10px] rounded-full h-3.5 w-3.5 flex items-center justify-center font-medium"
+                      class="cart-badge absolute top-1 right-1 bg-red-500 text-white text-[10px] rounded-full h-3.5 w-3.5 flex items-center justify-center font-medium"
                       style="display: none;">
                 </span>
                 
-            </a>
+            </button>
         </div>
     {% else %}
         {# Mobile Cart Link #}
         <div x-data="cartBadge()" data-initial-count="{{ function('WC') ? function('WC').cart.get_cart_contents_count() : 0 }}">
-            <a href="{{ function('wc_get_cart_url') }}" 
-               class="flex items-center justify-between px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
-               {% if mobile_menu %}@click="mobileMenuOpen = false"{% endif %}>
+            <button @click="$dispatch('cart-drawer-open'); {% if mobile_menu %}mobileMenuOpen = false{% endif %}" 
+                    class="flex items-center justify-between px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors w-full text-left">
                 <span class="flex items-center">
                     <img src="{{ site.theme.uri }}/assets/images/Cart.svg" 
                          alt="Cart" 
@@ -62,7 +61,7 @@
                       style="display: none;">
                 </span>
                 
-            </a>
+            </button>
         </div>
     {% endif %}
 {% endif %}
