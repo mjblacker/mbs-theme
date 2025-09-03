@@ -1,57 +1,92 @@
-// Alpine.js Single Product Components
-
 document.addEventListener("alpine:init", () => {
-  // Initialize cart count store
-  Alpine.store("initialCartCount", 0);
-
-  // Single Product Main Component
-  Alpine.data("singleProduct", () => ({
-    hasVariations: false,
-    currentVariation: null,
-    selectedAttributes: {},
-    currentPrice: null,
-    originalPrice: null,
-    isOnSale: false,
-
-    init() {
-      this.detectVariations();
-      this.initializeWooCommerceIntegration();
-      this.setupPriceElements();
-      this.listenForVariationChanges();
+  const ProductUtils = {
+    selectors: {
+      variationForm: '.variations_form',
+      priceElement: '.product-price',
+      quantityInput: 'input[name="quantity"]',
+      cartForm: '.woocommerce-cart-form, .cart',
+      cartBadge: '.cart-badge'
     },
 
-    detectVariations() {
-      // Check if product has variations or custom variation attributes
-      const variationForm = document.querySelector(".variations_form");
-      const hasCustomVariations = document.querySelector(
-        '[name="attribute_size"], [name="attribute_color"]'
-      );
-      this.hasVariations = !!(variationForm || hasCustomVariations);
+    endpoints: {
+      cart: window.wpEndpoints?.cartApiUrl || '/wp-json/wc/store/cart',
+      ajax: window.wpEndpoints?.ajaxUrl || '/wp-admin/admin-ajax.php'
+    },
 
-      if (this.hasVariations) {
-        this.initializeVariationHandling();
+    async updateCartBadge(addedQuantity = 1) {
+      try {
+        const response = await fetch(this.endpoints.cart, { credentials: 'same-origin' });
+        if (response.ok) {
+          const data = await response.json();
+          document.dispatchEvent(new CustomEvent('cart-updated', {
+            detail: { cartCount: data.items_count || 0, addedQuantity }
+          }));
+          return;
+        }
+      } catch (error) {
+        console.log('Could not fetch cart count:', error);
       }
+
+      const existingBadge = document.querySelector(this.selectors.cartBadge);
+      const currentCount = parseInt(existingBadge?.textContent) || 0;
+      document.dispatchEvent(new CustomEvent('cart-updated', {
+        detail: { cartCount: currentCount + addedQuantity, addedQuantity }
+      }));
+    },
+
+    getVariationData() {
+      const form = document.querySelector(this.selectors.variationForm);
+      if (form?.dataset.product_variations) {
+        try {
+          return JSON.parse(form.dataset.product_variations);
+        } catch (e) {
+          console.error('Error parsing variation data:', e);
+          return null;
+        }
+      }
+
+      const variationScript = document.querySelector("script[data-variations]");
+      if (variationScript) {
+        try {
+          return JSON.parse(variationScript.dataset.variations);
+        } catch (e) {
+          console.error('Error parsing script variation data:', e);
+          return null;
+        }
+      }
+
+      return null;
+    },
+
+    formatPrice(price) {
+      const currency = window.woocommerce_currency || '$';
+      return `<span class="woocommerce-Price-amount amount">${currency}${parseFloat(price).toFixed(2)}</span>`;
+    }
+  };
+
+  Alpine.data("singleProduct", () => ({
+    currentVariation: null,
+    selectedAttributes: {},
+    originalPrice: null,
+
+    init() {
+      this.setupPriceElements();
+      this.setupEventListeners();
     },
 
     setupPriceElements() {
-      // Store original price for fallback
-      const priceElement = document.querySelector(".product-price");
+      const priceElement = document.querySelector(ProductUtils.selectors.priceElement);
       if (priceElement) {
         this.originalPrice = priceElement.innerHTML;
-        this.currentPrice = this.originalPrice;
       }
     },
 
-    listenForVariationChanges() {
-      // Listen for custom variation changes from size/color components
+    setupEventListeners() {
       document.addEventListener("variation-changed", (event) => {
         this.selectedAttributes[event.detail.attribute] = event.detail.value;
         this.findMatchingVariation();
       });
-    },
 
-    initializeVariationHandling() {
-      // Listen for WooCommerce variation changes
       document.addEventListener("found_variation", (event) => {
         this.currentVariation = event.detail.variation;
         this.updatePrice(event.detail.variation);
@@ -61,202 +96,114 @@ document.addEventListener("alpine:init", () => {
       document.addEventListener("reset_data", () => {
         this.currentVariation = null;
         this.resetPrice();
-        this.updateCustomFields();
       });
     },
 
     findMatchingVariation() {
-      // For WooCommerce products, try to find matching variation
-      const variationData = this.getVariationData();
-
-      if (!variationData || !variationData.length) return;
+      const variationData = ProductUtils.getVariationData();
+      
+      if (!variationData?.length) return;
 
       const matchingVariation = variationData.find((variation) => {
         if (!variation.attributes) return false;
-
-        // Check if all selected attributes match
-        return Object.entries(this.selectedAttributes).every(
-          ([attr, value]) => {
-            if (!value) return true; // Skip unselected attributes
-
-            const attrKey = `attribute_${attr}`;
-            const variationValue = variation.attributes[attrKey];
-
-            // Handle empty variation attributes (means any value)
-            if (variationValue === "" || variationValue === null) return true;
-
-            return variationValue.toLowerCase() === value.toLowerCase();
-          }
-        );
+        
+        return Object.entries(this.selectedAttributes).every(([attr, value]) => {
+          if (!value) return true;
+          const attrKey = `attribute_${attr}`;
+          const variationValue = variation.attributes[attrKey];
+          
+          if (variationValue === "" || variationValue === null) return true;
+          return variationValue.toLowerCase() === value.toLowerCase();
+        });
       });
 
       if (matchingVariation) {
         this.currentVariation = matchingVariation;
         this.updatePrice(matchingVariation);
         this.updateCustomFields();
-
-        // Trigger WooCommerce found_variation event
-        document.dispatchEvent(
-          new CustomEvent("found_variation", {
-            detail: { variation: matchingVariation },
-          })
-        );
+        
+        document.dispatchEvent(new CustomEvent("found_variation", {
+          detail: { variation: matchingVariation }
+        }));
       } else {
         this.resetPrice();
         this.currentVariation = null;
       }
     },
 
-    getVariationData() {
-      // Try to get variation data from various sources
-      const variationForm = document.querySelector(".variations_form");
-      if (variationForm && variationForm.dataset.product_variations) {
-        try {
-          return JSON.parse(variationForm.dataset.product_variations);
-        } catch (e) {
-          // Silently handle parsing errors
-        }
-      }
-
-      // Check for inline variation data
-      const variationScript = document.querySelector("script[data-variations]");
-      if (variationScript) {
-        try {
-          return JSON.parse(variationScript.dataset.variations);
-        } catch (e) {
-          // Silently handle parsing errors
-        }
-      }
-
-      return null;
-    },
-
     updatePrice(variation) {
-      const priceElement = document.querySelector(".product-price");
+      const priceElement = document.querySelector(ProductUtils.selectors.priceElement);
       if (!priceElement || !variation) return;
 
-      let priceHtml = "";
       const salePrice = parseFloat(variation.display_price);
       const regularPrice = parseFloat(variation.display_regular_price);
 
+      let priceHtml = "";
+      
       if (variation.price_html && !regularPrice) {
-        // Use WooCommerce formatted price if available and no sale
-        priceHtml = variation.price_html;
-        priceHtml +=
-          '<span class="text-sm text-gray-500 font-normal ml-2">INC GST</span>';
+        priceHtml = variation.price_html + '<span class="text-sm text-gray-500 font-normal ml-2">INC GST</span>';
       } else if (salePrice) {
-        // Format price manually with custom layout
-        const formattedSale = this.formatPrice(salePrice);
-
+        const formattedSale = ProductUtils.formatPrice(salePrice);
+        
         if (regularPrice && regularPrice > salePrice) {
-          // On sale - show sale price, regular price, INC GST, and savings percentage
-          const formattedRegular = this.formatPrice(regularPrice);
-          const savingsPercent = Math.round(
-            ((regularPrice - salePrice) / regularPrice) * 100
-          );
-
+          const formattedRegular = ProductUtils.formatPrice(regularPrice);
+          const savingsPercent = Math.round(((regularPrice - salePrice) / regularPrice) * 100);
+          
           priceHtml = `
             <div class="flex items-center gap-3 flex-wrap">
               <div class="text-2xl font-bold text-gray-900">${formattedSale}</div>
               <div class="text-lg text-gray-500 line-through">${formattedRegular}</div>
               <span class="text-sm text-gray-500 font-normal">INC GST</span>
               <div class="bg-green-600 text-white px-2 py-1 rounded text-sm font-medium">-${savingsPercent}%</div>
-            </div>
-          `;
-          this.isOnSale = true;
+            </div>`;
         } else {
-          // Regular price - no sale
           priceHtml = `
             <div class="flex items-center gap-3">
               <div class="text-2xl font-bold text-gray-900">${formattedSale}</div>
               <span class="text-sm text-gray-500 font-normal">INC GST</span>
-            </div>
-          `;
-          this.isOnSale = false;
+            </div>`;
         }
       }
 
       if (priceHtml) {
         priceElement.innerHTML = priceHtml;
-        this.currentPrice = priceHtml;
       }
     },
 
     resetPrice() {
-      const priceElement = document.querySelector(".product-price");
+      const priceElement = document.querySelector(ProductUtils.selectors.priceElement);
       if (priceElement && this.originalPrice) {
         priceElement.innerHTML = this.originalPrice;
-        this.currentPrice = this.originalPrice;
-        this.isOnSale = false;
       }
-    },
-
-    formatPrice(price) {
-      // Basic price formatting - you might want to use WooCommerce's formatting
-      const currency = window.woocommerce_currency || "$";
-      const formattedPrice = parseFloat(price).toFixed(2);
-      return `<span class="woocommerce-Price-amount amount">${currency}${formattedPrice}</span>`;
     },
 
     updateCustomFields() {
-      // Update custom fields based on variation selection
-      if (this.currentVariation) {
-        this.updateCoverageField();
-        this.updatePanelWeightField();
-        this.updateDownloadLinks();
-      }
-    },
-
-    updateCoverageField() {
-      const coverageElement = document.querySelector("[data-coverage-field]");
-      if (coverageElement && this.currentVariation.coverage_m2) {
-        coverageElement.textContent = this.currentVariation.coverage_m2 + " M²";
-      }
-    },
-
-    updatePanelWeightField() {
-      const panelWeightElement = document.querySelector(
-        "[data-panel-weight-field]"
-      );
-      if (panelWeightElement && this.currentVariation.panel_weight_kg) {
-        panelWeightElement.textContent =
-          this.currentVariation.panel_weight_kg + " kg";
-      }
-    },
-
-    updateDownloadLinks() {
-      // Update download links for variation-specific files
-      const dataSheetLink = document.querySelector(
-        "[data-download-data-sheet]"
-      );
-      const installationGuideLink = document.querySelector(
-        "[data-download-installation-guide]"
-      );
-
-      if (dataSheetLink && this.currentVariation.data_sheet_url) {
-        dataSheetLink.href = this.currentVariation.data_sheet_url;
-      }
-
-      if (
-        installationGuideLink &&
-        this.currentVariation.installation_guide_url
-      ) {
-        installationGuideLink.href =
-          this.currentVariation.installation_guide_url;
-      }
-    },
-
-    initializeWooCommerceIntegration() {
-      // Add any custom WooCommerce event handlers here
-      this.handleAddToCart();
-    },
-
-    handleAddToCart() {
-      document.addEventListener("added_to_cart", (_event) => {
-        // Custom handling after item is added to cart
-        // Event detail contains: { productId, quantity, variations }
+      if (!this.currentVariation) return;
+      
+      const fields = [
+        { selector: '[data-coverage-field]', key: 'coverage_m2', suffix: ' M²' },
+        { selector: '[data-panel-weight-field]', key: 'panel_weight_kg', suffix: ' kg' }
+      ];
+      
+      fields.forEach(({ selector, key, suffix }) => {
+        const element = document.querySelector(selector);
+        if (element && this.currentVariation[key]) {
+          element.textContent = this.currentVariation[key] + suffix;
+        }
       });
-    },
+
+      const links = [
+        { selector: '[data-download-data-sheet]', key: 'data_sheet_url' },
+        { selector: '[data-download-installation-guide]', key: 'installation_guide_url' }
+      ];
+      
+      links.forEach(({ selector, key }) => {
+        const element = document.querySelector(selector);
+        if (element && this.currentVariation[key]) {
+          element.href = this.currentVariation[key];
+        }
+      });
+    }
   }));
 
   // Coverage Calculator Component
@@ -451,49 +398,46 @@ document.addEventListener("alpine:init", () => {
     },
   }));
 
-  // Product Cart Component (Quantity + Add to Cart)
   Alpine.data("productCart", () => ({
     quantity: 1,
     loading: false,
-    canAddToCart: false,
+    canAddToCart: true,
     showSuccess: false,
     successMessage: "",
-    selectedSize: null,
-    selectedColor: null,
-    hasVariations: false,
     selectedVariations: {},
 
     init() {
-      // Check if product has variations
-      this.checkForVariations();
-      // Listen for variation selection changes
-      this.listenForVariationChanges();
-      // Initial validation
+      this.setupEventListeners();
       this.validateCanAddToCart();
+    },
+
+    setupEventListeners() {
+      document.addEventListener("variation-changed", (event) => {
+        this.selectedVariations[event.detail.attribute] = event.detail.value;
+        this.validateCanAddToCart();
+      });
     },
 
     increaseQuantity() {
       this.quantity++;
-      this.updateQuantityInput();
+      this.syncQuantityInput();
     },
 
     decreaseQuantity() {
       if (this.quantity > 1) {
         this.quantity--;
-        this.updateQuantityInput();
+        this.syncQuantityInput();
       }
     },
 
-    updateQuantityInput() {
-      // Sync with any existing WooCommerce quantity inputs
-      const wooQuantityInput = document.querySelector('input[name="quantity"]');
-      if (wooQuantityInput && wooQuantityInput !== this.$refs.quantityInput) {
-        wooQuantityInput.value = this.quantity;
+    syncQuantityInput() {
+      const quantityInput = document.querySelector(ProductUtils.selectors.quantityInput);
+      if (quantityInput && quantityInput !== this.$refs.quantityInput) {
+        quantityInput.value = this.quantity;
       }
     },
 
     async addToCart() {
-      // Validate variations before proceeding
       if (!this.canAddToCart) {
         this.showValidationError();
         return;
@@ -502,30 +446,23 @@ document.addEventListener("alpine:init", () => {
       this.loading = true;
 
       try {
-        // Get product data
         const productId = this.getProductId();
         const variationData = this.getSelectedVariations();
-
-        // Find variation ID if this is a variable product
         const variationId = this.findVariationId(variationData);
 
-        // Prepare form data - use original working approach
         const formData = new FormData();
         formData.append("add-to-cart", variationId || productId);
         formData.append("quantity", this.quantity);
 
-        // Add variation ID for variable products
         if (variationId) {
           formData.append("variation_id", variationId);
           formData.append("product_id", productId);
         }
 
-        // Add variation data
         Object.entries(variationData).forEach(([key, value]) => {
           formData.append(key, value);
         });
 
-        // Submit to current page (original working approach)
         const response = await fetch(window.location.href, {
           method: "POST",
           body: formData,
@@ -533,275 +470,137 @@ document.addEventListener("alpine:init", () => {
         });
 
         if (response.ok) {
-          // Trigger WooCommerce added to cart event
-          document.body.dispatchEvent(
-            new CustomEvent("added_to_cart", {
-              detail: {
-                productId: productId,
-                quantity: this.quantity,
-                variations: variationData,
-              },
-            })
-          );
-
-          // Update cart badge
-          this.updateCartBadge();
-
-          // Show success feedback
+          await ProductUtils.updateCartBadge(this.quantity);
           this.showSuccessMessage();
         } else {
           throw new Error("Failed to add to cart");
         }
       } catch (error) {
         console.error("Add to cart error:", error);
-        // Handle add to cart error silently
-        this.showErrorMessage();
+        alert("Failed to add product to cart. Please try again.");
       } finally {
         this.loading = false;
       }
     },
 
     getProductId() {
-      // Try data attribute from the component element first
-      const componentElement = this.$el;
-      if (componentElement?.dataset.productId) {
-        return componentElement.dataset.productId;
-      }
-      
-      // Try hidden input
-      const hiddenInput = document.querySelector('input[name="add-to-cart"]');
-      if (hiddenInput?.value) {
-        return hiddenInput.value;
-      }
-      
-      // Try WooCommerce form
-      const form = document.querySelector(".variations_form, .cart");
-      if (form) {
-        const formProductId = form.dataset.product_id || form.querySelector('[name="add-to-cart"]')?.value;
-        if (formProductId) {
-          return formProductId;
-        }
-      }
-      
-      // Try window params as fallback
-      return window.wc_add_to_cart_params?.product_id || 
-             window.wc_single_product_params?.product_id || 
+      return this.$el?.dataset.productId ||
+             document.querySelector('input[name="add-to-cart"]')?.value ||
+             document.querySelector(ProductUtils.selectors.cartForm)?.dataset.product_id ||
              "";
     },
 
     getSelectedVariations() {
       const variations = {};
-
-      // Use all tracked variation values
+      
+      // Only include explicitly selected variations
       Object.entries(this.selectedVariations).forEach(([attribute, value]) => {
-        if (value) {
-          variations[`attribute_${attribute}`] = value;
-        }
+        if (value) variations[`attribute_${attribute}`] = value;
       });
-
-      // Also check for hidden inputs as fallback
-      const hiddenInputs = document.querySelectorAll(
-        'input[name^="attribute_"]'
-      );
-      hiddenInputs.forEach((input) => {
-        if (input.value && !variations[input.name]) {
+      
+      // Don't automatically include hidden inputs with default values
+      // Only include hidden inputs that correspond to explicitly selected variations
+      document.querySelectorAll('input[name^="attribute_"]').forEach((input) => {
+        const attributeName = input.name.replace('attribute_', '');
+        // Only include if we have explicitly selected this attribute
+        if (input.value && this.selectedVariations[attributeName] && !variations[input.name]) {
           variations[input.name] = input.value;
         }
       });
-
+      
+      
       return variations;
     },
 
     findVariationId(selectedVariations) {
-      // Get variation data from the page
-      const variationScript = document.querySelector("script[data-variations]");
-      if (!variationScript) return null;
+      const variationData = ProductUtils.getVariationData();
+      if (!variationData) return null;
 
-      try {
-        const variations = JSON.parse(variationScript.dataset.variations);
-
-        // Find matching variation based on selected attributes
-        const matchingVariation = variations.find((variation) => {
-          if (!variation.attributes || !selectedVariations) return false;
-
-          // Check if all selected attributes match this variation
-          return Object.entries(selectedVariations).every(([attr, value]) => {
-            const variationValue = variation.attributes[attr];
-
-            // Handle empty variation attributes (means any value)
-            if (variationValue === "" || variationValue === null) return true;
-
-            return variationValue.toLowerCase() === value.toLowerCase();
-          });
+      const matchingVariation = variationData.find((variation) => {
+        if (!variation.attributes || !selectedVariations) return false;
+        
+        return Object.entries(selectedVariations).every(([attr, value]) => {
+          const variationValue = variation.attributes[attr];
+          if (variationValue === "" || variationValue === null) return true;
+          return variationValue.toLowerCase() === value.toLowerCase();
         });
+      });
 
-        return matchingVariation ? matchingVariation.variation_id : null;
-      } catch (e) {
-        console.error("Error parsing variation data:", e);
-        return null;
-      }
+      return matchingVariation?.variation_id || null;
     },
 
     showSuccessMessage() {
-      // Show success message next to add to cart button
       this.showSuccess = true;
       this.successMessage = "Product added to cart";
 
-      // After 2 seconds, change to "View Cart" message
       setTimeout(() => {
-        if (this.showSuccess) {
-          this.successMessage = "View Cart";
-        }
+        if (this.showSuccess) this.successMessage = "View Cart";
       }, 2000);
 
-      // Hide success message after 8 seconds total (6 seconds for "View Cart")
       setTimeout(() => {
         this.showSuccess = false;
         this.successMessage = "";
       }, 8000);
     },
 
-    showErrorMessage() {
-      // You can customize this error feedback
-      alert("Failed to add product to cart. Please try again.");
-    },
-
     showValidationError() {
-      // Show validation message for missing variations
       const missingVariations = [];
-
-      // Check all variation elements
-      const allVariationElements = document.querySelectorAll(
-        '[x-data*="sizeDropdown"], [x-data*="colorSelection"]'
-      );
-
-      allVariationElements.forEach((element) => {
-        const attributeName = element.dataset.attribute || "size";
-        const label =
-          element.querySelector("label")?.textContent?.trim() || attributeName;
-
+      document.querySelectorAll('[x-data*="sizeDropdown"], [x-data*="colorSelection"], [x-data*="variationDropdown"], [class*="variation-selector"]').forEach((element) => {
+        let attributeName = element.dataset.attribute;
+        
+        // Determine attribute name based on component type if not explicitly set
+        if (!attributeName) {
+          const xData = element.getAttribute('x-data') || '';
+          if (xData.includes('sizeDropdown')) {
+            attributeName = 'size';
+          } else if (xData.includes('colorSelection')) {
+            attributeName = 'colour';
+          } else if (xData.includes('variationDropdown')) {
+            attributeName = element.dataset.variationAttribute || 'variation';
+          }
+        }
+        
         if (!this.selectedVariations[attributeName]) {
+          const label = element.querySelector("label")?.textContent?.trim() || 
+                       element.dataset.label || 
+                       attributeName.charAt(0).toUpperCase() + attributeName.slice(1);
           missingVariations.push(label.toLowerCase());
         }
       });
 
       if (missingVariations.length > 0) {
-        const variationText = missingVariations.join(" and ");
-        alert(`Please select a ${variationText} before adding to cart.`);
+        alert(`Please select a ${missingVariations.join(" and ")} before adding to cart.`);
       }
-    },
-
-    checkForVariations() {
-      // Check if product has any variations (size, color, or generic)
-      const sizeDropdown = document.querySelector('[x-data*="sizeDropdown"]');
-      const colorSelection = document.querySelector(
-        '[x-data*="colorSelection"]'
-      );
-      const genericVariations = document.querySelectorAll(
-        ".generic-variation-selection"
-      );
-
-      this.hasVariations = !!(
-        sizeDropdown ||
-        colorSelection ||
-        genericVariations.length > 0
-      );
-
-      // If no variations, allow add to cart
-      if (!this.hasVariations) {
-        this.canAddToCart = true;
-      }
-    },
-
-    listenForVariationChanges() {
-      // Listen for variation changes from all variation components
-      document.addEventListener("variation-changed", (event) => {
-        const attribute = event.detail.attribute;
-        const value = event.detail.value;
-
-        // Update tracked variations
-        this.selectedVariations[attribute] = value;
-
-        // Also update specific properties for size and color for backward compatibility
-        if (attribute === "size") {
-          this.selectedSize = value;
-        } else if (attribute === "colour") {
-          this.selectedColor = value;
-        }
-
-        this.validateCanAddToCart();
-      });
     },
 
     validateCanAddToCart() {
-      if (!this.hasVariations) {
+      const variationElements = document.querySelectorAll('[x-data*="sizeDropdown"], [x-data*="colorSelection"], [x-data*="variationDropdown"], [class*="variation-selector"]');
+      
+      if (variationElements.length === 0) {
         this.canAddToCart = true;
         return;
       }
 
-      let canAdd = true;
-
-      // Check all variation dropdowns
-      const allVariationElements = document.querySelectorAll(
-        '[x-data*="sizeDropdown"], [x-data*="colorSelection"]'
-      );
-
-      allVariationElements.forEach((element) => {
-        const attributeName = element.dataset.attribute || "size";
-
-        // Check if this variation has a value selected
-        if (!this.selectedVariations[attributeName]) {
-          canAdd = false;
+      const allSelected = Array.from(variationElements).every((element) => {
+        let attributeName = element.dataset.attribute;
+        
+        // Determine attribute name based on component type if not explicitly set
+        if (!attributeName) {
+          const xData = element.getAttribute('x-data') || '';
+          if (xData.includes('sizeDropdown')) {
+            attributeName = 'size';
+          } else if (xData.includes('colorSelection')) {
+            attributeName = 'colour'; // Note: colorSelection uses 'colour'
+          } else if (xData.includes('variationDropdown')) {
+            // For generic variation dropdowns, try to infer from element or use a default
+            attributeName = element.dataset.variationAttribute || 'variation';
+          }
         }
+        
+        return !!this.selectedVariations[attributeName];
       });
 
-      this.canAddToCart = canAdd;
-    },
-
-    async updateCartBadge() {
-      // Try to get the actual cart count from WooCommerce API
-      try {
-        const response = await fetch("/wp-json/wc/store/cart", {
-          credentials: "same-origin",
-        });
-        if (response.ok) {
-          const data = await response.json();
-          const actualCartCount = data.items_count || 0;
-
-          // Trigger cart update event with actual count
-          document.dispatchEvent(
-            new CustomEvent("cart-updated", {
-              detail: {
-                cartCount: actualCartCount,
-                addedQuantity: this.quantity,
-              },
-            })
-          );
-          return;
-        }
-      } catch (error) {
-        // Could not fetch actual cart count, using fallback
-      }
-
-      // Fallback: increment current count
-      const existingBadge = document.querySelector(".cart-badge");
-      let currentCount = Alpine.store("initialCartCount") || 0;
-
-      if (existingBadge && existingBadge.textContent) {
-        currentCount = parseInt(existingBadge.textContent) || 0;
-      }
-
-      const newCount = currentCount + this.quantity;
-
-      // Trigger cart update event
-      document.dispatchEvent(
-        new CustomEvent("cart-updated", {
-          detail: {
-            cartCount: newCount,
-            addedQuantity: this.quantity,
-          },
-        })
-      );
+      this.canAddToCart = allSelected;
     },
 
     get addToCartButtonClasses() {
@@ -811,7 +610,7 @@ document.addEventListener("alpine:init", () => {
         "opacity-50": !this.loading && !this.canAddToCart,
         "cursor-not-allowed": !this.canAddToCart,
       };
-    },
+    }
   }));
 
   // Size Dropdown Component
@@ -1047,7 +846,6 @@ document.addEventListener("alpine:init", () => {
     },
   }));
 
-  // Product Card Cart Component (for Simple Products)
   Alpine.data("productCardCart", () => ({
     loading: false,
     showSuccess: false,
@@ -1058,17 +856,12 @@ document.addEventListener("alpine:init", () => {
       this.loading = true;
 
       try {
-        // Use WooCommerce AJAX endpoint for add to cart
-        const ajaxUrl = window.wc_add_to_cart_params?.ajax_url || '/wp-admin/admin-ajax.php';
-        
-        // Prepare form data
         const formData = new FormData();
         formData.append("action", "woocommerce_add_to_cart");
         formData.append("product_id", productId);
         formData.append("quantity", 1);
 
-        // Submit to WooCommerce AJAX endpoint
-        const response = await fetch(ajaxUrl, {
+        const response = await fetch(ProductUtils.endpoints.ajax, {
           method: "POST",
           body: formData,
           credentials: 'same-origin'
@@ -1077,35 +870,28 @@ document.addEventListener("alpine:init", () => {
         if (response.ok) {
           const responseText = await response.text();
           
-          // Check if the response contains error
           if (responseText.includes('error') || responseText === '0') {
-            throw new Error("WooCommerce add to cart failed");
+            throw new Error("Add to cart failed");
           }
 
-          // Update cart badge
-          await this.updateCartBadge();
-
-          // Show success feedback
+          await ProductUtils.updateCartBadge(1);
           this.showSuccessMessage();
         } else {
           throw new Error("Failed to add to cart");
         }
       } catch (error) {
         console.error("Product card add to cart error:", error);
-        // Handle add to cart error silently
-        this.showErrorMessage();
+        alert("Failed to add product to cart. Please try again.");
       } finally {
         this.loading = false;
       }
     },
 
     showSuccessMessage() {
-      // Show success message next to add to cart button
       this.showSuccess = true;
       this.successMessage = "Added!";
       this.isViewCartLink = false;
 
-      // After 2 seconds, change to "View Cart" message
       setTimeout(() => {
         if (this.showSuccess) {
           this.successMessage = "View Cart";
@@ -1113,7 +899,6 @@ document.addEventListener("alpine:init", () => {
         }
       }, 2000);
 
-      // Hide success message after 8 seconds total (6 seconds for "View Cart")
       setTimeout(() => {
         this.showSuccess = false;
         this.successMessage = "";
@@ -1123,64 +908,8 @@ document.addEventListener("alpine:init", () => {
 
     goToCart() {
       if (this.isViewCartLink) {
-        window.location.href = this.getCartUrl();
+        window.location.href = window.wc_cart_params?.cart_url || "/cart";
       }
-    },
-
-    getCartUrl() {
-      // Try to get cart URL from WooCommerce
-      return window.wc_cart_params?.cart_url || "/cart";
-    },
-
-    showErrorMessage() {
-      // You can customize this error feedback
-      alert("Failed to add product to cart. Please try again.");
-    },
-
-    async updateCartBadge() {
-      // Try to get the actual cart count from WooCommerce API
-      try {
-        const response = await fetch("/wp-json/wc/store/cart", {
-          credentials: "same-origin",
-        });
-        if (response.ok) {
-          const data = await response.json();
-          const actualCartCount = data.items_count || 0;
-
-          // Trigger cart update event with actual count
-          document.dispatchEvent(
-            new CustomEvent("cart-updated", {
-              detail: {
-                cartCount: actualCartCount,
-                addedQuantity: 1,
-              },
-            })
-          );
-          return;
-        }
-      } catch (error) {
-        // Could not fetch actual cart count, using fallback
-      }
-
-      // Fallback: increment current count
-      const existingBadge = document.querySelector(".cart-badge");
-      let currentCount = Alpine.store("initialCartCount") || 0;
-
-      if (existingBadge && existingBadge.textContent) {
-        currentCount = parseInt(existingBadge.textContent) || 0;
-      }
-
-      const newCount = currentCount + 1;
-
-      // Trigger cart update event
-      document.dispatchEvent(
-        new CustomEvent("cart-updated", {
-          detail: {
-            cartCount: newCount,
-            addedQuantity: 1,
-          },
-        })
-      );
     },
 
     get addToCartButtonClasses() {
@@ -1189,82 +918,33 @@ document.addEventListener("alpine:init", () => {
         "opacity-75": this.loading,
         "cursor-wait": this.loading,
       };
-    },
+    }
   }));
 
-  // Cart Badge Component
   Alpine.data("cartBadge", () => ({
     cartCount: 0,
 
     init() {
-      // Initialize from data attribute (server-side count)
-      const initialCount = parseInt(this.$el.dataset.initialCount) || 0;
-      this.cartCount = initialCount;
+      this.cartCount = parseInt(this.$el.dataset.initialCount) || 0;
+      this.setupEventListeners();
+    },
 
-      // Listen for cart update events
+    setupEventListeners() {
       document.addEventListener("cart-updated", (event) => {
-        if (event.detail && event.detail.cartCount !== undefined) {
+        if (event.detail?.cartCount !== undefined) {
           this.cartCount = event.detail.cartCount;
-        } else {
-          // Fallback: try to get cart count from WooCommerce
-          this.fetchCartCount();
         }
       });
 
-      // Listen for WooCommerce cart events (cart page updates)
-      document.addEventListener("wc_fragments_refreshed", () => {
-        this.fetchCartCount();
+      const cartEvents = ['wc_fragments_refreshed', 'removed_from_cart', 'updated_cart_totals'];
+      cartEvents.forEach(eventName => {
+        document.addEventListener(eventName, () => this.fetchCartCount());
       });
-
-      // Listen for cart item removal (WooCommerce native events)
-      document.addEventListener("removed_from_cart", () => {
-        this.fetchCartCount();
-      });
-
-      // Listen for cart quantity changes
-      document.addEventListener("updated_cart_totals", () => {
-        this.fetchCartCount();
-      });
-
-      // Set up cart page monitoring
-      if (this.isCartPage()) {
-        this.startCartPagePolling();
-        this.setupCartPageObserver();
-      }
-
-      // Listen for AJAX complete events (for cart updates)
-      if (typeof jQuery !== "undefined") {
-        jQuery(document).ajaxComplete((_event, _xhr, settings) => {
-          // Check if the AJAX request was cart-related
-          if (
-            settings.url &&
-            (settings.url.includes("wc-ajax=update_shipping_method") ||
-              settings.url.includes("wc-ajax=apply_coupon") ||
-              settings.url.includes("wc-ajax=remove_coupon") ||
-              settings.url.includes("update-cart") ||
-              settings.url.includes("cart"))
-          ) {
-            setTimeout(() => this.fetchCartCount(), 500);
-          }
-        });
-      }
-    },
-
-    updateCartCount() {
-      // Get current cart count from the existing badge
-      const existingBadge = document.querySelector(".cart-badge");
-      if (existingBadge) {
-        const currentCount = parseInt(existingBadge.textContent) || 0;
-        this.cartCount = currentCount;
-      }
     },
 
     async fetchCartCount() {
-      // Try to get cart count via AJAX if available
       try {
-        const response = await fetch("/wp-json/wc/store/cart", {
-          credentials: "same-origin",
-        });
+        const response = await fetch(ProductUtils.endpoints.cart, { credentials: "same-origin" });
         if (response.ok) {
           const data = await response.json();
           this.cartCount = data.items_count || 0;
@@ -1276,42 +956,6 @@ document.addEventListener("alpine:init", () => {
 
     get showBadge() {
       return this.cartCount > 0;
-    },
-
-    isCartPage() {
-      // Check if we're on the cart page
-      return (
-        window.location.pathname.includes("/cart") ||
-        document.body.classList.contains("woocommerce-cart") ||
-        document.querySelector(".woocommerce-cart") !== null
-      );
-    },
-
-    startCartPagePolling() {
-      // Poll for cart changes every 2 seconds when on cart page
-      setInterval(() => {
-        this.fetchCartCount();
-      }, 2000);
-    },
-
-    setupCartPageObserver() {
-      // Watch for changes in cart items
-      const cartTable = document.querySelector(
-        ".woocommerce-cart-form, .cart-collaterals, .woocommerce-cart"
-      );
-      if (cartTable) {
-        const observer = new MutationObserver(() => {
-          // Delay to allow DOM updates to complete
-          setTimeout(() => this.fetchCartCount(), 300);
-        });
-
-        observer.observe(cartTable, {
-          childList: true,
-          subtree: true,
-          attributes: true,
-          attributeFilter: ["class"],
-        });
-      }
-    },
+    }
   }));
 });
