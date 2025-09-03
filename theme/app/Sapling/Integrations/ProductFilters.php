@@ -17,25 +17,33 @@ class ProductFilters implements SaplingPlugin
 
     public function localize_filter_script()
     {
-        // Only localize on shop/archive pages
-        if (is_shop() || is_product_category() || is_product_tag()) {
-            // Try to localize to main script first (production)
-            if (wp_script_is('main', 'enqueued')) {
-                wp_localize_script('main', 'shopFiltersAjax', array(
-                    'ajaxUrl' => admin_url('admin-ajax.php'),
-                    'nonce' => wp_create_nonce('filter_products_nonce')
-                ));
-            } else {
-                // Fallback: add to wp_head for development mode
-                add_action('wp_head', function() {
-                    echo '<script type="text/javascript">';
-                    echo 'window.shopFiltersAjax = ' . json_encode(array(
-                        'ajaxUrl' => admin_url('admin-ajax.php'),
-                        'nonce' => wp_create_nonce('filter_products_nonce')
-                    ));
-                    echo ';</script>';
-                }, 5);
+        // Localize script data for both shop/archive and single product pages
+        $script_data = array(
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'cartApiUrl' => rest_url('wc/store/cart'),
+            'nonce' => wp_create_nonce('filter_products_nonce')
+        );
+
+        // Try to localize to main script first (production)
+        if (wp_script_is('main', 'enqueued')) {
+            // For shop/archive pages
+            if (is_shop() || is_product_category() || is_product_tag()) {
+                wp_localize_script('main', 'shopFiltersAjax', $script_data);
             }
+            // For single product pages and general use
+            wp_localize_script('main', 'wpEndpoints', $script_data);
+        } else {
+            // Fallback: add to wp_head for development mode
+            add_action('wp_head', function() use ($script_data) {
+                echo '<script type="text/javascript">';
+                // For shop/archive functionality
+                if (is_shop() || is_product_category() || is_product_tag()) {
+                    echo 'window.shopFiltersAjax = ' . json_encode($script_data) . ';';
+                }
+                // For single product and general functionality
+                echo 'window.wpEndpoints = ' . json_encode($script_data) . ';';
+                echo '</script>';
+            }, 5);
         }
     }
 
