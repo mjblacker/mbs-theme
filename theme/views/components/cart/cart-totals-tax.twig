@@ -1,0 +1,29 @@
+{# Cart Totals Tax Component
+   Props: wc_cart
+#}
+
+{% if function('wc_tax_enabled') and not wc_cart.display_prices_including_tax() %}
+    {% set taxable_address = function('WC').customer.get_taxable_address() %}
+    {% set estimated_text = '' %}
+    
+    {% if function('WC').customer.is_customer_outside_base() and not function('WC').customer.has_calculated_shipping() %}
+        {% set estimated_text = ' <small>(estimated for ' ~ function('WC').countries.estimated_for_prefix(taxable_address[0]) ~ function('WC').countries.countries[taxable_address[0]] ~ ')</small>' %}
+    {% endif %}
+    
+    {% if function('get_option', 'woocommerce_tax_total_display') == 'itemized' %}
+        {% set tax_totals = wc_cart.get_tax_totals() %}
+        {% for code, tax in tax_totals %}
+            <div class="flex justify-between items-center py-3 border-b border-gray-200 tax-rate tax-rate-{{ function('sanitize_title', code) }}">
+                <span class="text-gray-600">{{ tax.label|raw }}{{ estimated_text|raw }}</span>
+                <span class="font-medium text-gray-900">{{ tax.formatted_amount|raw }}</span>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="flex justify-between items-center py-3 border-b border-gray-200 tax-total">
+            <span class="text-gray-600">{{ function('WC').countries.tax_or_vat()|raw }}{{ estimated_text|raw }}</span>
+            <span class="font-medium text-gray-900">
+                {{ function('wc_cart_totals_taxes_total_html')|raw }}
+            </span>
+        </div>
+    {% endif %}
+{% endif %}

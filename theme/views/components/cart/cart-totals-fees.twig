@@ -1,0 +1,15 @@
+{# Cart Totals Fees Component
+   Props: wc_cart
+#}
+
+{% set fees = wc_cart.get_fees() %}
+{% if fees %}
+    {% for fee in fees %}
+        <div class="flex justify-between items-center py-3 border-b border-gray-200 fee">
+            <span class="text-gray-600">{{ fee.name }}</span>
+            <span class="font-medium text-gray-900">
+                {{ function('wc_cart_totals_fee_html', fee)|raw }}
+            </span>
+        </div>
+    {% endfor %}
+{% endif %}

@@ -1,0 +1,11 @@
+{# Cart Items List Component
+   Handles the entire cart items rendering including data preparation
+   Props: cart_items
+#}
+
+{% for cart_item_key, cart_item in cart_items %}
+    {% include 'components/cart/cart-item-wrapper.twig' with {
+        cart_item_key: cart_item_key,
+        cart_item: cart_item
+    } %}
+{% endfor %}

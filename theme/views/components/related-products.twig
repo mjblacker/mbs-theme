@@ -1,0 +1,27 @@
+{# Related Products Component #}
+
+<div class="mt-20">
+    <div class="mb-8">
+        <h2 class="text-3xl font-medium text-gray-900">Do you also need?</h2>
+    </div>
+
+    <!-- Related Products Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {% set related_products = function('wc_get_products', {
+            'limit': 3,
+            'orderby': 'rand',
+            'status': 'publish'
+        }) %}
+        
+        {% for product in related_products %}
+            {% set product_post = function('get_post', product.get_id()) %}
+            {% if product_post %}
+                {% include 'woocommerce/product-card.twig' with {
+                    'post': product_post,
+                    'show_brand': true,
+                    'show_sale_badge': true
+                } %}
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>

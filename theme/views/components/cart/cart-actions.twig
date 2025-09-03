@@ -1,0 +1,14 @@
+{# Cart Actions Component #}
+
+<div class="flex flex-col sm:flex-row sm:justify-end items-center mt-8 pt-6 border-t border-gray-200 gap-4">
+    <a href="{{ function('wc_get_page_permalink', 'shop') }}" 
+       class="inline-flex items-center border border-gray-300 hover:border-gray-400 text-gray-700 px-6 py-3 rounded font-medium transition-colors">
+        Continue Shopping
+    </a>
+    <button type="submit" 
+            class="update-cart-btn inline-flex items-center bg-[#f5f5f5] hover:bg-[#FFF200] text-black px-6 py-3 rounded font-medium transition-colors"
+            name="update_cart"
+            value="Update cart">
+        Update Cart
+    </button>
+</div>

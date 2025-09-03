@@ -1,0 +1,20 @@
+{# Cart Totals Shipping Component
+   Props: wc_cart
+#}
+
+{% if wc_cart.needs_shipping() and wc_cart.show_shipping() %}
+    {{ function('do_action', 'woocommerce_cart_totals_before_shipping')|raw }}
+    
+    <div class="py-3 border-b border-gray-200 shipping">
+        {{ function('wc_cart_totals_shipping_html')|raw }}
+    </div>
+    
+    {{ function('do_action', 'woocommerce_cart_totals_after_shipping')|raw }}
+{% elseif wc_cart.needs_shipping() and function('get_option', 'woocommerce_enable_shipping_calc') == 'yes' %}
+    <div class="flex justify-between items-center py-3 border-b border-gray-200 shipping">
+        <span class="text-gray-600">Shipping</span>
+        <div class="text-right">
+            {{ function('woocommerce_shipping_calculator')|raw }}
+        </div>
+    </div>
+{% endif %}
