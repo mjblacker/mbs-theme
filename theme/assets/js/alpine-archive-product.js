@@ -581,7 +581,7 @@ document.addEventListener("alpine:init", () => {
       const numValue = parseInt(value);
       if (this.isValidMinPrice(numValue)) {
         this.minPrice = numValue;
-        this.updateCountsOnly();
+        //this.updateCountsOnly();
       }
     },
 
@@ -589,7 +589,7 @@ document.addEventListener("alpine:init", () => {
       const numValue = parseInt(value);
       if (this.isValidMaxPrice(numValue)) {
         this.maxPrice = numValue;
-        this.updateCountsOnly();
+        //this.updateCountsOnly();
       }
     },
 
@@ -619,10 +619,10 @@ document.addEventListener("alpine:init", () => {
       return false;
     },
 
-    updateCountsOnly() {
-      const shopFilters = FilterUtils.getComponentData(SELECTORS.SHOP_FILTERS);
-      shopFilters?.updateCountsOnly();
-    },
+    // updateCountsOnly() {
+    //   const shopFilters = FilterUtils.getComponentData(SELECTORS.SHOP_FILTERS);
+    //   shopFilters?.updateCountsOnly();
+    // },
   }));
 
   // Generic Filter Component (for brands, etc.)
