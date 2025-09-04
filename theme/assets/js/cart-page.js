@@ -3,31 +3,20 @@ document.addEventListener("alpine:init", () => {
     selectors: {
       updateBtn: '.update-cart-btn',
       quantityInputs: '.cart-qty-input',
-      cartForm: '.woocommerce-cart-form',
-      removeLink: '.remove-item',
-      cartNonce: '[name="woocommerce-cart-nonce"]',
       notices: '.woocommerce-message, .woocommerce-info, .woocommerce-error'
     },
 
     classes: {
       disabled: ['opacity-50', 'cursor-not-allowed'],
       loading: ['opacity-75', 'cursor-not-allowed'],
-      hover: ['hover:bg-[#FFF200]', 'hover:text-red-500']
+      hover: ['hover:bg-[#FFF200]', 'hover:text-black']
     },
 
     createSpinner() {
       return '<svg class="animate-spin h-5 w-5 inline mr-2" fill="none" viewBox="0 0 24 24">' +
              '<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>' +
-             '<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 8 1 8-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>' +
+             '<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0 1 4 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>' +
              '</svg>';
-    },
-
-    createHiddenInput(name, value) {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = name;
-      input.value = value;
-      return input;
     },
 
     fadeOutElement(element, delay = 4000) {
@@ -48,80 +37,14 @@ document.addEventListener("alpine:init", () => {
       });
     },
 
-    getCartNonce() {
-      const nonceInput = document.querySelector(this.selectors.cartNonce);
-      return nonceInput?.value || '';
-    }
   };
 
   Alpine.data("cartPage", () => ({
     updating: false,
-    hasChanges: false,
-    
     init() {
-      this.initializeCartUpdateButton();
-      this.setupQuantityHandlers();
       this.autoHideNotices();
-    },
-
-    initializeCartUpdateButton() {
-      const updateBtn = document.querySelector(CartUtils.selectors.updateBtn);
-      const quantityInputs = document.querySelectorAll(CartUtils.selectors.quantityInputs);
-      
-      if (!updateBtn) return;
-
-      this.enableButton(updateBtn);
-      this.setupUpdateButtonHandler(updateBtn);
-      this.setupQuantityChangeTracking(quantityInputs, updateBtn);
-    },
-
-    enableButton(button) {
-      button.disabled = false;
-      button.removeAttribute('disabled');
-    },
-
-    setupUpdateButtonHandler(updateBtn) {
-      updateBtn.addEventListener('click', () => {
-        if (!this.hasChanges) return;
-
-        const hiddenInput = CartUtils.createHiddenInput('update_cart', 'Update cart');
-        updateBtn.form.appendChild(hiddenInput);
-        
-        this.showCartLoading(updateBtn);
-        setTimeout(() => updateBtn.form.submit(), 100);
-      });
-    },
-
-    setupQuantityChangeTracking(inputs, updateBtn) {
-      inputs.forEach((input) => {
-        const originalValue = input.value;
-        
-        input.addEventListener('input', () => {
-          const hasChanged = input.value !== originalValue;
-          this.hasChanges = hasChanged;
-          
-          this.toggleButtonState(updateBtn, hasChanged);
-        });
-      });
-    },
-
-    toggleButtonState(button, enabled) {
-      if (enabled) {
-        button.disabled = false;
-        button.classList.remove(...CartUtils.classes.disabled);
-        button.classList.add(...CartUtils.classes.hover);
-      } else {
-        button.disabled = true;
-        button.classList.add(...CartUtils.classes.disabled);
-        button.classList.remove(...CartUtils.classes.hover);
-      }
-    },
-
-    showCartLoading(btn) {
-      this.updating = true;
-      btn.disabled = true;
-      btn.classList.add(...CartUtils.classes.loading);
-      btn.innerHTML = `${CartUtils.createSpinner()}Updating...`;
+      this.setupUpdateButton();
+      this.setupQuantityTracking();
     },
 
     autoHideNotices() {
@@ -133,62 +56,331 @@ document.addEventListener("alpine:init", () => {
       });
     },
 
-    setupQuantityHandlers() {
+    setupUpdateButton() {
+      const updateBtn = document.querySelector(CartUtils.selectors.updateBtn);
+      if (!updateBtn) return;
+
+      updateBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.updateCartAjax();
+      });
+    },
+
+    setupQuantityTracking() {
       const quantityInputs = document.querySelectorAll(CartUtils.selectors.quantityInputs);
+      const updateBtn = document.querySelector(CartUtils.selectors.updateBtn);
       
-      quantityInputs.forEach(input => {
-        input.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            this.updateCart();
-          }
+      if (!updateBtn) return;
+
+      // Initially disable the button
+      updateBtn.disabled = true;
+      updateBtn.classList.add(...CartUtils.classes.disabled);
+
+      quantityInputs.forEach((input) => {
+        const originalValue = input.value;
+        
+        input.addEventListener('input', () => {
+          const hasChanges = Array.from(quantityInputs).some(inp => inp.value !== inp.defaultValue);
+          this.toggleUpdateButton(updateBtn, hasChanges);
         });
       });
     },
 
-    updateCart() {
-      const form = document.querySelector(CartUtils.selectors.cartForm);
-      if (form) {
-        this.updating = true;
-        form.submit();
+    toggleUpdateButton(button, enabled) {
+      if (enabled) {
+        button.disabled = false;
+        button.classList.remove(...CartUtils.classes.disabled);
+        button.classList.add(...CartUtils.classes.hover);
+      } else {
+        button.disabled = true;
+        button.classList.add(...CartUtils.classes.disabled);
+        button.classList.remove(...CartUtils.classes.hover);
       }
+    },
+
+    async updateCartAjax() {
+      this.updating = true;
+      const updateBtn = document.querySelector(CartUtils.selectors.updateBtn);
+      
+      if (updateBtn) {
+        updateBtn.disabled = true;
+        updateBtn.classList.add(...CartUtils.classes.loading);
+        updateBtn.innerHTML = `${CartUtils.createSpinner()}<span class="text-black">Updating Cart...</span>`;
+      }
+
+      try {
+        const quantityInputs = document.querySelectorAll(CartUtils.selectors.quantityInputs);
+        const updates = [];
+        
+        quantityInputs.forEach(input => {
+          const itemKey = input.name.match(/cart\[(.*?)\]/)?.[1];
+          if (itemKey && input.value !== input.defaultValue) {
+            updates.push({
+              key: itemKey,
+              quantity: parseInt(input.value) || 0
+            });
+          }
+        });
+
+        // Process all updates
+        for (const update of updates) {
+          if (update.quantity === 0) {
+            await this.removeItemByKey(update.key);
+          } else {
+            await this.updateQuantityByKey(update.key, update.quantity);
+          }
+        }
+
+        // Refresh cart content and totals
+        await this.refreshCartFragments();
+        this.dispatchCartUpdateEvent();
+        
+        // Reset update button
+        if (updateBtn) {
+          updateBtn.disabled = true;
+          updateBtn.classList.remove(...CartUtils.classes.loading);
+          updateBtn.classList.add(...CartUtils.classes.disabled);
+          updateBtn.innerHTML = 'Update Cart';
+        }
+
+      } catch (error) {
+        console.error('Error updating cart:', error);
+        alert('Failed to update cart. Please try again.');
+      } finally {
+        this.updating = false;
+      }
+    },
+
+    async makeStoreApiRequest(url, options = {}) {
+      const defaultOptions = {
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+          'Nonce': window.wpEndpoints?.storeApiNonce || ''
+        }
+      };
+
+      return fetch(url, { ...defaultOptions, ...options });
+    },
+
+    async updateQuantityByKey(itemKey, newQuantity) {
+      const response = await this.makeStoreApiRequest('/wp-json/wc/store/v1/cart/update-item', {
+        method: 'POST',
+        body: JSON.stringify({
+          key: itemKey,
+          quantity: parseInt(newQuantity)
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update item quantity');
+      }
+      
+      return response;
+    },
+
+    async removeItemByKey(itemKey) {
+      const response = await this.makeStoreApiRequest(`/wp-json/wc/store/v1/cart/items/${itemKey}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to remove item');
+      }
+
+      // Remove the item element from DOM
+      const itemElement = document.querySelector(`input[name*="${itemKey}"]`)?.closest('.cart-item');
+      if (itemElement) {
+        itemElement.style.transition = 'opacity 0.3s ease-out';
+        itemElement.style.opacity = '0';
+        setTimeout(() => itemElement.remove(), 300);
+      }
+      
+      return response;
+    },
+
+    async refreshCartFragments() {
+      const cartContent = document.querySelector('.lg\\:col-span-7');
+      const cartTotals = document.querySelector('.lg\\:col-span-5');
+      
+      // Disable cart areas during refresh
+      this.disableCartAreas(cartContent, cartTotals);
+      
+      try {
+        // Fetch updated cart page content
+        const response = await fetch(window.location.href, {
+          method: 'GET',
+          credentials: 'same-origin',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch updated cart content');
+        }
+
+        const html = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        // Update cart content area
+        const currentCartContent = document.querySelector('.lg\\:col-span-7');
+        const newCartContent = doc.querySelector('.lg\\:col-span-7');
+        
+        if (currentCartContent && newCartContent) {
+          // Preserve Alpine.js data by updating innerHTML instead of replacing element
+          currentCartContent.innerHTML = newCartContent.innerHTML;
+          
+          // Reinitialize Alpine.js components for the updated content
+          if (window.Alpine) {
+            Alpine.initTree(currentCartContent);
+          }
+        }
+
+        // Update cart totals area
+        const currentCartTotals = document.querySelector('.lg\\:col-span-5');
+        const newCartTotals = doc.querySelector('.lg\\:col-span-5');
+        
+        if (currentCartTotals && newCartTotals) {
+          currentCartTotals.innerHTML = newCartTotals.innerHTML;
+          
+          // Reinitialize Alpine.js for totals if needed
+          if (window.Alpine) {
+            Alpine.initTree(currentCartTotals);
+          }
+        }
+
+        // Re-setup the update button and quantity tracking for new content
+        this.setupUpdateButton();
+        this.setupQuantityTracking();
+
+      } catch (error) {
+        console.error('Error refreshing cart fragments:', error);
+        // Fallback to page reload if fragment update fails
+        window.location.reload();
+      } finally {
+        // Re-enable cart areas after refresh
+        this.enableCartAreas(cartContent, cartTotals);
+      }
+    },
+
+    disableCartAreas(cartContent, cartTotals) {
+      [cartContent, cartTotals].forEach(area => {
+        if (area) {
+          // Add simple disabled styling
+          area.classList.add('opacity-50', 'pointer-events-none');
+          
+          // Disable all interactive elements including checkout buttons
+          const interactiveElements = area.querySelectorAll('button, input, a, select, .checkout-button, [href*="checkout"]');
+          interactiveElements.forEach(el => {
+            const wasDisabled = el.disabled || el.classList.contains('disabled');
+            el.disabled = true;
+            el.classList.add('disabled');
+            el.setAttribute('data-was-disabled', wasDisabled ? 'true' : 'false');
+          });
+        }
+      });
+    },
+
+    enableCartAreas(cartContent, cartTotals) {
+      [cartContent, cartTotals].forEach(area => {
+        if (area) {
+          // Remove disabled styling
+          area.classList.remove('opacity-50', 'pointer-events-none');
+          
+          // Re-enable interactive elements
+          const interactiveElements = area.querySelectorAll('[data-was-disabled]');
+          interactiveElements.forEach(el => {
+            const wasDisabled = el.getAttribute('data-was-disabled') === 'true';
+            el.disabled = wasDisabled;
+            if (!wasDisabled) {
+              el.classList.remove('disabled');
+            }
+            el.removeAttribute('data-was-disabled');
+          });
+        }
+      });
+    },
+
+    dispatchCartUpdateEvent() {
+      document.dispatchEvent(new CustomEvent('cart-updated', {
+        detail: { 
+          source: 'cart-page'
+        }
+      }));
+    },
+
+    updateCart() {
+      // Fallback for any remaining form submissions
+      this.updateCartAjax();
     }
   }));
 
   Alpine.data("cartItem", () => ({
     removing: false,
     
-    async removeItem() {
-      if (!this.confirmRemoval()) return;
+    async removeItem(itemKey) {
+      if (!confirm('Are you sure you want to remove this item from your cart?')) {
+        return;
+      }
 
       this.removing = true;
+      
+      // Get reference to cart page component for fragment refresh
+      const cartPageElement = document.querySelector('[x-data*="cartPage"]');
+      const cartPageData = cartPageElement ? Alpine.$data(cartPageElement) : null;
 
       try {
-        const removeUrl = this.getRemoveUrl();
-        if (removeUrl) {
-          window.location.href = removeUrl;
+        const response = await this.makeStoreApiRequest(`/wp-json/wc/store/v1/cart/items/${itemKey}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          // Remove the item from DOM immediately for instant feedback
+          this.$el.style.transition = 'opacity 0.3s ease-out';
+          this.$el.style.opacity = '0';
+          
+          setTimeout(async () => {
+            this.$el.remove();
+            
+            // Refresh cart fragments like the update cart button does
+            if (cartPageData && cartPageData.refreshCartFragments) {
+              await cartPageData.refreshCartFragments();
+            }
+          }, 300);
+          
+          this.dispatchCartUpdateEvent();
         } else {
-          throw new Error('Remove URL not found');
+          console.error('Failed to remove cart item');
+          alert('Failed to remove item. Please try again.');
         }
       } catch (error) {
-        this.handleRemovalError(error);
+        console.error('Error removing cart item:', error);
+        alert('Failed to remove item. Please try again.');
       } finally {
         this.removing = false;
       }
     },
 
-    confirmRemoval() {
-      return confirm('Are you sure you want to remove this item from your cart?');
+    async makeStoreApiRequest(url, options = {}) {
+      const defaultOptions = {
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+          'Nonce': window.wpEndpoints?.storeApiNonce || ''
+        }
+      };
+
+      return fetch(url, { ...defaultOptions, ...options });
     },
 
-    getRemoveUrl() {
-      const removeLink = this.$el.querySelector(CartUtils.selectors.removeLink);
-      return removeLink?.href;
-    },
-
-    handleRemovalError(error) {
-      console.error('Error removing cart item:', error);
-      alert('Failed to remove item. Please try again.');
+    dispatchCartUpdateEvent() {
+      document.dispatchEvent(new CustomEvent('cart-updated', {
+        detail: { 
+          source: 'cart-page'
+        }
+      }));
     },
 
     get removeButtonClasses() {

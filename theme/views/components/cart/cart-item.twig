@@ -2,16 +2,17 @@
    Props: cart_item_key, cart_item, product, product_post, image_id, brand_id
 #}
 
-<div class="cart-item grid grid-cols-1 md:grid-cols-12 gap-4 py-6 border-b border-gray-100 last:border-b-0">
+<div class="cart-item grid grid-cols-1 md:grid-cols-12 gap-4 py-6 border-b border-gray-100 last:border-b-0" x-data="cartItem()">
     <!-- Remove Button -->
     <div class="md:col-span-1 flex items-center justify-center">
-        <a href="{{ function('wc_get_cart_remove_url', cart_item_key) }}"
-           class="cart-remove-item text-gray-400 hover:text-red-500 focus:outline-none"
-           data-cart-key="{{ cart_item_key }}">
+        <button @click="removeItem('{{ cart_item_key }}')"
+                :disabled="removing"
+                class="cart-remove-item text-gray-400 hover:text-red-500 focus:outline-none transition-colors"
+                :class="{ 'opacity-50 cursor-not-allowed': removing }">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
-        </a>
+        </button>
     </div>
 
     <!-- Product Info -->
@@ -58,11 +59,13 @@
     <!-- Quantity -->
     <div class="md:col-span-2 flex items-center justify-center md:justify-center">
         <input type="number" 
-               class="cart-qty-input w-16 text-center border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-               value="{{ cart_item.quantity }}" 
-               min="0"
-               name="cart[{{ cart_item_key }}][qty]"
+               class="cart-qty-input w-16 text-center border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-opacity" 
+               value="{{ cart_item.quantity }}"
+               :disabled="updating || removing"
+               :class="{ 'opacity-50': updating || removing }"
+               min="1"
                step="1"
+               name="cart[{{ cart_item_key }}][qty]"
                autocomplete="off">
     </div>
 
