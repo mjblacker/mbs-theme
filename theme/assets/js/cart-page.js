@@ -200,11 +200,11 @@ document.addEventListener("alpine:init", () => {
     },
 
     async refreshCartFragments() {
-      const cartContent = document.querySelector('.lg\\:col-span-7');
+      const cartItemsSection = document.querySelector('.cart-items-section');
       const cartTotals = document.querySelector('.lg\\:col-span-5');
       
       // Disable cart areas during refresh
-      this.disableCartAreas(cartContent, cartTotals);
+      this.disableCartAreas(cartItemsSection, cartTotals);
       
       try {
         // Fetch updated cart page content
@@ -224,17 +224,17 @@ document.addEventListener("alpine:init", () => {
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
 
-        // Update cart content area
-        const currentCartContent = document.querySelector('.lg\\:col-span-7');
-        const newCartContent = doc.querySelector('.lg\\:col-span-7');
+        // Update only the cart items section (not the related products)
+        const currentCartItemsSection = document.querySelector('.cart-items-section');
+        const newCartItemsSection = doc.querySelector('.cart-items-section');
         
-        if (currentCartContent && newCartContent) {
+        if (currentCartItemsSection && newCartItemsSection) {
           // Preserve Alpine.js data by updating innerHTML instead of replacing element
-          currentCartContent.innerHTML = newCartContent.innerHTML;
+          currentCartItemsSection.innerHTML = newCartItemsSection.innerHTML;
           
           // Reinitialize Alpine.js components for the updated content
           if (window.Alpine) {
-            Alpine.initTree(currentCartContent);
+            Alpine.initTree(currentCartItemsSection);
           }
         }
 
@@ -261,7 +261,7 @@ document.addEventListener("alpine:init", () => {
         window.location.reload();
       } finally {
         // Re-enable cart areas after refresh
-        this.enableCartAreas(cartContent, cartTotals);
+        this.enableCartAreas(cartItemsSection, cartTotals);
       }
     },
 
