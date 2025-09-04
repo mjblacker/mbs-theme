@@ -1,13 +1,17 @@
 document.addEventListener("alpine:init", () => {
   Alpine.data("cartDrawer", () => ({
+    // State
     isOpen: false,
     loading: false,
+    removing: false,
     cartItems: [],
     cartTotal: '$0.00',
+
+    // Configuration
     cartUrl: window.wpEndpoints?.cartUrl || '/cart',
     checkoutUrl: window.wpEndpoints?.checkoutUrl || '/checkout',
-    removing: false,
 
+    // Initialization
     init() {
       this.loadCartData();
       this.setupEventListeners();
@@ -29,104 +33,109 @@ document.addEventListener("alpine:init", () => {
       });
     },
 
+    // Drawer Controls
     openDrawer() {
       this.isOpen = true;
       this.loadCartData();
-      // Prevent body scroll when drawer is open
       document.body.style.overflow = 'hidden';
     },
 
     closeDrawer() {
       this.isOpen = false;
-      // Restore body scroll
       document.body.style.overflow = '';
     },
 
+    // Cart Data Management
     async loadCartData() {
       this.loading = true;
       
       try {
-        const response = await fetch('/wp-json/wc/store/cart', {
-          credentials: 'same-origin',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
-
+        const response = await this.fetchCart();
+        
         if (response.ok) {
           const data = await response.json();
           await this.processCartData(data);
         } else {
+          this.resetCartState();
           console.error('Failed to load cart data');
-          this.cartItems = [];
-          this.cartTotal = '$0.00';
         }
       } catch (error) {
+        this.resetCartState();
         console.error('Error loading cart data:', error);
-        this.cartItems = [];
-        this.cartTotal = '$0.00';
       } finally {
         this.loading = false;
       }
     },
 
+    async fetchCart() {
+      return fetch('/wp-json/wc/store/v1/cart', {
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+    },
+
+    resetCartState() {
+      this.cartItems = [];
+      this.cartTotal = '$0.00';
+    },
+
     async processCartData(cartData) {
-      if (!cartData || !cartData.items) {
-        this.cartItems = [];
-        this.cartTotal = '$0.00';
+      if (!cartData?.items) {
+        this.resetCartState();
         return;
       }
 
-      
-      // Process cart items
-      const processedItems = await Promise.all(cartData.items.map(async (item) => {
-        // Check if this is a variation product
-        const hasVariation = item.variation && item.variation.length > 0;
-        
-        const cartItem = {
-          key: item.key,
-          id: item.id,
-          variation_id: hasVariation ? item.id : null, // For variations, store the variation ID
-          name: item.name, // WooCommerce Store API should provide the parent product name for variations
-          quantity: item.quantity,
-          line_total: item.totals.line_total,
-          line_subtotal: item.totals.line_subtotal,
-          image: item.images?.[0]?.src || null,
-          brand: this.extractBrand(item),
-          variations: this.extractVariations(item),
-          permalink: item.permalink,
-          is_variation: hasVariation
-        };
-
-        // If brand wasn't found in cart data, fetch it separately
-        if (!cartItem.brand) {
-          cartItem.brand = await this.fetchBrandForItem(item);
-        }
-
-        return cartItem;
-      }));
+      // Process cart items with brand and variation data
+      const processedItems = await Promise.all(
+        cartData.items.map(item => this.processCartItem(item))
+      );
 
       this.cartItems = processedItems;
-
-      // Format cart total
       this.cartTotal = this.formatPrice(cartData.totals.total_price);
     },
 
+    async processCartItem(item) {
+      const hasVariation = item.variation?.length > 0;
+        
+      const cartItem = {
+        key: item.key,
+        id: item.id,
+        variation_id: hasVariation ? item.id : null,
+        name: item.name,
+        quantity: item.quantity,
+        line_total: item.totals.line_total,
+        line_subtotal: item.totals.line_subtotal,
+        image: item.images?.[0]?.src || null,
+        brand: this.extractBrand(item),
+        variations: this.extractVariations(item),
+        permalink: item.permalink,
+        is_variation: hasVariation
+      };
+
+      // Fetch brand separately if not found in cart data
+      if (!cartItem.brand) {
+        cartItem.brand = await this.fetchBrandForItem(item);
+      }
+
+      return cartItem;
+    },
+
+    // Brand Extraction
     extractBrand(item) {
-      // Try to extract brand from various possible locations in cart data
-      
-      // 1. Check item meta
-      if (item.meta && item.meta.brand) {
+      // Check item meta
+      if (item.meta?.brand) {
         return item.meta.brand;
       }
       
-      // 2. Check item extensions (WooCommerce extensions might store here)
-      if (item.extensions && item.extensions.brand) {
+      // Check item extensions
+      if (item.extensions?.brand) {
         return item.extensions.brand;
       }
       
-      // 3. Check for product_brand taxonomy in categories
-      if (item.categories && Array.isArray(item.categories)) {
+      // Check product_brand taxonomy in categories
+      if (Array.isArray(item.categories)) {
         const brandCategory = item.categories.find(cat => 
           cat.taxonomy === 'product_brand' || cat.slug?.includes('brand')
         );
@@ -135,8 +144,8 @@ document.addEventListener("alpine:init", () => {
         }
       }
       
-      // 4. Check item attributes for brand
-      if (item.variation && Array.isArray(item.variation)) {
+      // Check item attributes for brand
+      if (Array.isArray(item.variation)) {
         const brandAttribute = item.variation.find(attr => 
           attr.attribute && (
             attr.attribute.includes('brand') || 
@@ -144,79 +153,76 @@ document.addEventListener("alpine:init", () => {
             attr.attribute === 'attribute_pa_brand'
           )
         );
-        if (brandAttribute && brandAttribute.value) {
+        if (brandAttribute?.value) {
           return brandAttribute.value;
         }
       }
       
-      // 5. If brand data isn't in cart API, we'll fetch it separately
-      // This will be handled by fetchBrandForItem method
       return null;
     },
 
     async fetchBrandForItem(item) {
-      // Fetch brand data separately if not included in cart API
-      if (item.brand) return item.brand; // Already has brand
+      if (item.brand) return item.brand;
       
       try {
-        let productSlug = null;
-        let productId = item.id;
-        
-        // If this is a variation, extract parent product slug from permalink
-        if (item.type === 'variation' && item.permalink) {
-          const match = item.permalink.match(/\/product\/([^\/\?]+)/);
-          if (match) {
-            productSlug = match[1]; // Extract "est-ut" from the permalink
-          }
-        }
+        // Extract product slug for variations
+        const productSlug = this.extractProductSlug(item);
         
         // Try to get product by slug first (for variations)
         if (productSlug) {
-          const slugResponse = await fetch(`/wp-json/wp/v2/product?slug=${productSlug}&_embed=wp:term`, {
-            credentials: 'same-origin'
-          });
-          
-          if (slugResponse.ok) {
-            const products = await slugResponse.json();
-            if (products && products.length > 0) {
-              const product = products[0];
-              
-              // Look for product_brand taxonomy in embedded terms
-              if (product._embedded && product._embedded['wp:term']) {
-                const terms = product._embedded['wp:term'].flat();
-                const brandTerm = terms.find(term => term.taxonomy === 'product_brand');
-                
-                if (brandTerm) {
-                  return brandTerm.name;
-                }
-              }
-            }
-          }
+          const brand = await this.fetchBrandBySlug(productSlug);
+          if (brand) return brand;
         }
         
-        // Fallback: Try by product ID (for simple products or if slug method failed)
-        const response = await fetch(`/wp-json/wp/v2/product/${productId}?_embed=wp:term`, {
-          credentials: 'same-origin'
-        });
-        
-        if (response.ok) {
-          const product = await response.json();
-          
-          // Look for product_brand taxonomy in embedded terms
-          if (product._embedded && product._embedded['wp:term']) {
-            const terms = product._embedded['wp:term'].flat();
-            const brandTerm = terms.find(term => term.taxonomy === 'product_brand');
-            
-            if (brandTerm) {
-              return brandTerm.name;
-            }
-          }
-        }
+        // Fallback: Try by product ID
+        return await this.fetchBrandById(item.id);
       } catch (error) {
         console.log('Could not fetch brand for item:', error);
+        return 'BRAND NAME';
       }
+    },
+
+    extractProductSlug(item) {
+      if (item.type === 'variation' && item.permalink) {
+        const match = item.permalink.match(/\/product\/([^\/\?]+)/);
+        return match?.[1];
+      }
+      return null;
+    },
+
+    async fetchBrandBySlug(productSlug) {
+      const response = await fetch(`/wp-json/wp/v2/product?slug=${productSlug}&_embed=wp:term`, {
+        credentials: 'same-origin'
+      });
       
-      return 'BRAND NAME'; // Fallback
+      if (response.ok) {
+        const products = await response.json();
+        if (products?.length > 0) {
+          return this.extractBrandFromProduct(products[0]);
+        }
+      }
+      return null;
+    },
+
+    async fetchBrandById(productId) {
+      const response = await fetch(`/wp-json/wp/v2/product/${productId}?_embed=wp:term`, {
+        credentials: 'same-origin'
+      });
+      
+      if (response.ok) {
+        const product = await response.json();
+        return this.extractBrandFromProduct(product);
+      }
+      return null;
+    },
+
+    extractBrandFromProduct(product) {
+      if (product._embedded?.['wp:term']) {
+        const terms = product._embedded['wp:term'].flat();
+        const brandTerm = terms.find(term => term.taxonomy === 'product_brand');
+        return brandTerm?.name;
+      }
+      return null;
     },
 
     extractVariations(item) {
@@ -234,22 +240,17 @@ document.addEventListener("alpine:init", () => {
       return variations;
     },
 
+    // Cart Actions
     async updateQuantity(itemKey, newQuantity) {
       if (newQuantity < 1) {
-        this.removeItem(itemKey);
-        return;
+        return this.removeItem(itemKey);
       }
 
       this.loading = true;
 
       try {
-        const response = await fetch('/wp-json/wc/store/cart/update-item', {
+        const response = await this.makeStoreApiRequest('/wp-json/wc/store/v1/cart/update-item', {
           method: 'POST',
-          credentials: 'same-origin',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-WP-Nonce': window.wpEndpoints?.nonce || ''
-          },
           body: JSON.stringify({
             key: itemKey,
             quantity: parseInt(newQuantity)
@@ -258,11 +259,7 @@ document.addEventListener("alpine:init", () => {
 
         if (response.ok) {
           await this.loadCartData();
-          
-          // Trigger cart update event for badge
-          document.dispatchEvent(new CustomEvent('cart-updated', {
-            detail: { source: 'drawer' }
-          }));
+          this.dispatchCartUpdateEvent();
         } else {
           console.error('Failed to update cart item');
           alert('Failed to update item quantity. Please try again.');
@@ -283,28 +280,16 @@ document.addEventListener("alpine:init", () => {
       this.removing = true;
 
       try {
-        const response = await fetch('/wp-json/wc/store/cart/remove-item', {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-WP-Nonce': window.wpEndpoints?.nonce || ''
-          },
-          body: JSON.stringify({
-            key: itemKey
-          })
+        // Primary method: DELETE to cart/items/{key}
+        const response = await this.makeStoreApiRequest(`/wp-json/wc/store/v1/cart/items/${itemKey}`, {
+          method: 'DELETE'
         });
 
         if (response.ok) {
-          await this.loadCartData();
-          
-          // Trigger cart update event for badge
-          document.dispatchEvent(new CustomEvent('cart-updated', {
-            detail: { source: 'drawer' }
-          }));
+          await this.handleSuccessfulRemoval();
         } else {
-          console.error('Failed to remove cart item');
-          alert('Failed to remove item. Please try again.');
+          // Fallback method: POST with query parameter
+          await this.tryFallbackRemoval(itemKey);
         }
       } catch (error) {
         console.error('Error removing cart item:', error);
@@ -314,18 +299,59 @@ document.addEventListener("alpine:init", () => {
       }
     },
 
+    async tryFallbackRemoval(itemKey) {
+      const fallbackResponse = await this.makeStoreApiRequest(`/wp-json/wc/store/v1/cart/remove-item?key=${itemKey}`, {
+        method: 'POST'
+      });
+
+      if (fallbackResponse.ok) {
+        await this.handleSuccessfulRemoval();
+      } else {
+        console.error('Failed to remove cart item');
+        alert('Failed to remove item. Please try again.');
+      }
+    },
+
+    async handleSuccessfulRemoval() {
+      await this.loadCartData();
+      this.dispatchCartUpdateEvent();
+    },
+
+    // API Helpers
+    async makeStoreApiRequest(url, options = {}) {
+      const defaultOptions = {
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+          'Nonce': window.wpEndpoints?.storeApiNonce || ''
+        }
+      };
+
+      return fetch(url, { ...defaultOptions, ...options });
+    },
+
+    dispatchCartUpdateEvent() {
+      document.dispatchEvent(new CustomEvent('cart-updated', {
+        detail: { 
+          source: 'drawer',
+          cartCount: this.cartItems?.length || 0
+        }
+      }));
+    },
+
+    // Utilities
     formatPrice(price) {
-      // Handle both string and number prices
       const numPrice = typeof price === 'string' ? 
         parseFloat(price.replace(/[^0-9.-]+/g, '')) : 
         parseFloat(price);
         
-      const currency = window.woocommerce_currency || '$';
+      const currency = window.wooCommerce_currency || '$';
       return `${currency}${(numPrice / 100).toFixed(2)}`;
     },
 
+    // Getters
     get isEmpty() {
-      return !this.cartItems || this.cartItems.length === 0;
+      return !this.cartItems?.length;
     }
   }));
 });

@@ -11,7 +11,7 @@
   <div class="flex-shrink-0">
     <img :src="item.image || '{{ site.theme.uri }}/assets/images/placeholder-product.png'" 
          :alt="item.name"
-         class="h-16 w-16 object-cover rounded-md bg-gray-100">
+         class="h-30 w-28 object-cover rounded-md bg-gray-100">
   </div>
   
   <!-- Product Info -->
@@ -37,9 +37,9 @@
     </template>
     
     <!-- Quantity and Price Row -->
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-baseline">
       <!-- Quantity Input -->
-      <div class="flex items-center">
+      <div class="flex items-center mr-4">
         <input type="number" 
                :value="item.quantity"
                @change="updateQuantity(item.key, $event.target.value)"

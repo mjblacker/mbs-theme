@@ -22,7 +22,7 @@
         {# Desktop Cart Icon #}
         <div class="relative" x-data="cartBadge()" data-initial-count="{{ function('WC') ? function('WC').cart.get_cart_contents_count() : 0 }}">
             <button @click="$dispatch('cart-drawer-open')" 
-                    class="text-gray-700 hover:text-gray-900 transition-colors p-2">
+                    class="text-gray-700 hover:text-gray-900 transition-colors p-2 cursor-pointer">
                 <img src="{{ site.theme.uri }}/assets/images/Cart.svg" 
                      alt="Cart" 
                      class="h-6 w-6">
