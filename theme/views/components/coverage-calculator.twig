@@ -5,9 +5,12 @@
 #}
 
 {% set coverage = function('get_field', 'coverage_m2', post.ID) %}
+{% set calculator_unit = function('get_field', 'coverage_calculator_default_unit', 'option')|default('Units') %}
+{% set calculator_description = function('get_field', 'coverage_calculator_description', 'option') %}
+
 <div class="coverage-calculator" x-data="coverageCalculator()" data-product-coverage="{{ coverage|default(1) }}">
     <h3 class="text-lg font-semibold mb-4">Coverage Calculator</h3>
-    
+
     <div class="flex items-center gap-4">
         <!-- Total Area Input -->
         <div class="flex-1">
@@ -26,7 +29,7 @@
         <div class="flex-1 text-right" x-show="requiredQuantity > 0">
             <span class="text-gray-700">You need: </span>
             <span class="text-2xl font-bold text-green-600" x-text="requiredQuantity"></span>
-            <span class="text-green-600 font-medium"> units</span>
+            <span class="text-green-600 font-medium"> {{ calculator_unit|capitalize }}</span>
         </div>
     </div>
 </div>

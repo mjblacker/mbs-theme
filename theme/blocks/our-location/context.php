@@ -12,10 +12,13 @@ if ($locations && is_array($locations)) {
         // Process address lines into a single address string
         $address_parts = [];
         
-        if (!empty($location['address_lines']) && is_array($location['address_lines'])) {
-            foreach ($location['address_lines'] as $address_line) {
-                if (!empty($address_line['line'])) {
-                    $address_parts[] = $address_line['line'];
+        if (!empty($location['address_lines'])) {
+            // Handle new textarea field - split by line breaks and filter empty lines
+            $lines = explode("\n", $location['address_lines']);
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if (!empty($line)) {
+                    $address_parts[] = $line;
                 }
             }
         }

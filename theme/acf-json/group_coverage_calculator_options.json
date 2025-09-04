@@ -1,0 +1,49 @@
+{
+  "key": "group_coverage_calculator_options",
+  "title": "Coverage Calculator Options",
+  "fields": [
+    {
+      "key": "field_coverage_calculator_default_unit",
+      "label": "Default Unit",
+      "name": "coverage_calculator_default_unit",
+      "aria-label": "",
+      "type": "text",
+      "instructions": "Enter the default unit label for the coverage calculator (e.g., Units, Bags, Pieces, etc.)",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "default_value": "Units",
+      "maxlength": "",
+      "placeholder": "e.g., Units, Bags, Pieces",
+      "prepend": "",
+      "append": ""
+    }
+  ],
+  "location": [
+    [
+      {
+        "param": "options_page",
+        "operator": "==",
+        "value": "coverage-calculator"
+      }
+    ]
+  ],
+  "menu_order": 0,
+  "position": "normal",
+  "style": "default",
+  "label_placement": "top",
+  "instruction_placement": "label",
+  "hide_on_screen": "",
+  "active": true,
+  "description": "Configuration options for the Coverage Calculator component",
+  "show_in_rest": 0,
+  "acfe_display_title": "",
+  "acfe_autosync": "",
+  "acfe_form": 0,
+  "acfe_meta": "",
+  "modified": 1735970400
+}

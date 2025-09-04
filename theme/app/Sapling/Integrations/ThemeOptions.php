@@ -34,5 +34,32 @@ class ThemeOptions implements SaplingPlugin
             'position'   => 59,
             'redirect'   => false
         ));
+
+        // Add Coverage Calculator sub-page
+        acf_add_options_sub_page(array(
+            'page_title' => 'Coverage Calculator Settings',
+            'menu_title' => 'Coverage Calculator',
+            'menu_slug'  => 'coverage-calculator',
+            'capability' => 'edit_theme_options',
+            'parent_slug' => 'theme-options'
+        ));
+
+        // Add Top Header Banner sub-page
+        acf_add_options_sub_page(array(
+            'page_title' => 'Top Header Banner Settings',
+            'menu_title' => 'Top Header Banner',
+            'menu_slug'  => 'top-header-banner',
+            'capability' => 'edit_theme_options',
+            'parent_slug' => 'theme-options'
+        ));
+
+        // Add Footer Action Buttons sub-page
+        acf_add_options_sub_page(array(
+            'page_title' => 'Footer Action Buttons Settings',
+            'menu_title' => 'Footer Action Buttons',
+            'menu_slug'  => 'footer-action-buttons',
+            'capability' => 'edit_theme_options',
+            'parent_slug' => 'theme-options'
+        ));
     }
 }

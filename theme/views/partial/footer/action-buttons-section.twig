@@ -10,14 +10,19 @@
     {# Empty heading space to align with other columns #}
     {# <div class="h-[28px] mb-6"></div> #}
     
-    {# Action Buttons #}
-    {% set footer_buttons = theme_options.footer_action_buttons %}
-    {% set show_buttons = footer_buttons.enabled ? true : false %}
+    {# Get footer action buttons configuration from new options page #}
+    {% set footer_buttons_enabled = function('get_field', 'footer_action_buttons_enabled', 'option') %}
+    {% set footer_buttons_list = function('get_field', 'footer_action_buttons', 'option') %}
+    
+    {# Fallback to old structure for backward compatibility #}
+    {% set legacy_footer_buttons = theme_options.footer_action_buttons %}
+    {% set show_buttons = footer_buttons_enabled ?: (legacy_footer_buttons.enabled ? true : false) %}
+    {% set buttons_list = footer_buttons_list ?: (legacy_footer_buttons.buttons ?: []) %}
     
     {# Show buttons if enabled in theme options and buttons exist, or fallback to hardcoded if no options set #}
-    {% if show_buttons and footer_buttons.buttons %}
+    {% if show_buttons and buttons_list %}
         <div class="space-y-3 mb-6">
-            {% for button in footer_buttons.buttons %}
+            {% for button in buttons_list %}
                 {% if button.enabled %}
                     {% set button_url = button.url ?: '#' %}
                     {% set button_text = button.text ?: 'Button' %}
@@ -43,7 +48,7 @@
             {% endfor %}
         </div>
     {# Fallback to original hardcoded buttons if no theme options configured #}
-    {% elseif not footer_buttons.enabled %}
+    {% elseif not show_buttons %}
         <div class="space-y-3 mb-6">
             <a href="/contact" 
                class="inline-block w-full bg-[#FFF200] hover:bg-yellow-300 focus:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-black font-medium px-4 py-2 rounded-md transition-colors duration-200 text-center text-sm">
