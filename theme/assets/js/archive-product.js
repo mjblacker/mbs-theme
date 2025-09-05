@@ -139,6 +139,7 @@ document.addEventListener("alpine:init", () => {
     loading: false,
     sortOrder: FILTER_CONSTANTS.DEFAULT_SORT,
     currentCategoryId: null,
+    currentPage: 1,
 
     activeFilters: {
       categories: [],
@@ -184,12 +185,19 @@ document.addEventListener("alpine:init", () => {
     // Filter Actions
     setSortOrder(order) {
       this.sortOrder = order;
+      this.currentPage = 1; // Reset to first page when sorting
+      this.filterProducts();
+    },
+
+    setPage(page) {
+      this.currentPage = page;
       this.filterProducts();
     },
 
     async applyFilters() {
       this.collectFilterSelections();
       this.appliedFilters = FilterUtils.deepClone(this.activeFilters);
+      this.currentPage = 1; // Reset to first page when applying filters
       await this.filterProducts();
     },
 
@@ -249,6 +257,7 @@ document.addEventListener("alpine:init", () => {
           brands: this.activeFilters.brands,
           price_range: this.activeFilters.priceRange,
           current_url: window.location.href,
+          page: this.currentPage,
         };
 
         // Only send sort_order if it's not default
@@ -708,5 +717,13 @@ document.addEventListener("alpine:init", () => {
         shopFilters?.updateCountsOnly();
       },
     };
+  };
+
+  // Global pagination function for use in Twig templates
+  window.paginateProducts = function(page) {
+    const shopFilters = FilterUtils.getComponentData(SELECTORS.SHOP_FILTERS);
+    if (shopFilters) {
+      shopFilters.setPage(page);
+    }
   };
 });

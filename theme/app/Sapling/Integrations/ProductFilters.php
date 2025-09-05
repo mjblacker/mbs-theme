@@ -69,12 +69,19 @@ class ProductFilters implements SaplingPlugin
             $brands = isset($_POST['brands']) ? json_decode(stripslashes($_POST['brands']), true) : array();
             $price_range = isset($_POST['price_range']) ? json_decode(stripslashes($_POST['price_range']), true) : array('min' => 0, 'max' => 1000);
             $sort_order = isset($_POST['sort_order']) ? sanitize_text_field($_POST['sort_order']) : null;
+            $current_page = isset($_POST['page']) ? intval($_POST['page']) : 1;
+
+            // Calculate products per page using WooCommerce settings
+            $products_per_row = get_option('woocommerce_catalog_columns', 4);
+            $rows_per_page = get_option('woocommerce_catalog_rows', 4);
+            $products_per_page = $products_per_row * $rows_per_page;
 
             // Build WP_Query arguments
             $args = array(
                 'post_type' => 'product',
                 'post_status' => 'publish',
-                'posts_per_page' => get_option('posts_per_page', 12)
+                'posts_per_page' => $products_per_page,
+                'paged' => $current_page
             );
 
             // Add sorting logic
@@ -234,29 +241,30 @@ class ProductFilters implements SaplingPlugin
 
             // Add pagination if needed
             if ($products_query->max_num_pages > 1) {
-                // Create pagination context
+                // Create pagination context for AJAX filtering
                 $pagination_context = array(
                     'pagination' => array(
-                        'current' => max(1, get_query_var('paged')),
+                        'current' => $current_page,
                         'total' => $products_query->max_num_pages,
                         'prev' => array(
-                            'link' => get_previous_posts_page_link(),
-                            'found' => get_previous_posts_page_link() ? true : false
+                            'page' => $current_page > 1 ? $current_page - 1 : null,
+                            'found' => $current_page > 1
                         ),
                         'next' => array(
-                            'link' => get_next_posts_page_link($products_query->max_num_pages),
-                            'found' => get_next_posts_page_link($products_query->max_num_pages) ? true : false
+                            'page' => $current_page < $products_query->max_num_pages ? $current_page + 1 : null,
+                            'found' => $current_page < $products_query->max_num_pages
                         ),
-                        'pages' => array()
+                        'pages' => array(),
+                        'is_ajax' => true // Flag to indicate this is AJAX pagination
                     )
                 );
 
-                // Generate page links
+                // Generate page numbers
                 for ($i = 1; $i <= $products_query->max_num_pages; $i++) {
                     $pagination_context['pagination']['pages'][] = array(
-                        'link' => get_pagenum_link($i),
+                        'page' => $i,
                         'title' => $i,
-                        'current' => ($i == max(1, get_query_var('paged')))
+                        'current' => ($i == $current_page)
                     );
                 }
 
