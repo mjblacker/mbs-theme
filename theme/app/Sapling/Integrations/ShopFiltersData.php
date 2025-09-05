@@ -13,8 +13,8 @@ class ShopFiltersData implements SaplingPlugin
 
     public function add_shop_filters_to_context($context)
     {
-        // Only add filter data on shop/archive pages
-        if (is_shop() || is_product_category() || is_product_tag()) {
+        // Only add filter data on shop/archive pages - check if WooCommerce functions exist first
+        if (function_exists('is_shop') && (is_shop() || is_product_category() || is_product_tag())) {
             // Get current category context if on category page
             $current_category = null;
             if (is_product_category()) {
