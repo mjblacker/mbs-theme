@@ -24,6 +24,13 @@
         >
             <div class="py-1">
                 <button 
+                    @click="setSortOrder('default'); open = false" 
+                    class="block w-full px-4 py-2 text-left text-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50"
+                    :class="sortOrder === 'default' ? 'bg-blue-50 text-blue-700' : 'text-gray-700'"
+                >
+                    Default
+                </button>
+                <button 
                     @click="setSortOrder('date_desc'); open = false" 
                     class="block w-full px-4 py-2 text-left text-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50"
                     :class="sortOrder === 'date_desc' ? 'bg-blue-50 text-blue-700' : 'text-gray-700'"

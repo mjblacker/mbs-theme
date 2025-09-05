@@ -68,7 +68,7 @@ class ProductFilters implements SaplingPlugin
             $categories = isset($_POST['categories']) ? json_decode(stripslashes($_POST['categories']), true) : array();
             $brands = isset($_POST['brands']) ? json_decode(stripslashes($_POST['brands']), true) : array();
             $price_range = isset($_POST['price_range']) ? json_decode(stripslashes($_POST['price_range']), true) : array('min' => 0, 'max' => 1000);
-            $sort_order = isset($_POST['sort_order']) ? sanitize_text_field($_POST['sort_order']) : 'date_desc';
+            $sort_order = isset($_POST['sort_order']) ? sanitize_text_field($_POST['sort_order']) : null;
 
             // Build WP_Query arguments
             $args = array(
@@ -78,34 +78,76 @@ class ProductFilters implements SaplingPlugin
             );
 
             // Add sorting logic
-            switch ($sort_order) {
-                case 'date_asc':
-                    $args['orderby'] = 'date';
-                    $args['order'] = 'ASC';
-                    break;
-                case 'price_asc':
-                    $args['meta_key'] = '_price';
-                    $args['orderby'] = 'meta_value_num';
-                    $args['order'] = 'ASC';
-                    break;
-                case 'price_desc':
-                    $args['meta_key'] = '_price';
-                    $args['orderby'] = 'meta_value_num';
-                    $args['order'] = 'DESC';
-                    break;
-                case 'name_asc':
-                    $args['orderby'] = 'title';
-                    $args['order'] = 'ASC';
-                    break;
-                case 'name_desc':
-                    $args['orderby'] = 'title';
-                    $args['order'] = 'DESC';
-                    break;
-                case 'date_desc':
-                default:
-                    $args['orderby'] = 'date';
-                    $args['order'] = 'DESC';
-                    break;
+            if ($sort_order === null) {
+                // Use WooCommerce default sorting when no sort_order is provided
+                $default_catalog_orderby = get_option('woocommerce_default_catalog_orderby', 'menu_order');
+                switch ($default_catalog_orderby) {
+                    case 'menu_order':
+                        $args['orderby'] = array('menu_order' => 'ASC', 'title' => 'ASC');
+                        break;
+                    case 'date':
+                        $args['orderby'] = 'date';
+                        $args['order'] = 'DESC';
+                        break;
+                    case 'price':
+                        $args['meta_key'] = '_price';
+                        $args['orderby'] = 'meta_value_num';
+                        $args['order'] = 'ASC';
+                        break;
+                    case 'price-desc':
+                        $args['meta_key'] = '_price';
+                        $args['orderby'] = 'meta_value_num';
+                        $args['order'] = 'DESC';
+                        break;
+                    case 'popularity':
+                        $args['meta_key'] = 'total_sales';
+                        $args['orderby'] = 'meta_value_num';
+                        $args['order'] = 'DESC';
+                        break;
+                    case 'rating':
+                        $args['meta_key'] = '_wc_average_rating';
+                        $args['orderby'] = 'meta_value_num';
+                        $args['order'] = 'DESC';
+                        break;
+                    default:
+                        // Fallback to menu_order + title
+                        $args['orderby'] = array('menu_order' => 'ASC', 'title' => 'ASC');
+                        break;
+                }
+            } else {
+                // Use custom sorting
+                switch ($sort_order) {
+                    case 'date_asc':
+                        $args['orderby'] = 'date';
+                        $args['order'] = 'ASC';
+                        break;
+                    case 'price_asc':
+                        $args['meta_key'] = '_price';
+                        $args['orderby'] = 'meta_value_num';
+                        $args['order'] = 'ASC';
+                        break;
+                    case 'price_desc':
+                        $args['meta_key'] = '_price';
+                        $args['orderby'] = 'meta_value_num';
+                        $args['order'] = 'DESC';
+                        break;
+                    case 'name_asc':
+                        $args['orderby'] = 'title';
+                        $args['order'] = 'ASC';
+                        break;
+                    case 'name_desc':
+                        $args['orderby'] = 'title';
+                        $args['order'] = 'DESC';
+                        break;
+                    case 'date_desc':
+                        $args['orderby'] = 'date';
+                        $args['order'] = 'DESC';
+                        break;
+                    default:
+                        $args['orderby'] = 'date';
+                        $args['order'] = 'DESC';
+                        break;
+                }
             }
 
         // Add tax query if filters are selected

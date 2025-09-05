@@ -7,7 +7,7 @@
 const FILTER_CONSTANTS = {
   PRICE_MIN: 0,
   PRICE_MAX: 1000,
-  DEFAULT_SORT: "date_desc",
+  DEFAULT_SORT: "default",
   ADMIN_BAR_THRESHOLD: 10,
   REQUEST_TIMEOUT: 120000,
 };
@@ -22,6 +22,7 @@ const SELECTORS = {
 };
 
 const SORT_LABELS = {
+  default: "Default",
   date_desc: "Latest",
   date_asc: "Oldest",
   price_asc: "Price: Low to High",
@@ -170,7 +171,7 @@ document.addEventListener("alpine:init", () => {
 
     // Getters
     getCurrentSortLabel() {
-      return SORT_LABELS[this.sortOrder] || "Latest";
+      return SORT_LABELS[this.sortOrder] || "Default";
     },
 
     hasUnappliedChanges() {
@@ -243,13 +244,19 @@ document.addEventListener("alpine:init", () => {
           this.activeFilters.categories
         );
 
-        const data = await FilterUtils.makeAjaxRequest("filter_products", {
+        const requestData = {
           categories: validCategories,
           brands: this.activeFilters.brands,
           price_range: this.activeFilters.priceRange,
-          sort_order: this.sortOrder,
           current_url: window.location.href,
-        });
+        };
+
+        // Only send sort_order if it's not default
+        if (this.sortOrder !== FILTER_CONSTANTS.DEFAULT_SORT) {
+          requestData.sort_order = this.sortOrder;
+        }
+
+        const data = await FilterUtils.makeAjaxRequest("filter_products", requestData);
 
         if (data.success) {
           this.updateProductResults(data.data);
