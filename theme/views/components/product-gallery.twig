@@ -20,7 +20,7 @@
 <div class="product-gallery" x-data="productGallery()" x-init="init()">
     {% if all_image_ids|length > 0 %}
         <!-- Main Image Display -->
-        <div class="main-image-container mb-4 bg-gray-100 rounded-lg overflow-hidden">
+        <div class="main-image-container mb-4 rounded-lg overflow-hidden">
             <div class="swiper main-image-swiper aspect-square">
                 <div class="swiper-wrapper">
                     {% for image_id in all_image_ids %}
@@ -138,36 +138,3 @@
     {% endif %}
 </div>
 
-<style>
-/* Custom Swiper Styles */
-.main-image-swiper .swiper-button-next,
-.main-image-swiper .swiper-button-prev {
-    width: 40px;
-    height: 40px;
-    margin-top: -20px;
-}
-
-.main-image-swiper .swiper-button-next:after,
-.main-image-swiper .swiper-button-prev:after {
-    font-size: 16px;
-}
-
-.thumbnail-swiper {
-    padding: 8px 0;
-}
-
-.thumbnail-swiper .swiper-slide {
-    width: 80px;
-    flex-shrink: 0;
-}
-
-.lightbox-swiper .swiper-button-next,
-.lightbox-swiper .swiper-button-prev {
-    color: white;
-}
-
-.lightbox-swiper .swiper-button-next:after,
-.lightbox-swiper .swiper-button-prev:after {
-    font-size: 24px;
-}
-</style>
