@@ -1,0 +1,12 @@
+{# Checkout Shipping Options Component
+   Props: wc_cart, wc_checkout
+#}
+
+<div class="shipping-section">
+    {% include 'woocommerce/shipping-methods.twig' with {
+        context: 'checkout',
+        wc_cart: wc_cart,
+        wc_checkout: wc_checkout,
+        show_calculator: false
+    } %}
+</div>

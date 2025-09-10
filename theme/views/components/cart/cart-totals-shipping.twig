@@ -2,51 +2,10 @@
    Props: wc_cart
 #}
 
-{% if wc_cart.needs_shipping() and wc_cart.show_shipping() %}
-    {{ function('do_action', 'woocommerce_cart_totals_before_shipping')|raw }}
-    
-    <div class="shipping-section mb-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Select Shipping</h3>
-        
-        {# Get shipping packages and render each one #}
-        {% set shipping_packages = wc_cart.get_shipping_packages() %}
-        {% for package_key, package in shipping_packages %}
-            {# Get available shipping methods for this package #}
-            {% set available_methods = function('WC').shipping.get_shipping_methods() %}
-            {% set package_methods = [] %}
-            {% set chosen_method = function('WC').session.get('chosen_shipping_methods')[package_key] ?? '' %}
-            
-            {# Calculate shipping for this package if not already done #}
-            {% do function('WC').shipping.calculate_shipping([package]) %}
-            {% set rates = function('WC').shipping.get_packages()[package_key]['rates'] ?? [] %}
-            
-            {% if rates %}
-                {% include 'components/cart/cart-shipping.twig' with {
-                    package: package,
-                    available_methods: rates,
-                    chosen_method: chosen_method,
-                    index: package_key,
-                    formatted_destination: function('WC').countries.get_formatted_address(package.destination, ', '),
-                    has_calculated_shipping: function('WC').customer.has_calculated_shipping(),
-                    show_shipping_calculator: function('get_option', 'woocommerce_enable_shipping_calc') == 'yes'
-                } %}
-            {% endif %}
-        {% endfor %}
-    </div>
-    
-    {{ function('do_action', 'woocommerce_cart_totals_after_shipping')|raw }}
-{% elseif function('get_option', 'woocommerce_enable_shipping_calc') == 'yes' %}
-    <div class="shipping-section mb-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Select Shipping</h3>
-        {% if wc_cart.needs_shipping() %}
-            <div class="shipping-placeholder p-4 border border-gray-200 rounded-lg bg-gray-50">
-                <p class="text-gray-600 mb-3">Calculate shipping rates for your location</p>
-                {{ function('woocommerce_shipping_calculator')|raw }}
-            </div>
-        {% else %}
-            <div class="shipping-placeholder p-4 border border-gray-200 rounded-lg bg-gray-50">
-                <span class="text-gray-500">Add products to calculate shipping</span>
-            </div>
-        {% endif %}
-    </div>
-{% endif %}
+<div class="shipping-section mb-6">
+    {% include 'woocommerce/shipping-methods.twig' with {
+        context: 'cart',
+        wc_cart: wc_cart,
+        show_calculator: true
+    } %}
+</div>

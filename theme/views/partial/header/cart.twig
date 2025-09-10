@@ -19,7 +19,7 @@
 {# Check if we're on cart or checkout pages to disable drawer functionality #}
 {% set is_cart_page = function('is_cart') %}
 {% set is_checkout_page = function('is_checkout') %}
-{% set disable_drawer = is_cart_page or is_checkout_page %}
+{% set disable_drawer = is_cart_page %}
 
 {# Only show cart if WooCommerce is active #}
 {% if wc_active %}

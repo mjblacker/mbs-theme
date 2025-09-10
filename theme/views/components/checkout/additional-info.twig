@@ -1,0 +1,20 @@
+{# Additional Information Component
+   Props: wc_checkout
+#}
+
+<div class="additional-info-section">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Notes (optional)</h3>
+    
+    <div class="form-row">
+        <label for="order_comments" class="block text-sm font-medium text-gray-700 mb-1">
+            Notes about your order, e.g. special notes for delivery
+        </label>
+        <textarea name="order_comments" 
+                  id="order_comments" 
+                  class="w-full px-3 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none" 
+                  rows="4" 
+                  placeholder="Notes about your order, e.g. special notes for delivery">{{ wc_checkout.get_value('order_comments') }}</textarea>
+    </div>
+
+    {{ function('do_action', 'woocommerce_after_order_notes', wc_checkout)|raw }}
+</div>

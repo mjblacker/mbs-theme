@@ -1,0 +1,11 @@
+{# Billing Details Component
+   Props: wc_checkout
+#}
+
+<div class="billing-details-section">
+    <h2 class="text-2xl font-semibold text-gray-900 mb-6">Billing Details</h2>
+    
+    <div class="woocommerce-billing-fields">
+        {{ function('do_action', 'woocommerce_checkout_billing')|raw }}
+    </div>
+</div>

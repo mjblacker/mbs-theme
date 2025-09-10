@@ -1,0 +1,35 @@
+{# Shipping Details Component
+   Props: wc_checkout
+#}
+
+<div class="shipping-details-section">
+    <div class="flex items-center mb-6">
+        <h2 class="text-2xl font-semibold text-gray-900 !mb-0">Delivery Address</h2>
+        <div class="ml-4 flex items-center">
+            <input type="checkbox" 
+                   id="ship-to-different-address-checkbox" 
+                   name="ship_to_different_address" 
+                   value="1" 
+                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                   x-model="shipToDifferentAddress"
+                   {{ function('checked', wc_checkout.get_value('ship_to_different_address'), 1, false) }} />
+            <label for="ship-to-different-address-checkbox" class="ml-2 text-sm text-gray-600">
+                Billing address different to delivery address?
+            </label>
+        </div>
+    </div>
+    
+    <div class="shipping-fields woocommerce-shipping-fields" x-show="shipToDifferentAddress" x-transition>
+        <div class="woocommerce-shipping-fields__field-wrapper">
+            {{ function('woocommerce_form_field', 'shipping_first_name', wc_checkout.get_checkout_fields('shipping')['shipping_first_name'], wc_checkout.get_value('shipping_first_name'))|raw }}
+            {{ function('woocommerce_form_field', 'shipping_last_name', wc_checkout.get_checkout_fields('shipping')['shipping_last_name'], wc_checkout.get_value('shipping_last_name'))|raw }}
+            {{ function('woocommerce_form_field', 'shipping_company', wc_checkout.get_checkout_fields('shipping')['shipping_company'], wc_checkout.get_value('shipping_company'))|raw }}
+            {{ function('woocommerce_form_field', 'shipping_country', wc_checkout.get_checkout_fields('shipping')['shipping_country'], wc_checkout.get_value('shipping_country'))|raw }}
+            {{ function('woocommerce_form_field', 'shipping_address_1', wc_checkout.get_checkout_fields('shipping')['shipping_address_1'], wc_checkout.get_value('shipping_address_1'))|raw }}
+            {{ function('woocommerce_form_field', 'shipping_address_2', wc_checkout.get_checkout_fields('shipping')['shipping_address_2'], wc_checkout.get_value('shipping_address_2'))|raw }}
+            {{ function('woocommerce_form_field', 'shipping_city', wc_checkout.get_checkout_fields('shipping')['shipping_city'], wc_checkout.get_value('shipping_city'))|raw }}
+            {{ function('woocommerce_form_field', 'shipping_state', wc_checkout.get_checkout_fields('shipping')['shipping_state'], wc_checkout.get_value('shipping_state'))|raw }}
+            {{ function('woocommerce_form_field', 'shipping_postcode', wc_checkout.get_checkout_fields('shipping')['shipping_postcode'], wc_checkout.get_value('shipping_postcode'))|raw }}
+        </div>
+    </div>
+</div>
