@@ -21,6 +21,8 @@ class WooCommercePricing implements SaplingPlugin
         add_filter('woocommerce_add_cart_item_data', array($this, 'ensure_sale_price_in_cart'), 10, 3);
         add_action('woocommerce_add_to_cart', array($this, 'fix_cart_item_prices'), 10, 6);
         add_filter('woocommerce_add_cart_item', array($this, 'apply_sale_price_to_cart_item'), 10, 2);
+
+        remove_action('woocommerce_before_checkout_form', 'woocommerce_checkout_coupon_form', 10);
     }
 
     /**
