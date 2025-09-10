@@ -212,3 +212,145 @@
 .lightbox-swiper .swiper-button-prev:after {
   font-size: 24px;
 }
+
+/* Modern Shipping Options Styling */
+.shipping-options-modern {
+  @apply mb-6;
+
+  .shipping-title {
+    @apply text-lg font-medium text-gray-900 mb-4;
+  }
+
+  .shipping-methods-list {
+    @apply space-y-3;
+  }
+
+  .shipping-method-option {
+    @apply relative;
+  }
+
+  .shipping-method-label {
+    @apply grid grid-cols-12 items-center p-1 rounded-lg cursor-pointer;
+
+    &:hover {
+      @apply border-gray-300;
+    }
+  }
+
+  /* Radio button styling */
+  .shipping_method:checked + .shipping-method-label {
+    @apply border-black bg-gray-50;
+
+    .radio-button {
+      @apply border-black;
+    }
+
+    .radio-inner {
+      @apply scale-100;
+    }
+  }
+
+  .radio-button {
+    @apply flex-shrink-0 w-5 h-5 border-2 border-gray-300 rounded-full relative transition-colors;
+  }
+
+  .radio-inner {
+    @apply absolute inset-0.5 bg-black rounded-full scale-0 transition-transform duration-200;
+  }
+
+  .method-details {
+    @apply flex-1;
+  }
+
+  .method-name {
+    @apply font-medium text-gray-900;
+  }
+
+  .method-location {
+    @apply text-sm text-gray-600 mt-1;
+  }
+
+  .method-price {
+    @apply font-semibold text-gray-900 text-right;
+  }
+
+  /* Shipping calculator styling */
+  .shipping-calculator-form {
+    @apply mt-4 p-4 bg-gray-50 rounded-lg;
+    display: none !important; /* Hidden by default */
+
+    &.open {
+      display: block !important;
+    }
+
+    .form-row {
+      @apply mb-4;
+
+      label {
+        @apply block text-sm font-medium text-gray-700 mb-1;
+      }
+
+      input,
+      select {
+        @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+      }
+    }
+
+    .button {
+      @apply bg-yellow-400 hover:bg-yellow-500 text-black px-4 py-2 rounded font-medium transition-colors;
+    }
+  }
+
+  .shipping-calculator-button {
+    @apply text-blue-600 hover:text-blue-700 text-sm font-medium cursor-pointer underline;
+  }
+
+  /* WooCommerce default shipping calculator overrides */
+  .woocommerce-shipping-destination {
+    a {
+      @apply text-blue-600 hover:text-blue-700 no-underline;
+    }
+  }
+
+  /* Additional spacing for shipping destination text */
+  .woocommerce-shipping-destination {
+    @apply text-sm text-gray-600 mt-4;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .shipping-method-label {
+      @apply grid-cols-1 gap-3;
+
+      .col-span-1,
+      .col-span-2,
+      .col-span-3,
+      .col-span-6 {
+        @apply col-span-1;
+      }
+
+      /* Radio button row */
+      .col-span-1:first-child {
+        @apply flex items-center gap-3;
+
+        .radio-button {
+          @apply flex-shrink-0;
+        }
+
+        + .col-span-3 .method-name {
+          @apply inline;
+        }
+      }
+
+      /* Location info gets full width */
+      .method-location {
+        @apply text-base font-medium text-gray-700;
+      }
+
+      /* Price gets full width and larger */
+      .method-price {
+        @apply text-lg font-semibold;
+      }
+    }
+  }
+}

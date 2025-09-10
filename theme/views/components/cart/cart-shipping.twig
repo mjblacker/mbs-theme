@@ -1,0 +1,98 @@
+{# Cart Shipping Component
+   Props: 
+   - package (shipping package data)
+   - available_methods (available shipping methods)
+   - chosen_method (currently selected method)
+   - index (package index)
+   - formatted_destination (formatted shipping destination)
+   - has_calculated_shipping (boolean)
+   - show_shipping_calculator (boolean)
+#}
+
+<div class="woocommerce-shipping-totals shipping-options-modern">
+    <div class="shipping-options-container">
+        {% if available_methods %}
+            <div class="shipping-methods-list space-y-3">
+                {% for method in available_methods %}
+                    {% set method_id = function('sanitize_title', method.id) %}
+                    {% set input_id = 'shipping_method_' ~ index ~ '_' ~ method_id %}
+                    {% set is_checked = (method.id == chosen_method) %}
+                    {% set method_title = method.label %}
+                    {% set method_cost = method.cost > 0 ? function('wc_price', method.cost) : 'FREE' %}
+                    
+                    {# Split method title by colon to separate method name and location #}
+                    {% set title_parts = method_title|split(' : ') %}
+                    {% set method_name = title_parts[0]|trim %}
+                    {% set location_info = title_parts[1] is defined ? title_parts[1]|trim : '' %}
+                    
+                    <div class="shipping-method-option">
+                        <input type="{{ available_methods|length > 1 ? 'radio' : 'hidden' }}" 
+                               name="shipping_method[{{ index }}]" 
+                               data-index="{{ index }}" 
+                               id="{{ input_id }}" 
+                               value="{{ method.id }}" 
+                               class="shipping_method sr-only" 
+                               {{ is_checked ? 'checked' : '' }} />
+                        
+                        <label for="{{ input_id }}" class="shipping-method-label grid grid-cols-12 !items-start p-2 rounded-lg cursor-pointer">
+                            <div class="col-span-1 flex justify-center">
+                                <div class="radio-button flex-shrink-0 w-5 h-5 border-2 border-gray-300 rounded-full relative mt-[3px]">
+                                    <div class="radio-inner absolute inset-0.5 bg-black rounded-full scale-0 transition-transform"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-span-4">
+                                <div class="method-name font-medium text-gray-900">{{ method_name }}</div>
+                            </div>
+                            
+                            <div class="col-span-5">
+                                {% if location_info %}
+                                    <div class="method-location text-sm text-gray-600">
+                                        {{ location_info }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-span-2 text-right">
+                                <div class="method-price font-semibold text-gray-900">
+                                    {{ method_cost|raw }}
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                    {{ function('do_action', 'woocommerce_after_shipping_rate', method, index)|raw }}
+                {% endfor %}
+            </div>
+            
+            {% if function('is_cart') and function('get_theme_mod', 'cart_estimate_text', 1) %}
+                <p class="woocommerce-shipping-destination text-sm text-gray-600 mt-4">
+                    {% if formatted_destination %}
+                        {{ function('sprintf', function('__', 'Shipping to %s.', 'woocommerce'), '<strong>' ~ formatted_destination ~ '</strong>')|raw }}
+                        {% set calculator_text = function('__', 'Delivery', 'woocommerce') %}
+                    {% else %}
+                        {{ function('apply_filters', 'woocommerce_shipping_estimate_html', function('__', 'Shipping options will be updated during checkout.', 'woocommerce'))|raw }}
+                    {% endif %}
+                </p>
+            {% endif %}
+        {% elseif not has_calculated_shipping or not formatted_destination %}
+            <div class="text-gray-600">
+                {{ function('apply_filters', 'woocommerce_shipping_may_be_available_html', function('__', 'Enter your address to view shipping options.', 'woocommerce'))|raw }}
+            </div>
+        {% elseif not function('is_cart') %}
+            <div class="text-gray-600">
+                {{ function('apply_filters', 'woocommerce_no_shipping_available_html', function('__', 'There are no shipping options available. Please ensure that your address has been entered correctly, or contact us if you need any help.', 'woocommerce'))|raw }}
+            </div>
+        {% else %}
+            <div class="text-gray-600">
+                {% if formatted_destination %}
+                    {{ function('apply_filters', 'woocommerce_cart_no_shipping_available_html', function('sprintf', function('__', 'No shipping options were found for %s.', 'woocommerce'), '<strong>' ~ formatted_destination ~ '</strong>'))|raw }}
+                    {% set calculator_text = function('__', 'Enter a different address', 'woocommerce') %}
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if show_shipping_calculator %}
+            {{ function('woocommerce_shipping_calculator', calculator_text ?? '')|raw }}
+        {% endif %}
+    </div>
+</div>

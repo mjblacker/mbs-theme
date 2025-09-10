@@ -45,6 +45,7 @@ document.addEventListener("alpine:init", () => {
       this.autoHideNotices();
       this.setupUpdateButton();
       this.setupQuantityTracking();
+      this.setupShippingHandlers();
     },
 
     autoHideNotices() {
@@ -301,6 +302,168 @@ document.addEventListener("alpine:init", () => {
           });
         }
       });
+    },
+
+    setupShippingHandlers() {
+      // Prevent default WooCommerce shipping calculator behavior
+      this.disableDefaultShippingCalculator();
+      
+      // Handle shipping method changes
+      document.addEventListener('change', (e) => {
+        if (e.target.matches('select.shipping_method, input[name^="shipping_method"]')) {
+          this.handleShippingMethodChange(e.target);
+        }
+      });
+
+      // Handle shipping calculator
+      document.addEventListener('click', (e) => {
+        // Handle shipping calculator button - look for multiple possible selectors
+        if (e.target.matches('.shipping-calculator-button, .shipping-calculator-form button, a[href="#"], a[onclick*="shipping"]')) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Find the calculator form - it could be a sibling or in a parent container
+          let form = e.target.nextElementSibling;
+          if (!form || !form.classList.contains('shipping-calculator-form')) {
+            // Try to find it as a sibling of the parent
+            const parent = e.target.parentElement;
+            form = parent.querySelector('.shipping-calculator-form');
+          }
+          if (!form) {
+            // Try to find it anywhere in the shipping section
+            const shippingSection = e.target.closest('.shipping, .woocommerce-shipping-totals, .shipping-section');
+            if (shippingSection) {
+              form = shippingSection.querySelector('.shipping-calculator-form');
+            }
+          }
+          
+          if (form) {
+            // Toggle the form visibility using classes instead of inline styles
+            if (form.classList.contains('open')) {
+              form.classList.remove('open');
+            } else {
+              form.classList.add('open');
+            }
+          }
+          
+          return false;
+        }
+        
+        // Handle shipping calculator form submission
+        if (e.target.matches('input[name="calc_shipping"]')) {
+          e.preventDefault();
+          this.handleShippingCalculation(e.target);
+        }
+      });
+    },
+
+    async handleShippingMethodChange(target) {
+      const cartTotals = document.querySelector('.cart-totals');
+      
+      // Show loading state
+      if (cartTotals) {
+        cartTotals.style.opacity = '0.6';
+        cartTotals.style.pointerEvents = 'none';
+      }
+
+      try {
+        // Collect all selected shipping methods
+        const shippingMethods = {};
+        document.querySelectorAll('select.shipping_method, input[name^="shipping_method"]:checked, input[name^="shipping_method"][type="hidden"]').forEach(input => {
+          const index = input.getAttribute('data-index') || '0';
+          shippingMethods[index] = input.value;
+        });
+
+        // Update shipping method via AJAX
+        const response = await fetch(window.wc_cart_params?.wc_ajax_url?.replace('%%endpoint%%', 'update_shipping_method') || '/wp-admin/admin-ajax.php?action=woocommerce_update_shipping_method', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            'shipping_method': JSON.stringify(shippingMethods),
+            'security': window.wc_cart_params?.update_shipping_method_nonce || ''
+          })
+        });
+
+        if (response.ok) {
+          // Refresh cart fragments to show updated totals
+          await this.refreshCartFragments();
+          this.dispatchCartUpdateEvent();
+        }
+
+      } catch (error) {
+        console.error('Error updating shipping method:', error);
+      } finally {
+        // Remove loading state
+        if (cartTotals) {
+          cartTotals.style.opacity = '';
+          cartTotals.style.pointerEvents = '';
+        }
+      }
+    },
+
+    async handleShippingCalculation(submitButton) {
+      const form = submitButton.closest('form');
+      const cartTotals = document.querySelector('.cart-totals');
+      
+      if (!form) return;
+
+      // Show loading state
+      if (cartTotals) {
+        cartTotals.style.opacity = '0.6';
+        cartTotals.style.pointerEvents = 'none';
+      }
+
+      try {
+        const formData = new FormData(form);
+        
+        const response = await fetch(form.action || window.location.href, {
+          method: 'POST',
+          credentials: 'same-origin',
+          body: formData
+        });
+
+        if (response.ok) {
+          // Refresh the entire cart to show calculated shipping
+          await this.refreshCartFragments();
+          this.dispatchCartUpdateEvent();
+        }
+
+      } catch (error) {
+        console.error('Error calculating shipping:', error);
+        // Fallback to page reload
+        window.location.reload();
+      } finally {
+        // Remove loading state
+        if (cartTotals) {
+          cartTotals.style.opacity = '';
+          cartTotals.style.pointerEvents = '';
+        }
+      }
+    },
+
+    disableDefaultShippingCalculator() {
+      // Remove any existing WooCommerce shipping calculator event listeners
+      const existingButtons = document.querySelectorAll('.woocommerce-shipping-destination a, .shipping-calculator-button');
+      existingButtons.forEach(button => {
+        // Clone the button to remove all event listeners
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
+        
+        // Ensure the href doesn't cause page navigation
+        if (newButton.tagName === 'A') {
+          newButton.href = '#';
+          newButton.removeAttribute('onclick');
+        }
+      });
+      
+      // Prevent jQuery/WooCommerce from handling calculator toggles
+      if (window.jQuery) {
+        window.jQuery(document).off('click.woocommerce', '.shipping-calculator-button');
+        window.jQuery(document).off('click', '.woocommerce-shipping-destination a');
+      }
     },
 
     dispatchCartUpdateEvent() {
