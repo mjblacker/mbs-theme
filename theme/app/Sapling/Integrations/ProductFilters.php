@@ -8,6 +8,11 @@ class ProductFilters implements SaplingPlugin
 {
     public function init()
     {
+         // Only initialize if WooCommerce is active
+        if (!function_exists('WC') || !function_exists('wc_get_product')) {
+            return;
+        }
+        
         add_action('wp_ajax_filter_products', array($this, 'filter_products'));
         add_action('wp_ajax_nopriv_filter_products', array($this, 'filter_products'));
         add_action('wp_ajax_update_filter_counts', array($this, 'update_filter_counts_only'));
