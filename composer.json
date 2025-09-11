@@ -22,10 +22,10 @@
   },
   "autoload": {
       "psr-4": {
-          "Sapling\\": "theme/app/Sapling",
-          "App\\": "theme/app/"
+          "Sapling\\": "app/Sapling",
+          "App\\": "app/"
       },
-      "classmap": ["theme/app/Sapling/Integrations/", "theme/app/Sapling/Sapling.php"]
+      "classmap": ["app/Sapling/Integrations/", "app/Sapling/Sapling.php"]
   },
   "config": {
     "vendor-dir": "theme/vendor",
