@@ -18,6 +18,9 @@ class ProductFilters implements SaplingPlugin
         add_action('wp_ajax_update_filter_counts', array($this, 'update_filter_counts_only'));
         add_action('wp_ajax_nopriv_update_filter_counts', array($this, 'update_filter_counts_only'));
         add_action('wp_enqueue_scripts', array($this, 'localize_filter_script'));
+        
+        // Enable AJAX pagination by default for shop/product pages
+        add_filter('timber/post/pagination', array($this, 'enable_ajax_pagination'), 10, 2);
     }
 
     public function localize_filter_script()
@@ -463,5 +466,24 @@ class ProductFilters implements SaplingPlugin
         } catch (\Exception $e) {
             wp_send_json_error('Error: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Enable AJAX pagination for shop/product pages
+     * 
+     * @param array $pagination_data The pagination data from Timber
+     * @param \Timber\PostQuery $posts The post query object
+     * @return array Modified pagination data with is_ajax flag
+     */
+    public function enable_ajax_pagination($pagination_data, $posts) {
+        // Only apply to shop/product archive pages
+        if ((function_exists('is_shop') && is_shop()) || 
+            (function_exists('is_product_category') && is_product_category()) || 
+            (function_exists('is_product_tag') && is_product_tag())) {
+            
+            $pagination_data['is_ajax'] = true;
+        }
+        
+        return $pagination_data;
     }
 }

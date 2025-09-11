@@ -162,6 +162,72 @@ document.addEventListener("alpine:init", () => {
     // Initialization
     init() {
       console.log("ShopFilters initialized");
+      // Auto-initialize product counts on page load
+      this.initializePageLoad();
+    },
+
+    // Auto-initialize functionality on page load
+    async initializePageLoad() {
+      try {
+        // Wait for DOM to be fully loaded
+        await this.waitForDOMReady();
+
+        // Hide initial products and show loading immediately
+        this.hideInitialProductsAndShowLoading();
+
+        // Initialize product counts (like clicking Clear button)
+        await this.updateCountsOnly();
+
+        // Auto-trigger apply filters for seamless UX - load via AJAX instead of showing defaults
+        setTimeout(() => {
+          this.autoTriggerApplyFilters();
+        }, 100); // Reduced delay for faster loading
+
+        // console.log("Product counts initialized, loading via AJAX");
+      } catch (error) {
+        //console.error("Error initializing page load:", error);
+      }
+    },
+
+    // Hide initial products and show loading spinner immediately
+    hideInitialProductsAndShowLoading() {
+      const productResults = document.querySelector("#product-results");
+      if (productResults) {
+        // Hide the initial server-rendered products
+        productResults.style.display = "none";
+      }
+
+      // Show loading state immediately
+      this.loading = true;
+      //console.log("Initial products hidden, loading spinner activated");
+    },
+
+    // Auto-trigger apply filters for seamless AJAX experience
+    async autoTriggerApplyFilters() {
+      try {
+        // console.log(
+        //   "Auto-triggering apply filters for seamless AJAX experience"
+        // );
+
+        // Actually call the applyFilters method to enable full AJAX functionality
+        // This will replace the pagination with AJAX buttons and set up the proper state
+        await this.applyFilters();
+
+        //console.log("AJAX pagination now enabled - page links replaced with AJAX buttons");
+      } catch (error) {
+        // console.error("Error auto-triggering apply filters:", error);
+      }
+    },
+
+    // Wait for DOM to be ready
+    waitForDOMReady() {
+      return new Promise((resolve) => {
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", resolve);
+        } else {
+          resolve();
+        }
+      });
     },
 
     initializeCategoryPage(categoryId) {
@@ -265,7 +331,10 @@ document.addEventListener("alpine:init", () => {
           requestData.sort_order = this.sortOrder;
         }
 
-        const data = await FilterUtils.makeAjaxRequest("filter_products", requestData);
+        const data = await FilterUtils.makeAjaxRequest(
+          "filter_products",
+          requestData
+        );
 
         if (data.success) {
           this.updateProductResults(data.data);
@@ -720,7 +789,7 @@ document.addEventListener("alpine:init", () => {
   };
 
   // Global pagination function for use in Twig templates
-  window.paginateProducts = function(page) {
+  window.paginateProducts = function (page) {
     const shopFilters = FilterUtils.getComponentData(SELECTORS.SHOP_FILTERS);
     if (shopFilters) {
       shopFilters.setPage(page);
