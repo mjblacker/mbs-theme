@@ -42,7 +42,7 @@ class WooCommerceCoupon implements SaplingPlugin
         // Ensure WooCommerce checkout parameters are available for our custom coupon functionality
         wp_localize_script('main', 'wc_checkout_params', array(
             'ajax_url' => admin_url('admin-ajax.php'),
-            'wc_ajax_url' => WC_AJAX::get_endpoint('%%endpoint%%'),
+            'wc_ajax_url' => \WC_AJAX::get_endpoint('%%endpoint%%'),
             'update_order_review_nonce' => wp_create_nonce('update-order-review'),
             'apply_coupon_nonce' => wp_create_nonce('apply-coupon'),
             'remove_coupon_nonce' => wp_create_nonce('remove-coupon'),
@@ -142,12 +142,12 @@ class WooCommerceCoupon implements SaplingPlugin
     {
         // Remove WooCommerce's default AJAX handlers to prevent conflicts
         if (class_exists('WC_AJAX')) {
-            remove_action('wc_ajax_apply_coupon', array('WC_AJAX', 'apply_coupon'));
-            remove_action('wp_ajax_woocommerce_apply_coupon', array('WC_AJAX', 'apply_coupon'));
-            remove_action('wp_ajax_nopriv_woocommerce_apply_coupon', array('WC_AJAX', 'apply_coupon'));
-            remove_action('wc_ajax_remove_coupon', array('WC_AJAX', 'remove_coupon'));
-            remove_action('wp_ajax_woocommerce_remove_coupon', array('WC_AJAX', 'remove_coupon'));
-            remove_action('wp_ajax_nopriv_woocommerce_remove_coupon', array('WC_AJAX', 'remove_coupon'));
+            remove_action('wc_ajax_apply_coupon', array('\WC_AJAX', 'apply_coupon'));
+            remove_action('wp_ajax_woocommerce_apply_coupon', array('\WC_AJAX', 'apply_coupon'));
+            remove_action('wp_ajax_nopriv_woocommerce_apply_coupon', array('\WC_AJAX', 'apply_coupon'));
+            remove_action('wc_ajax_remove_coupon', array('\WC_AJAX', 'remove_coupon'));
+            remove_action('wp_ajax_woocommerce_remove_coupon', array('\WC_AJAX', 'remove_coupon'));
+            remove_action('wp_ajax_nopriv_woocommerce_remove_coupon', array('\WC_AJAX', 'remove_coupon'));
         }
     }
 }
