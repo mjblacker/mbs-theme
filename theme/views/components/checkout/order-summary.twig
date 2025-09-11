@@ -43,6 +43,10 @@
             wc_checkout: wc_checkout 
         } %}
 
+        {% include 'components/checkout/applied-coupons.twig' with { 
+            wc_cart: wc_cart 
+        } %}
+
         <!-- Coupon Section -->
         <div class="coupon-section py-4 border-b border-gray-200">
             <div class="flex gap-2">
@@ -51,6 +55,7 @@
                        id="coupon_code" 
                        class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
                        placeholder="Discount Code" 
+                       x-model="couponCode" 
                        value="" />
                 <button type="button" 
                         class="bg-[#FFF200] hover:bg-yellow-500 text-black px-4 py-2 rounded font-medium transition-colors"

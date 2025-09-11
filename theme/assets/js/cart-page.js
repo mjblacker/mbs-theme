@@ -42,11 +42,13 @@ document.addEventListener("alpine:init", () => {
 
   Alpine.data("cartPage", () => ({
     updating: false,
+    couponCode: "",
     init() {
       this.autoHideNotices();
       this.setupUpdateButton();
       this.setupQuantityTracking();
       this.setupShippingHandlers();
+      this.setupCouponHandlers();
     },
 
     autoHideNotices() {
@@ -571,6 +573,138 @@ document.addEventListener("alpine:init", () => {
           }
         }
       });
+    },
+
+    setupCouponHandlers() {
+      // Handle coupon removal clicks
+      document.addEventListener("click", (e) => {
+        if (e.target.matches('a[data-coupon], .remove-coupon')) {
+          e.preventDefault();
+          const couponCode = e.target.getAttribute('data-coupon') || 
+                           e.target.closest('[data-coupon]')?.getAttribute('data-coupon') ||
+                           e.target.getAttribute('href')?.match(/remove_coupon=([^&]+)/)?.[1];
+          if (couponCode) {
+            this.removeCoupon(couponCode);
+          }
+        }
+      });
+    },
+
+    async applyCoupon() {
+      if (!this.couponCode.trim()) {
+        this.showError('Please enter a coupon code.');
+        return;
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append('coupon_code', this.couponCode);
+        formData.append('security', window.wc_checkout_params?.apply_coupon_nonce || '');
+
+        const ajaxUrl = window.wc_checkout_params?.wc_ajax_url?.replace('%%endpoint%%', 'apply_coupon') || 
+                        '/wp-admin/admin-ajax.php?action=woocommerce_apply_coupon';
+
+        const response = await fetch(ajaxUrl, {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin'
+        });
+
+        if (response.ok) {
+          const contentType = response.headers.get('content-type');
+          
+          if (contentType && contentType.includes('application/json')) {
+            const result = await response.json();
+            
+            if (result.success) {
+              this.couponCode = '';
+              await this.refreshCartFragments();
+              this.dispatchCartUpdateEvent();
+            } else {
+              this.showError(result.data || 'Failed to apply coupon.');
+            }
+          } else {
+            // Handle HTML response
+            this.couponCode = '';
+            await this.refreshCartFragments();
+            this.dispatchCartUpdateEvent();
+          }
+        } else {
+          this.showError('Failed to apply coupon. Please try again.');
+        }
+      } catch (error) {
+        this.showError('Failed to apply coupon. Please try again.');
+      }
+    },
+
+    async removeCoupon(couponCode) {
+      if (!couponCode) {
+        return;
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append('coupon_code', couponCode);
+        formData.append('security', window.wc_checkout_params?.remove_coupon_nonce || '');
+
+        const ajaxUrl = window.wc_checkout_params?.wc_ajax_url?.replace('%%endpoint%%', 'remove_coupon') || 
+                        '/wp-admin/admin-ajax.php?action=woocommerce_remove_coupon';
+
+        const response = await fetch(ajaxUrl, {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin'
+        });
+
+        if (response.ok) {
+          await this.refreshCartFragments();
+          this.dispatchCartUpdateEvent();
+        } else {
+          this.showError('Failed to remove coupon. Please try again.');
+        }
+      } catch (error) {
+        this.showError('Failed to remove coupon. Please try again.');
+      }
+    },
+
+    showError(message) {
+      // Remove any existing error messages first
+      const existingErrors = document.querySelectorAll('.coupon-error-message');
+      existingErrors.forEach(error => error.remove());
+
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'coupon-error-message woocommerce-error bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-4 relative';
+      
+      // Add close button
+      errorDiv.innerHTML = `
+        <div class="flex justify-between items-center">
+          <span>${message}</span>
+          <button type="button" class="ml-4 text-red-600 hover:text-red-800" onclick="this.parentElement.parentElement.remove()">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      `;
+
+      const cartContent = document.querySelector('.cart-content, .woocommerce-cart-form, main');
+      if (cartContent) {
+        cartContent.insertBefore(errorDiv, cartContent.firstChild);
+        errorDiv.scrollIntoView({ behavior: 'smooth' });
+        
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => {
+          if (errorDiv.parentNode) {
+            errorDiv.style.transition = 'opacity 0.5s ease-out';
+            errorDiv.style.opacity = '0';
+            setTimeout(() => {
+              if (errorDiv.parentNode) {
+                errorDiv.remove();
+              }
+            }, 500);
+          }
+        }, 5000);
+      }
     },
 
     dispatchCartUpdateEvent() {

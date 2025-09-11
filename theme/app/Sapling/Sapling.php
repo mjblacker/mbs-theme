@@ -5,6 +5,7 @@ use Sapling\Integrations\ThemeOptions;
 use Sapling\Integrations\ProductFilters;
 use Sapling\Integrations\ShopFiltersData;
 use Sapling\Integrations\WooCommercePricing;
+use Sapling\Integrations\WooCommerceCoupon;
 
 class Sapling extends \Timber\Site
 {
@@ -188,6 +189,7 @@ class Sapling extends \Timber\Site
             new ProductFilters(),
             new ShopFiltersData(),
             new WooCommercePricing(),
+            new WooCommerceCoupon(),
         ];
 
         $plugins = array_filter($plugins, function ($plugin) {
@@ -196,5 +198,6 @@ class Sapling extends \Timber\Site
 
         array_walk($plugins, function ($plugin) {$plugin->init();});
     }
+
 
 }

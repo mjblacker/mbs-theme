@@ -1,0 +1,30 @@
+{# Applied Coupons Component
+   Props: wc_cart
+#}
+
+<!-- Applied Coupons -->
+{% if wc_cart.get_applied_coupons() %}
+    <div class="applied-coupons py-4 border-b border-gray-200">
+        <h4 class="text-sm font-medium text-gray-900 mb-3">Applied Discounts</h4>
+        {% for coupon_code in wc_cart.get_applied_coupons() %}
+            <div class="flex justify-between items-center py-2 px-3 bg-green-50 border border-green-200 rounded-md mb-2">
+                <div class="flex items-center">
+                    <span class="text-green-800 font-medium">{{ coupon_code|upper }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-green-800 font-semibold">
+                        -{{ function('wc_price', wc_cart.get_coupon_discount_amount(coupon_code))|raw }}
+                    </span>
+                    <button type="button" 
+                            class="text-red-600 hover:text-red-800 p-1"
+                            @click="removeCoupon('{{ coupon_code }}')"
+                            title="Remove coupon">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
