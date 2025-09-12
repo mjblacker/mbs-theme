@@ -1,1 +1,1 @@
-console.log('hello from example block');
+//console.log('hello from example block');
