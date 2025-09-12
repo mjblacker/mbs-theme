@@ -12,8 +12,9 @@
 
 {# Sticky Header Implementation with Alpine.js - Admin Bar Desktop Only Positioning #}
 <header class="sticky {{ admin_bar.is_showing ? 'top-0 lg:top-8' : 'top-0' }} bg-white shadow-sm border-b border-gray-100 z-40 transition-all duration-300"
+    x-data="{mobileMenuOpen: false}"
         >
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="relative mx-auto px-4 sm:px-6 lg:px-8 z-50 bg-white">
         <div class="flex items-center justify-between h-16 lg:h-20">
 
             {# Logo Section #}
