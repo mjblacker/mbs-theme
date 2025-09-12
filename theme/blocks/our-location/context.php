@@ -1,6 +1,7 @@
 <?php
 /** @var array $context Timber Context array */
 
+/*
 // Get locations data from theme options
 $locations = get_field('locations', 'option');
 
@@ -11,7 +12,7 @@ if ($locations && is_array($locations)) {
     foreach ($locations as $location) {
         // Process address lines into a single address string
         $address_parts = [];
-        
+
         if (!empty($location['address_lines'])) {
             // Handle new textarea field - split by line breaks and filter empty lines
             $lines = explode("\n", $location['address_lines']);
@@ -22,15 +23,15 @@ if ($locations && is_array($locations)) {
                 }
             }
         }
-        
+
         // Add city and state if available
         if (!empty($location['city_state'])) {
             $address_parts[] = $location['city_state'];
         }
-        
+
         // Combine address parts
         $full_address = implode(', ', $address_parts);
-        
+
         $processed_locations[] = [
             'name' => $location['name'] ?? '',
             'address' => $full_address,
@@ -40,10 +41,10 @@ if ($locations && is_array($locations)) {
             'get_direction_link' => $location['get_direction_link'] ?? '#'
         ];
     }
-}
+} */
 
 // Add processed locations to context
-$context['locations'] = $processed_locations;
+$context['locations'] = $context['theme_options']['locations'];
 
 // Set block alignment classes
 $block_classes = $context['block']['className'] ?? '';
@@ -74,8 +75,9 @@ $context['grid_classes'] = $column_classes[$context['columns']];
 $context['default_heading'] = $context['heading'];
 $context['default_description'] = $context['sub_heading'];
 
+/*
 // If no locations are available, provide sample data for preview
-if (empty($processed_locations) || ($context['is_preview'] ?? false)) {
+if (empty($context['locations']) || ($context['is_preview'] ?? false)) {
     $context['locations'] = [
         [
             'name' => 'Pakenham - Head Office',
@@ -100,4 +102,4 @@ if (empty($processed_locations) || ($context['is_preview'] ?? false)) {
             'get_direction_link' => '#'
         ]
     ];
-}
+} */

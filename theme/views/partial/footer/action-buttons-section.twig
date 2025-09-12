@@ -9,16 +9,16 @@
 <div>
     {# Empty heading space to align with other columns #}
     {# <div class="h-[28px] mb-6"></div> #}
-    
+
     {# Get footer action buttons configuration from new options page #}
     {% set footer_buttons_enabled = function('get_field', 'footer_action_buttons_enabled', 'option') %}
     {% set footer_buttons_list = function('get_field', 'footer_action_buttons', 'option') %}
-    
+
     {# Fallback to old structure for backward compatibility #}
     {% set legacy_footer_buttons = theme_options.footer_action_buttons %}
     {% set show_buttons = footer_buttons_enabled ?: (legacy_footer_buttons.enabled ? true : false) %}
     {% set buttons_list = footer_buttons_list ?: (legacy_footer_buttons.buttons ?: []) %}
-    
+
     {# Show buttons if enabled in theme options and buttons exist, or fallback to hardcoded if no options set #}
     {% if show_buttons and buttons_list %}
         <div class="space-y-3 mb-6">
@@ -28,17 +28,17 @@
                     {% set button_text = button.text ?: 'Button' %}
                     {% set button_style = button.style ?: 'primary' %}
                     {% set target_attr = button.target_blank ? 'target="_blank" rel="noopener noreferrer"' : '' %}
-                    
+
                     {# Primary button style (yellow background) #}
                     {% if button_style == 'primary' %}
-                        <a href="{{ button_url }}" 
+                        <a href="{{ button_url }}"
                            class="inline-block w-full bg-[#FFF200] hover:bg-[#FFF200] focus:bg-[#FFF200] focus:outline-none focus:ring-2 focus:ring-[#FFF200] text-black font-medium px-4 py-2 rounded-md transition-colors duration-200 text-center text-sm"
                            {{ target_attr|raw }}>
                             {{ button_text }}
                         </a>
                     {# Secondary button style (transparent with border) #}
                     {% else %}
-                        <a href="{{ button_url }}" 
+                        <a href="{{ button_url }}"
                            class="inline-block w-full bg-transparent hover:bg-[#000] text-[#fafafa] border-1 !border-[#fafafa] font-medium px-4 py-2 rounded-md transition-colors duration-200 text-center text-sm"
                            {{ target_attr|raw }}>
                             {{ button_text }}
@@ -50,14 +50,18 @@
     {# Fallback to original hardcoded buttons if no theme options configured #}
     {% elseif not show_buttons %}
         <div class="space-y-3 mb-6">
-            <a href="/contact" 
-               class="inline-block w-full bg-[#FFF200] hover:bg-yellow-300 focus:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-black font-medium px-4 py-2 rounded-md transition-colors duration-200 text-center text-sm">
+            <a href="/contact"
+               class="btn inline-block w-full px-4 py-2 ">
                 Contact Us
             </a>
-            <a href="/directions" 
-               class="inline-block w-full bg-transparent hover:bg-[#000] text-[#fafafa] border-1 !border-[#fafafa] font-medium px-4 py-2 rounded-md transition-colors duration-200 text-center text-sm">
+            <a @click.prevent="locationsDialogOpen=true" href="/contact"
+               class="btn-alt inline-block w-full px-4 py-2">
                 Get Directions
             </a>
+            <!-- <a @click.prevent="locationsDialogOpen=true" href="/contact"
+               class="inline-block w-full bg-transparent hover:bg-[#000] text-[#fafafa] border-1 !border-[#fafafa] font-medium px-4 py-2 rounded-md transition-colors duration-200 text-center text-sm">
+                Get Directions
+            </a> -->
         </div>
     {% endif %}
 
@@ -65,16 +69,16 @@
     <div>
         <h4 class="text-sm font-medium text-white mb-3">We Accept</h4>
         <div class="flex space-x-2">
-            <div class="bg-white rounded p-1 flex items-center justify-center w-12 h-8" 
+            <div class="bg-white rounded p-1 flex items-center justify-center w-12 h-8"
                  title="Visa">
-                <img src="{{ site.theme.uri }}/assets/images/Visa.png" 
-                     alt="Visa" 
+                <img src="{{ site.theme.uri }}/assets/images/Visa.png"
+                     alt="Visa"
                      class="max-w-full max-h-full object-contain">
             </div>
             <div class="bg-white rounded p-1 flex items-center justify-center w-12 h-8"
                  title="Mastercard">
-                <img src="{{ site.theme.uri }}/assets/images/MasterCard.png" 
-                     alt="Mastercard" 
+                <img src="{{ site.theme.uri }}/assets/images/MasterCard.png"
+                     alt="Mastercard"
                      class="max-w-full max-h-full object-contain">
             </div>
         </div>

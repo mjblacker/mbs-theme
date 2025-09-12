@@ -8,7 +8,7 @@
 
 <div>
     <h3 class="text-lg font-semibold mb-6 text-white">Locations</h3>
-    
+
     {% if theme_options.locations %}
         {# Loop through locations from theme options #}
         {% for location in theme_options.locations %}
@@ -20,7 +20,7 @@
                     {% set address_lines = address_lines|merge([line|trim]) %}
                 {% endfor %}
             {% endif %}
-            
+
             {% include "partial/contact-info.twig" with {
                 name: location.name,
                 address_lines: address_lines,
@@ -29,22 +29,5 @@
                 is_head_office: location.is_head_office
             } %}
         {% endfor %}
-    {% else %}
-        {# Fallback content if no locations are configured #}
-        {% include "partial/contact-info.twig" with {
-            name: 'Pakenham',
-            address_lines: ['102 Racecourse Road'],
-            city_state: 'Pakenham VIC 3810',
-            phone: '(03) 9707 0264',
-            is_head_office: true
-        } %}
-
-        {% include "partial/contact-info.twig" with {
-            name: 'Traralgon',
-            address_lines: ['93 National Drive'],
-            city_state: 'Traralgon VIC 3844',
-            phone: '(03) 9707 0264',
-            is_head_office: false
-        } %}
     {% endif %}
 </div>

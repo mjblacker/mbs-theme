@@ -2,7 +2,7 @@
   Contact Information Component
   - Displays location details with contact information
   - Supports structured data for better SEO
-  
+
   Parameters:
   - name: Location name
   - address_lines: Array of address line strings
@@ -19,9 +19,10 @@
 
 <div class="mb-6" itemscope itemtype="https://schema.org/LocalBusiness">
     <h4 class="font-medium text-white mb-2" itemprop="name">
-        {{ name }}{% if is_head_office %} (Head Office){% endif %}
+        {% if is_head_office %} Head Office {% endif %}
+        {{ name }}
     </h4>
-    <div class="text-gray-300 text-sm space-y-1" itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
+    <div class="text-zinc-500 text-sm space-y-1" itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
         {% for line in address_lines %}
             {% if loop.first %}
                 <p itemprop="streetAddress">{{ line }}</p>
@@ -36,7 +37,7 @@
             </p>
         {% endif %}
         {% if phone %}
-            <a href="tel:{{ phone|replace({' ': '', '(': '', ')': ''}) }}" 
+            <a href="tel:{{ phone|replace({' ': '', '(': '', ')': ''}) }}"
                class="hover:text-[#FFF200] transition-colors duration-200"
                itemprop="telephone"
                aria-label="Call {{ name }}">

@@ -22,11 +22,11 @@
 
 {# Set button style classes #}
 {% if button_style == 'light' %}
-  {% set button_classes = 'bg-white text-gray-800 hover:bg-gray-100' %}
+  {% set button_classes = 'btn-alt' %}
 {% elseif button_style == 'yellow' %}
-  {% set button_classes = 'bg-yellow-400 text-gray-800 hover:bg-yellow-300' %}
+  {% set button_classes = 'btn' %}
 {% else %}
-  {% set button_classes = 'bg-[#363738] !text-white' %}
+  {% set button_classes = 'btn-dark' %}
 {% endif %}
 
 {% if background_type == 'image' %}
@@ -35,14 +35,14 @@
   {% set fallback_bg_url = mobile_bg_url ?: desktop_bg_url %}
 {% endif %}
 
-<section class="cta-section relative overflow-hidden py-16 lg:py-20 min-h-[505px] lg:min-h-[464px]" 
+<section class="cta-section relative overflow-hidden py-16 lg:py-20 min-h-[505px] lg:min-h-[464px]"
          {% if background_type == 'color' %}
          style="background-color: {{ background_color }};"
          {% elseif background_type == 'image' and (desktop_bg_url or mobile_bg_url) %}
          style="
            {% if mobile_bg_url %}background-image: url('{{ mobile_bg_url }}');{% endif %}
-           background-size: cover; 
-           background-position: bottom; 
+           background-size: cover;
+           background-position: bottom;
            background-repeat: no-repeat;
            {% if desktop_bg_url and desktop_bg_url != mobile_bg_url %}
            --desktop-bg: url('{{ desktop_bg_url }}');
@@ -52,13 +52,13 @@
          data-responsive-bg="true"
          {% endif %}
          {% endif %}>
-  
+
   {# Background overlay for image backgrounds #}
   {% if background_type == 'image' and overlay_color and (desktop_bg_url or mobile_bg_url) %}
-  <div class="absolute inset-0" 
+  <div class="absolute inset-0"
        style="background-color: {{ overlay_color }}; opacity: {{ overlay_opacity / 100 }};"></div>
   {% endif %}
-  
+
   {# CSS for responsive background images #}
   {% if background_type == 'image' and desktop_bg_url and desktop_bg_url != mobile_bg_url %}
   <style>
@@ -69,33 +69,33 @@
     }
   </style>
   {% endif %}
-  
+
   {# Main content container #}
   <div class="relative z-10 px-4 sm:px-6 lg:px-8 container mx-auto">
     <div class="cta-content">
-      
+
       {# Content wrapper - centered layout #}
       <div class="text-center max-w-4xl mx-auto">
-        
+
         {# Main Heading #}
         {% if heading %}
           <h3 class="font-medium leading-tight mb-4 mt-1 text-5xl sm:text-5xl {{ heading_classes }}">
             {{ heading }}
           </h3>
         {% endif %}
-        
+
         {# Sub Heading #}
         {% if sub_heading %}
           <p class="text-xl sm:text-xl lg:text-2xl leading-relaxed mb-8 max-w-3xl mx-auto {{ sub_heading_classes }}">
             {{ sub_heading }}
           </p>
         {% endif %}
-        
+
         {# Call to Action Button #}
         {% if button_text %}
           <div class="flex justify-center">
             {% if button_link and button_link.url %}
-              <a href="{{ button_link.url }}" 
+              <a href="{{ button_link.url }}"
                  class="inline-flex items-center px-8 py-4 rounded-lg text-base font-semibold transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5 {{ button_classes }}"
                  {% if button_link.target %}target="{{ button_link.target }}"{% endif %}
                  {% if button_link.title %}aria-label="{{ button_link.title }}"{% endif %}>
@@ -108,10 +108,10 @@
             {% endif %}
           </div>
         {% endif %}
-        
+
       </div>
     </div>
   </div>
-  
-  
+
+
 </section>

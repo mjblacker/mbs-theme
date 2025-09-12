@@ -35,7 +35,7 @@ class Sapling extends \Timber\Site
         // Add theme options if ACF is available
         if (function_exists('get_field')) {
             $context['theme_options'] = array(
-                'locations' => get_field('locations', 'option') ?: array(),
+                'locations' => \mbs_locations(),
                 'company_info' => get_field('company_info', 'option') ?: array(),
                 'alert_banner' => get_field('alert_banner', 'option') ?: array(),
                 'footer_action_buttons' => get_field('footer_action_buttons', 'option') ?: array(),
@@ -58,7 +58,7 @@ class Sapling extends \Timber\Site
                 'hide_empty' => false,
                 'number' => 10
             ));
-            
+
             $context['wc_categories'] = array();
             if (!is_wp_error($raw_categories) && !empty($raw_categories)) {
                 foreach ($raw_categories as $category) {

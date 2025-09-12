@@ -11,7 +11,9 @@
     {{function('wp_head')}}
 </head>
 
-<body class="{{body_class}} " data-template="base.twig" data-layout="{{ layout_type|default('boxed') }}">
+<body class="{{body_class}} " data-template="base.twig" data-layout="{{ layout_type|default('boxed') }}"
+  x-data="{locationsDialogOpen: false,}"
+>
     {# Top Header Alert Banner #}
     {% include "partial/top-header/top-header.twig" %}
     <div class="grid grid-rows-[auto_1fr_auto] min-h-screen">
@@ -33,5 +35,6 @@
     </div>
     {# Cart Drawer - Available site-wide #}
     {% include 'components/cart-drawer/cart-drawer-include.twig' %}
+    {% include 'components/modals/locations.twig' %}
 </body>
 </html>

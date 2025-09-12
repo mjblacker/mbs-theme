@@ -2,14 +2,37 @@
 @theme {
   --font-sans: "Lexend", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --container-6xl: 73rem;
+
+  --color-primary: #FFF600;
+  --color-primary-alt: #363738;
+  --color-secondary: #F5F5F5;
+  --color-secondary-alt: #FEFAF1;
+  --color-secondary-tertiary: #333333;
+
+  --color-mbs-white: #FAFAFA;
+  --color-mbs-gray-light: #7D8184;
+  --color-mbs-gray-medium: var(--color-secondary-tertiary);
+
+  --color-btn: var(--color-primary);
+  --color-btn-text: var(--color-secondary-tertiary);
+  --color-btn-hover: #FFD900;
+}
+
+.btn {
+  @apply bg-btn hover:bg-btn-hover rounded-md text-sm text-btn-text font-semibold focus:outline-none focus:ring-2 focus:ring-btn-hover transition-colors duration-200 text-center ;
+}
+
+.btn-alt {
+  @apply bg-transparent border-1 border-mbs-white text-mbs-white rounded-md text-sm font-semibold focus:outline-none transition-colors duration-200 text-center ;
+}
+
+.btn-dark {
+  @apply bg-primary-alt text-mbs-white rounded-md text-sm font-semibold focus:outline-none transition-colors duration-200 text-center ;
 }
 
 /* Custom Container Configuration */
 .container {
   @apply xl:max-w-6xl;
-  /* @media (width >= 96rem) { */
-  /*   max-width: 1170px; */
-  /* } */
 }
 
 .prose :where(a):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
