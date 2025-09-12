@@ -11,20 +11,26 @@
     {{function('wp_head')}}
 </head>
 
-<body class="{{body_class}} min-h-screen flex flex-col" data-template="base.twig" data-layout="{{ layout_type|default('boxed') }}">
-    {% include 'header.twig' %}
+<body class="{{body_class}} " data-template="base.twig" data-layout="{{ layout_type|default('boxed') }}">
+    {# Top Header Alert Banner #}
+    {% include "partial/top-header/top-header.twig" %}
+    <div class="grid grid-rows-[auto_1fr_auto] min-h-screen">
+      {% include 'header.twig' %}
 
-    <main class="flex-grow">
-        {% block content %}
-        Sorry, no content
-        {% endblock %}
-    </main>
+      <main class="">
+          {% block content %}
+          Sorry, no content
+          {% endblock %}
+      </main>
 
-    {% block footer %}
-        {% include 'footer.twig' %}
-        {{ function('wp_footer') }}
-    {% endblock %}
+      <div>
+      {% block footer %}
+          {% include 'footer.twig' %}
+          {{ function('wp_footer') }}
+      {% endblock %}
 
+      </div>
+    </div>
     {# Cart Drawer - Available site-wide #}
     {% include 'components/cart-drawer/cart-drawer-include.twig' %}
 </body>
