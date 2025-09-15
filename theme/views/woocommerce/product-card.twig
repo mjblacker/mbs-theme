@@ -13,7 +13,7 @@
 {% set show_sale_badge = show_sale_badge is defined ? show_sale_badge : true %}
 
 {% if product %}
-    <div class="product-item bg-white relative group h-full flex flex-col transition-transform duration-200 ease-in-out hover:-translate-y-1">
+    <div class="product-item relative group h-full flex flex-col transition-transform duration-200 ease-in-out hover:-translate-y-1">
         <!-- Sale Badge -->
         {% if show_sale_badge and product.is_on_sale() %}
             {% set regular_price = product.get_regular_price() %}

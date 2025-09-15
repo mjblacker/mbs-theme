@@ -16,24 +16,27 @@
     <ul class="{{ extra_classes }}{% if context == 'desktop' %}{% if level == 0 %} flex space-x-8 items-center{% else %} absolute left-0 top-full bg-white shadow-lg rounded-md py-2 w-48 z-50 hidden group-hover:block{% endif %}{% else %}{% if level == 0 %} space-y-2{% else %} ml-4 mt-2 space-y-1{% endif %}{% endif %}">
     {% for item in items %}
         <li class="{% if context == 'desktop' and level == 0 %}relative group{% endif %}">
-            <a href="{{ item.url }}" 
+            <a href="{{ item.url }}"
                target="{{ item.target ? item.target : '_self' }}"
                {% if context == 'mobile' %}@click="mobileMenuOpen = false"{% endif %}
-               class="{% if context == 'desktop' %}{% if level == 0 %}text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors {{ item.current ? 'text-gray-900 font-semibold underline' : '' }}{% if item.children %} flex items-center{% endif %}{% else %}block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors{% endif %}{% else %}block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors {{ item.current ? 'text-gray-900 bg-gray-100' : '' }}{% endif %}">
+               class="{% if context == 'desktop' %}{% if level == 0 %}text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors {{ item.current ? 'text-gray-900 font-semibold underline' : '' }}{% if item.children or (item.title|lower == 'categories') %} flex items-center{% endif %}{% else %}block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors{% endif %}{% else %}block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors {{ item.current ? 'text-gray-900 bg-gray-100' : '' }}{% endif %}">
                 {{ item.title }}
-                {% if item.children and context == 'desktop' and level == 0 %}
+                {% if (item.children and context == 'desktop' and level == 0) or (item.title|lower == 'categories' and context == 'desktop' and level == 0) %}
                     <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                     </svg>
                 {% endif %}
             </a>
-            
+
             {% if item.children %}
                 {% include "menu.twig" with {
-                    'items': item.children, 
+                    'items': item.children,
                     'level': level + 1,
                     'context': context
                 } %}
+            {% elseif item.title|lower == 'categories' and context == 'desktop' and level == 0 %}
+                {# Special flyout menu for Categories #}
+                {% include "partial/flyout-menu/flyout-menu.twig" %}
             {% endif %}
         </li>
     {% endfor %}

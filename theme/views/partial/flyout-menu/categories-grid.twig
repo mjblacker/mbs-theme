@@ -1,0 +1,45 @@
+{#
+  Categories Grid Component
+  - Displays WooCommerce categories from global context
+#}
+
+{% if wc_categories %}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        {# First Column - Categories 1-5 #}
+        <div class="space-y-1">
+            {% for category in wc_categories|slice(0, 5) %}
+                <a href="{{ category.url }}"
+                   class="block text-mbs-gray-light hover:text-primary transition-colors duration-200 text-base py-1">
+                    {{ category.name }}
+                </a>
+            {% endfor %}
+        </div>
+
+        {# Second Column - Categories 6-10 #}
+        <div class="space-y-1">
+            {% for category in wc_categories|slice(5, 5) %}
+                <a href="{{ category.url }}"
+                   class="block text-mbs-gray-light hover:text-primary transition-colors duration-200 text-base py-1">
+                    {{ category.name }}
+                </a>
+            {% endfor %}
+        </div>
+
+        {# Third Column - Categories 11+ #}
+        <div class="space-y-1">
+            {% for category in wc_categories|slice(10, 5) %}
+                <a href="{{ category.url }}"
+                   class="block text-mbs-gray-light hover:text-primary transition-colors duration-200 text-base py-1">
+                    {{ category.name }}
+                </a>
+            {% endfor %}
+        </div>
+
+    </div>
+{% else %}
+    {# No categories found #}
+    <div class="text-center py-8 text-gray-500">
+        <p>No categories found.</p>
+    </div>
+{% endif %}

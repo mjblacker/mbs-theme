@@ -54,9 +54,9 @@ class Sapling extends \Timber\Site
         // Add WooCommerce categories if available
         if (function_exists('wc_get_product_category_list')) {
             $raw_categories = get_terms(array(
-                'taxonomy' => 'product_cat',
-                'hide_empty' => false,
-                'number' => 10
+                'taxonomy' => 'product_cat'
+                // 'hide_empty' => false,
+                // 'number' => 10
             ));
 
             $context['wc_categories'] = array();

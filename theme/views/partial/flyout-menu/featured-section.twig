@@ -1,0 +1,81 @@
+{#
+  Featured Section Component
+  - Right column of flyout menu
+  - Contains logo, description, buttons (1/3) and featured products (2/3)
+  - Uses existing product-card.twig for product display
+#}
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+
+    {# Left Part - Logo, Description & Buttons (1/3) #}
+    <div class="lg:col-span-1 space-y-4">
+        {# Logo #}
+        <div class="mb-4">
+            <img src="{{ function('get_template_directory_uri') }}/assets/images/hebel-logo-white 1.png"
+                 alt="{{ site.name }}"
+                 class="h-full w-auto">
+        </div>
+
+        {# Description #}
+        <div class="text-gray-600 text-sm leading-relaxed mb-6">
+            <p>Your trusted partner for quality building materials, tools, and hardware supplies. Serving builders and contractors across the region.</p>
+        </div>
+
+        {# Action Buttons #}
+        <div class="space-y-3">
+            <a href="{{ function('get_permalink', function('wc_get_page_id', 'shop')) }}"
+               class="block w-full bg-transparent text-[#333333] border border-[#333333] px-2 py-2 transition-colors rounded font-medium text-sm no-underline text-center">
+                All Hebel Products
+            </a>
+
+        </div>
+    </div>
+
+    {# Right Part - Featured Products (2/3) #}
+    <div class="lg:col-span-2">
+        {# Get featured/recent products #}
+        {% set featured_products = function('get_posts', {
+            'post_type': 'product',
+            'meta_key': '_featured',
+            'meta_value': 'yes',
+            'posts_per_page': 2,
+            'post_status': 'publish'
+        }) %}
+
+        {# Fallback to recent products if no featured products #}
+        {% if not featured_products or featured_products is empty %}
+            {% set featured_products = function('get_posts', {
+                'post_type': 'product',
+                'posts_per_page': 2,
+                'post_status': 'publish',
+                'orderby': 'date',
+                'order': 'DESC'
+            }) %}
+        {% endif %}
+
+        {% if featured_products and featured_products is not empty %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {% for product_post in featured_products %}
+                    <div class="overflow-hidden">
+                        {% include "woocommerce/product-card.twig" with {
+                            'post': product_post,
+                            'show_brand': false,
+                            'show_sale_badge': true
+                        } %}
+                    </div>
+                {% endfor %}
+            </div>
+
+        {% else %}
+            {# Fallback content when no products found #}
+            <div class="text-center py-8 text-gray-500">
+                <p class="mb-4">No featured products available at the moment.</p>
+                <a href="{{ function('get_permalink', function('wc_get_page_id', 'shop')) }}"
+                   class="inline-block bg-[#FFF200] text-black py-2 px-6 font-semibold text-sm uppercase transition-colors hover:bg-yellow-300 border-0 rounded-none">
+                    Browse Shop
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
