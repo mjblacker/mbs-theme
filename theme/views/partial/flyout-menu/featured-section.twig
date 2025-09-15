@@ -1,14 +1,14 @@
 {#
   Featured Section Component
   - Right column of flyout menu
-  - Contains logo, description, buttons (1/3) and featured products (2/3)
+  - Contains logo, description, buttons (40%) and featured products (60%)
   - Uses existing product-card.twig for product display
 #}
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-10">
 
-    {# Left Part - Logo, Description & Buttons (1/3) #}
-    <div class="lg:col-span-1 space-y-4">
+    {# Left Part - Logo, Description & Buttons (40%) #}
+    <div class="lg:col-span-2 space-y-4">
         {# Logo #}
         <div class="mb-4">
             <img src="{{ function('get_template_directory_uri') }}/assets/images/hebel-logo-white 1.png"
@@ -17,7 +17,7 @@
         </div>
 
         {# Description #}
-        <div class="text-gray-600 text-sm leading-relaxed mb-6">
+        <div class="text-mbs-text-light text-sm leading-relaxed mb-6">
             <p>Your trusted partner for quality building materials, tools, and hardware supplies. Serving builders and contractors across the region.</p>
         </div>
 
@@ -31,8 +31,8 @@
         </div>
     </div>
 
-    {# Right Part - Featured Products (2/3) #}
-    <div class="lg:col-span-2">
+    {# Right Part - Featured Products (60%) #}
+    <div class="lg:col-span-3">
         {# Get featured/recent products #}
         {% set featured_products = function('get_posts', {
             'post_type': 'product',

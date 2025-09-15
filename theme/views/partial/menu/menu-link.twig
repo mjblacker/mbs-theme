@@ -1,0 +1,49 @@
+{#
+  Menu Link Component
+  - Renders individual menu item links
+  - Handles different contexts (desktop/mobile) and levels
+
+  Parameters:
+  - item: menu item object
+  - context: 'desktop' or 'mobile'
+  - level: nesting level
+  - has_dropdown: boolean indicating if item has dropdown/flyout
+#}
+
+{# Helper variables #}
+{% set is_desktop = context == 'desktop' %}
+{% set is_mobile = context == 'mobile' %}
+{% set is_top_level = level == 0 %}
+{% set is_current = item.current %}
+
+{# Build link classes based on context and level #}
+{% set link_classes %}
+    {% if is_desktop %}
+        {% if is_top_level %}
+            text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors
+            {{ is_current ? 'text-gray-900 font-semibold underline' : '' }}
+            {{ has_dropdown ? 'flex items-center' : '' }}
+        {% else %}
+            block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors
+        {% endif %}
+    {% else %}
+        block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors
+        {{ is_current ? 'text-gray-900 bg-gray-100' : '' }}
+    {% endif %}
+{% endset %}
+
+<a href="{{ item.url }}"
+   target="{{ item.target ? item.target : '_self' }}"
+   {% if is_mobile %}@click="mobileMenuOpen = false"{% endif %}
+   class="{{ link_classes|trim }}">
+
+    {{ item.title }}
+
+    {# Dropdown arrow for items with children or categories flyout #}
+    {% if has_dropdown and is_desktop and is_top_level %}
+        <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+    {% endif %}
+
+</a>
