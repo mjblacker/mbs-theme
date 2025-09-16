@@ -17,6 +17,7 @@
 
 {# Get banner configuration from Top Header Banner options page #}
 {% set banner_enabled = function('get_field', 'alert_banner_enabled', 'option') %}
+{% set banner_tag = function('get_field', 'alert_banner_tag', 'option') %}
 {% set banner_text = function('get_field', 'alert_banner_text', 'option') %}
 {% set banner_button_text = function('get_field', 'alert_banner_button_text', 'option') %}
 {% set banner_button_link = function('get_field', 'alert_banner_button_link', 'option') %}
@@ -28,8 +29,8 @@
 {% set button_text = banner_button_text ?: (theme_options.alert_banner.button_text ?: 'Contact Us') %}
 
 {% if show_banner == true %}
-<div x-data="{ showTopHeader: {{ show_banner ? 'true' : 'false' }} }"
-     x-show="showTopHeader"
+<div x-data="AlertPersist('{{banner_tag}}')"
+     x-show="showAlert"
      x-transition:enter="transition ease-out duration-300"
      x-transition:enter-start="transform -translate-y-full"
      x-transition:enter-end="transform translate-y-0"
@@ -63,7 +64,7 @@
             </div>
 
             {# Close Button - Positioned absolutely on the far right #}
-            <button @click="showTopHeader = false"
+            <button @click="dismiss()"
                     class="absolute right-0 text-white hover:text-gray-300 transition-colors duration-200 p-2 rounded-md hover:bg-gray-600/50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
                     aria-label="Close alert banner">
                 <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

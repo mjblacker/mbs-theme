@@ -7,9 +7,9 @@
     "dev": "cross-env NODE_ENV=development vite",
     "build": "vite build",
     "zip": "node scripts/bundler.cjs timberweb",
-		"version:patch": "node scripts/version.cjs patch",
-		"version:minor": "node scripts/version.cjs minor",
-		"version:major": "node scripts/version.cjs major",
+    "version:patch": "node scripts/version.cjs patch",
+    "version:minor": "node scripts/version.cjs minor",
+    "version:major": "node scripts/version.cjs major",
     "bundle": "run-s build zip",
     "cleanup:vendor": "rm -r theme/vendor",
     "cleanup:wp": "rm -r wp",
@@ -28,6 +28,8 @@
     "vite": "^6.3.5"
   },
   "dependencies": {
+    "@alpinejs/focus": "^3.15.0",
+    "@alpinejs/persist": "^3.15.0",
     "swiper": "^11.2.10"
   }
 }

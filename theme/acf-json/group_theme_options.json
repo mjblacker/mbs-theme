@@ -169,7 +169,7 @@
                         "id": ""
                     },
                     "default_value": "",
-                    "placeholder": "https://maps.google.com/...",
+                    "placeholder": "https:\/\/maps.google.com\/...",
                     "parent_repeater": "field_theme_locations"
                 }
             ]
@@ -244,7 +244,7 @@
                         "id": ""
                     },
                     "default_value": "",
-                    "placeholder": "https://www.example.com"
+                    "placeholder": "https:\/\/www.example.com"
                 },
                 {
                     "key": "field_company_logo",
@@ -270,6 +270,32 @@
                     "max_height": "",
                     "max_size": "",
                     "mime_types": "jpg,jpeg,png,gif,svg,webp"
+                },
+                {
+                    "key": "field_68c8cae5086cd",
+                    "label": "Company Logo Footer",
+                    "name": "logo_dark",
+                    "aria-label": "",
+                    "type": "image",
+                    "instructions": "Logo for use on a dark background",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "return_format": "array",
+                    "library": "all",
+                    "min_width": "",
+                    "min_height": "",
+                    "min_size": "",
+                    "max_width": "",
+                    "max_height": "",
+                    "max_size": "",
+                    "mime_types": "jpg,jpeg,png,gif,svg,webp",
+                    "allow_in_bindings": 1,
+                    "preview_size": "thumbnail"
                 }
             ]
         }
@@ -291,5 +317,6 @@
     "hide_on_screen": "",
     "active": true,
     "description": "Configuration options for theme contact information and company details",
-    "show_in_rest": 0
+    "show_in_rest": 0,
+    "modified": 1757989646
 }

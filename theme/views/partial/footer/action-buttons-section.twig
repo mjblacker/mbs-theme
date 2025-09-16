@@ -36,6 +36,12 @@
                            {{ target_attr|raw }}>
                             {{ button_text }}
                         </a>
+                    {# Locations button style with popover (transparent with border) #}
+                    {% elseif button_style == 'locations' %}
+                      <a @click.prevent="locationsDialogOpen=true" href="/contact"
+                         class="btn-alt inline-block w-full px-4 py-2">
+                            {{ button_text }}
+                      </a>
                     {# Secondary button style (transparent with border) #}
                     {% else %}
                         <a href="{{ button_url }}"
@@ -58,16 +64,11 @@
                class="btn-alt inline-block w-full px-4 py-2">
                 Get Directions
             </a>
-            <!-- <a @click.prevent="locationsDialogOpen=true" href="/contact"
-               class="inline-block w-full bg-transparent hover:bg-[#000] text-[#fafafa] border-1 !border-[#fafafa] font-medium px-4 py-2 rounded-md transition-colors duration-200 text-center text-sm">
-                Get Directions
-            </a> -->
         </div>
     {% endif %}
 
     {# Payment Methods #}
     <div>
-        <h4 class="text-sm font-medium text-white mb-3">We Accept</h4>
         <div class="flex space-x-2">
             <div class="bg-white rounded p-1 flex items-center justify-center w-12 h-8"
                  title="Visa">
