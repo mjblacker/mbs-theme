@@ -14,7 +14,7 @@ services:
       - chmod +x /app/scripts/setup-wordpress.sh
 
     run:
-      - cd $LANDO_MOUNT && composer install
+      - cd ${LANDO_MOUNT}/theme && composer install
       #- cd $LANDO_MOUNT && scripts/setup-wordpress.sh
       - echo "To set up WordPress, run 'lando install' if you have not already done so."
 
@@ -55,6 +55,7 @@ tooling:
 
   composer:
     service: appserver
+    dir: /app/theme
 
   npm:
     service: node
