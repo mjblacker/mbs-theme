@@ -16,10 +16,10 @@
 >
     {# Top Header Alert Banner #}
     {% include "partial/top-header/top-header.twig" %}
-    <div class="grid grid-rows-[auto_1fr_auto] min-h-screen">
+    <div class="flex flex-col lg:grid lg:grid-rows-[auto_1fr_auto] min-h-screen">
       {% include 'header.twig' %}
 
-      <main class="">
+      <main class="flex-1 lg:flex-none">
           {% block content %}
           Sorry, no content
           {% endblock %}
