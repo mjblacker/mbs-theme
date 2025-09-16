@@ -12,7 +12,6 @@
     "timber/timber": "^2.2"
   },
   "require-dev": {
-    "aspireweb/sapling-composer-paths-plugin": "dev-main",
     "johnpbloch/wordpress-core": "^6.8.2",
     "johnpbloch/wordpress-core-installer": "^2.0"
   },
@@ -28,18 +27,11 @@
       },
       "classmap": ["app/Sapling/Integrations/", "app/Sapling/Sapling.php"]
   },
-  "repositories": [
-    {
-      "type": "path",
-      "url": "sapling-composer-paths-plugin"
-    }
-  ],
   "config": {
     "vendor-dir": "vendor",
     "optimize-autoloader": false,
     "sort-packages": true,
     "allow-plugins": {
-      "aspireweb/sapling-composer-paths-plugin": true,
       "johnpbloch/wordpress-core-installer": true
     }
   },
