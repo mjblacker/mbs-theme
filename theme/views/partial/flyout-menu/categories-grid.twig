@@ -10,7 +10,7 @@
         <div class="space-y-1">
             {% for category in wc_categories|slice(0, 5) %}
                 <a href="{{ category.url }}"
-                   class="block text-mbs-gray-light hover:text-primary transition-colors duration-200 text-base py-1">
+                   class="block text-mbs-gray-light hover:text-primary-hover transition-colors duration-200 text-base py-1">
                     {{ category.name }}
                 </a>
             {% endfor %}
@@ -20,7 +20,7 @@
         <div class="space-y-1">
             {% for category in wc_categories|slice(5, 5) %}
                 <a href="{{ category.url }}"
-                   class="block text-mbs-gray-light hover:text-primary transition-colors duration-200 text-base py-1">
+                   class="block text-mbs-gray-light hover:text-primary-hover transition-colors duration-200 text-base py-1">
                     {{ category.name }}
                 </a>
             {% endfor %}
@@ -30,7 +30,7 @@
         <div class="space-y-1">
             {% for category in wc_categories|slice(10, 5) %}
                 <a href="{{ category.url }}"
-                   class="block text-mbs-gray-light hover:text-primary transition-colors duration-200 text-base py-1">
+                   class="block text-mbs-gray-light hover:text-primary-hover transition-colors duration-200 text-base py-1">
                     {{ category.name }}
                 </a>
             {% endfor %}
