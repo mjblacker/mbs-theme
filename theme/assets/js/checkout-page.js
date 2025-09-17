@@ -37,6 +37,8 @@ document.addEventListener("alpine:init", () => {
       this.setupPaymentHandlers();
       this.setupFormValidation();
       this.initializeDefaultValues();
+      this.setupShippingCalculatorIntegration();
+      this.checkAndRefreshShippingOnLoad();
     },
 
     initializeDefaultValues() {
@@ -71,6 +73,18 @@ document.addEventListener("alpine:init", () => {
           this.updateCheckout();
         }
       });
+
+      // Listen for all checkout field changes that might affect shipping
+      document.addEventListener("change", (e) => {
+        if (
+          e.target.matches(
+            'select[name="billing_country"], select[name="billing_state"], ' +
+            'select[name="shipping_country"], select[name="shipping_state"]'
+          )
+        ) {
+          this.debouncedUpdateCheckout();
+        }
+      });
     },
 
     setupShippingHandlers() {
@@ -89,9 +103,24 @@ document.addEventListener("alpine:init", () => {
       document.addEventListener("blur", (e) => {
         if (
           e.target.matches(
-            'input[name*="address"], input[name*="city"], input[name*="postcode"]'
+            'input[name="billing_address_1"], input[name="billing_address_2"], input[name="billing_city"], input[name="billing_postcode"], input[name="billing_state"], ' +
+            'input[name="shipping_address_1"], input[name="shipping_address_2"], input[name="shipping_city"], input[name="shipping_postcode"], input[name="shipping_state"]'
           )
         ) {
+          this.debouncedUpdateCheckout();
+        }
+      });
+
+      // Real-time updates for postcode changes (both billing and shipping)
+      document.addEventListener("input", (e) => {
+        if (e.target.matches('input[name="billing_postcode"], input[name="shipping_postcode"]')) {
+          this.debouncedUpdateCheckoutFast();
+        }
+      });
+
+      // Generic billing/shipping field listener (fallback for any missed fields)
+      document.addEventListener("change", (e) => {
+        if (e.target.name && (e.target.name.startsWith('billing_') || e.target.name.startsWith('shipping_'))) {
           this.debouncedUpdateCheckout();
         }
       });
@@ -452,6 +481,9 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
+        // Show loading state
+        this.showCheckoutLoadingState(true);
+
         const formData = new FormData(form);
         formData.set("action", "woocommerce_update_order_review");
         formData.set(
@@ -481,6 +513,9 @@ document.addEventListener("alpine:init", () => {
         }
       } catch (error) {
         // Silent fail - checkout will still work on page refresh
+      } finally {
+        // Remove loading state
+        this.showCheckoutLoadingState(false);
       }
     },
 
@@ -489,6 +524,14 @@ document.addEventListener("alpine:init", () => {
       return function () {
         clearTimeout(timeout);
         timeout = setTimeout(() => this.updateCheckout(), 1000);
+      };
+    })(),
+
+    debouncedUpdateCheckoutFast: (() => {
+      let timeout;
+      return function () {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => this.updateCheckout(), 500);
       };
     })(),
 
@@ -504,13 +547,28 @@ document.addEventListener("alpine:init", () => {
               // Update our custom order summary instead
               const orderSummary = document.querySelector(".order-summary");
               if (orderSummary) {
-                // Extract and update just the totals part
-                this.updateOrderSummaryFromTable(
+                // Extract and update shipping and totals
+                this.updateCustomOrderSummaryFromWooCommerceTable(
                   data.fragments[selector],
                   orderSummary
                 );
-                // Also update the applied coupons section
-                this.updateAppliedCoupons();
+
+                // Refresh the shipping methods section like the cart does
+                this.refreshShippingMethodsSection();
+              }
+            }
+
+            // Handle payment methods
+            if (selector === ".woocommerce-checkout-payment") {
+              const paymentSection = document.querySelector(".payment-methods, [data-payment-methods]");
+              if (paymentSection) {
+                // Extract just the payment methods part
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data.fragments[selector], 'text/html');
+                const paymentMethods = doc.querySelector('.wc_payment_methods, .payment_methods');
+                if (paymentMethods) {
+                  paymentSection.innerHTML = paymentMethods.innerHTML;
+                }
               }
             }
           }
@@ -575,6 +633,84 @@ document.addEventListener("alpine:init", () => {
 
       // Re-initialize shipping visual state after content update
       this.initializeShippingVisualState();
+    },
+
+    setupShippingCalculatorIntegration() {
+      // If shipping calculator is available on checkout page, integrate it with checkout updates
+      if (window.ShippingCalculator) {
+        // Store reference to this context
+        const checkoutComponent = this;
+
+        // Override the shipping calculator's update method to use checkout's update function
+        window.ShippingCalculator.updateShippingAddress = async function(form) {
+          const submitButton = form.querySelector('button[type="submit"]');
+          const originalText = submitButton.textContent;
+
+          // Show loading state
+          submitButton.disabled = true;
+          submitButton.textContent = 'Updating...';
+
+          // Get form data and update checkout form fields
+          const formData = new FormData(form);
+          const country = formData.get('shipping_country');
+          const state = formData.get('shipping_state');
+          const city = formData.get('shipping_city');
+          const postcode = formData.get('shipping_postcode');
+
+          try {
+            // Update the actual checkout form fields
+            checkoutComponent.updateCheckoutFormFields(country, state, city, postcode);
+
+            // Trigger checkout update
+            await checkoutComponent.updateCheckout();
+
+            // Hide the shipping calculator form
+            const formContainer = document.querySelector('#custom-shipping-form');
+            const toggleButton = document.querySelector('.shipping-address-toggle');
+
+            if (formContainer) {
+              formContainer.classList.add('hidden');
+            }
+            if (toggleButton) {
+              toggleButton.setAttribute('aria-expanded', 'false');
+            }
+          } catch (error) {
+            console.error('Error updating shipping address:', error);
+            window.ShippingCalculator.showShippingError('Failed to update shipping address. Please try again.');
+          } finally {
+            // Reset button
+            submitButton.disabled = false;
+            submitButton.textContent = originalText;
+          }
+        };
+      }
+    },
+
+    updateCheckoutFormFields(country, state, city, postcode) {
+      // Update shipping fields in the checkout form
+      const shippingCountry = document.querySelector('select[name="shipping_country"]');
+      const shippingState = document.querySelector('select[name="shipping_state"], input[name="shipping_state"]');
+      const shippingCity = document.querySelector('input[name="shipping_city"]');
+      const shippingPostcode = document.querySelector('input[name="shipping_postcode"]');
+
+      if (shippingCountry && country) shippingCountry.value = country;
+      if (shippingState && state) shippingState.value = state;
+      if (shippingCity && city) shippingCity.value = city;
+      if (shippingPostcode && postcode) shippingPostcode.value = postcode;
+
+      // Also update billing fields if "ship to different address" is not checked
+      const shipToDifferent = document.querySelector('#ship-to-different-address-checkbox');
+      if (!shipToDifferent || !shipToDifferent.checked) {
+        const billingCountry = document.querySelector('select[name="billing_country"]');
+        const billingState = document.querySelector('select[name="billing_state"], input[name="billing_state"]');
+        const billingCity = document.querySelector('input[name="billing_city"]');
+        const billingPostcode = document.querySelector('input[name="billing_postcode"]');
+
+        if (billingCountry && country) billingCountry.value = country;
+        if (billingState && state) billingState.value = state;
+        if (billingCity && city) billingCity.value = city;
+        if (billingPostcode && postcode) billingPostcode.value = postcode;
+      }
     },
 
     validateForm(form) {
@@ -665,8 +801,8 @@ document.addEventListener("alpine:init", () => {
       }
     },
 
-    updateOrderSummaryFromTable(tableHtml, orderSummary) {
-      // Parse the table HTML to extract totals
+    updateCustomOrderSummaryFromWooCommerceTable(tableHtml, orderSummary) {
+      // Parse the table HTML to extract data
       const parser = new DOMParser();
       const doc = parser.parseFromString(tableHtml, "text/html");
       const table = doc.querySelector("table");
@@ -675,45 +811,214 @@ document.addEventListener("alpine:init", () => {
         return;
       }
 
-      // Extract shipping cost and total from the table
+      // Extract all data from the table
       const tableRows = table.querySelectorAll("tr");
-      let totalCost = null;
+      let subtotal = null;
+      let shipping = null;
+      let total = null;
+      let shippingMethods = [];
 
       tableRows.forEach((row) => {
-        const cells = row.querySelectorAll("td, th");
-        if (cells.length >= 2) {
-          const label = cells[0].textContent.trim().toLowerCase();
-          const value = cells[1].innerHTML.trim();
+        const label = row.querySelector(".product-name, th");
+        const value = row.querySelector(".product-total, td:last-child");
 
-          if (label.includes("total")) {
-            totalCost = value;
-          }
+        if (!label || !value) return;
+
+        const labelText = label.textContent.trim().toLowerCase();
+        const valueHtml = value.innerHTML.trim();
+
+        if (labelText.includes("subtotal")) {
+          subtotal = valueHtml;
+        } else if (labelText.includes("shipping")) {
+          shipping = valueHtml;
+
+          // Extract shipping methods if present
+          const shippingInputs = row.querySelectorAll('input[name^="shipping_method"]');
+          shippingInputs.forEach(input => {
+            shippingMethods.push({
+              id: input.value,
+              checked: input.checked,
+              label: input.nextElementSibling?.textContent || '',
+              html: row.innerHTML
+            });
+          });
+        } else if (labelText.includes("total")) {
+          total = valueHtml;
         }
       });
 
-      // Update total cost in our custom order summary
-      const totalRow = orderSummary.querySelector(".total-row:last-child");
-      if (totalRow && totalCost) {
-        const totalPriceElement = totalRow.querySelector("span:last-child");
-        if (totalPriceElement) {
-          totalPriceElement.innerHTML = totalCost;
+      // Update subtotal
+      if (subtotal) {
+        const totalRows = orderSummary.querySelectorAll('.total-row');
+        totalRows.forEach((row) => {
+          const label = row.querySelector("span:first-child");
+          if (label && label.textContent.toLowerCase().includes("subtotal")) {
+            const priceElement = row.querySelector("span:last-child");
+            if (priceElement) {
+              priceElement.innerHTML = subtotal;
+            }
+          }
+        });
+      }
+
+      // Update shipping section if we have shipping methods
+      if (shippingMethods.length > 0) {
+        const shippingSection = orderSummary.querySelector('.shipping-section');
+        if (shippingSection) {
+          // Update shipping methods in our custom structure
+          this.updateShippingMethodsInOrderSummary(shippingMethods, shippingSection);
         }
       }
 
-      // Also look for the specific "Total (inc GST)" row
-      const summaryRows = orderSummary.querySelectorAll(".total-row");
-      summaryRows.forEach((row) => {
-        const label = row.querySelector("span:first-child");
-        const price = row.querySelector("span:last-child");
-        if (
-          label &&
-          price &&
-          label.textContent.includes("Total") &&
-          totalCost
-        ) {
-          price.innerHTML = totalCost;
+      // Update total
+      if (total) {
+        const totalRows = orderSummary.querySelectorAll('.total-row');
+        totalRows.forEach((row) => {
+          const label = row.querySelector("span:first-child");
+          const price = row.querySelector("span:last-child");
+          if (label && price && label.textContent.toLowerCase().includes("total")) {
+            price.innerHTML = total;
+          }
+        });
+      }
+    },
+
+    updateShippingMethodsInOrderSummary(shippingMethods, shippingSection) {
+      // This will update the shipping methods in the order summary
+
+      // Find and update any existing shipping cost display
+      const orderSummary = shippingSection.closest('.order-summary');
+      if (orderSummary && shippingMethods.length > 0) {
+        const selectedMethod = shippingMethods.find(m => m.checked);
+        if (selectedMethod) {
+          // Look for shipping row in order totals
+          const totalRows = orderSummary.querySelectorAll('.total-row');
+          totalRows.forEach((row) => {
+            const label = row.querySelector("span:first-child");
+            if (label && label.textContent.toLowerCase().includes("shipping")) {
+              const priceElement = row.querySelector("span:last-child");
+              if (priceElement) {
+                // Extract price from the method label
+                const priceMatch = selectedMethod.label.match(/\$[\d,]+\.?\d*/);
+                if (priceMatch) {
+                  priceElement.textContent = priceMatch[0];
+                }
+              }
+            }
+          });
         }
-      });
+      }
+    },
+
+    async refreshShippingMethodsSection() {
+      try {
+        // Fetch fresh checkout page content
+        const response = await fetch(window.location.href, {
+          method: 'GET',
+          credentials: 'same-origin',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const html = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        // Update the shipping section in the order summary
+        const currentShippingSection = document.querySelector('.order-summary .shipping-section');
+        const newShippingSection = doc.querySelector('.order-summary .shipping-section');
+
+        if (currentShippingSection && newShippingSection) {
+          currentShippingSection.innerHTML = newShippingSection.innerHTML;
+
+          // Reinitialize Alpine.js components for the updated content
+          if (window.Alpine) {
+            Alpine.initTree(currentShippingSection);
+          }
+
+          // Re-initialize shipping visual state
+          this.initializeShippingVisualState();
+        }
+
+      } catch (error) {
+        // Silent fail
+      }
+    },
+
+    showCheckoutLoadingState(show) {
+      const orderSummary = document.querySelector('.order-summary');
+      const placeOrderBtn = document.querySelector(CheckoutUtils.selectors.placeOrderBtn);
+      const shippingSection = document.querySelector('.order-summary .shipping-section');
+
+      if (show) {
+        // Disable place order button
+        if (placeOrderBtn) {
+          placeOrderBtn.disabled = true;
+          placeOrderBtn.classList.add(...CheckoutUtils.classes.disabled);
+          placeOrderBtn.setAttribute('data-original-text', placeOrderBtn.textContent);
+          placeOrderBtn.textContent = 'Updating...';
+        }
+
+        // Add loading state to order summary
+        if (orderSummary) {
+          orderSummary.classList.add(...CheckoutUtils.classes.disabled);
+        }
+
+        // Add loading state to shipping section
+        if (shippingSection) {
+          shippingSection.style.opacity = '0.6';
+          shippingSection.style.pointerEvents = 'none';
+        }
+      } else {
+        // Re-enable place order button
+        if (placeOrderBtn) {
+          placeOrderBtn.disabled = false;
+          placeOrderBtn.classList.remove(...CheckoutUtils.classes.disabled);
+          const originalText = placeOrderBtn.getAttribute('data-original-text');
+          if (originalText) {
+            placeOrderBtn.textContent = originalText;
+            placeOrderBtn.removeAttribute('data-original-text');
+          }
+        }
+
+        // Remove loading state from order summary
+        if (orderSummary) {
+          orderSummary.classList.remove(...CheckoutUtils.classes.disabled);
+        }
+
+        // Remove loading state from shipping section
+        if (shippingSection) {
+          shippingSection.style.opacity = '';
+          shippingSection.style.pointerEvents = '';
+        }
+      }
+    },
+
+    checkAndRefreshShippingOnLoad() {
+      // Check if there's already a postcode filled in and refresh shipping methods
+      const billingPostcode = document.querySelector('input[name="billing_postcode"]');
+      const shippingPostcode = document.querySelector('input[name="shipping_postcode"]');
+
+      // Check if either billing or shipping postcode has a value
+      const hasBillingPostcode = billingPostcode && billingPostcode.value.trim().length > 0;
+      const hasShippingPostcode = shippingPostcode && shippingPostcode.value.trim().length > 0;
+
+      if (hasBillingPostcode || hasShippingPostcode) {
+        // Delay the update slightly to ensure the page is fully loaded
+        setTimeout(() => {
+          this.updateCheckout();
+        }, 500);
+      }
+    },
+
+    updateOrderSummaryFromTable(tableHtml, orderSummary) {
+      // Legacy method - keeping for compatibility
+      this.updateCustomOrderSummaryFromWooCommerceTable(tableHtml, orderSummary);
     },
 
     initializeShippingVisualState() {
