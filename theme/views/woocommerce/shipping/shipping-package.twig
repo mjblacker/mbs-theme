@@ -1,0 +1,35 @@
+{# Shipping Package Component
+   Props:
+   - package_key: string
+   - package: WooCommerce package object
+   - context: 'cart' or 'checkout'
+   - is_cart: boolean
+#}
+
+{# Get chosen shipping method for this package #}
+{% set chosen_method = function('WC').session.get('chosen_shipping_methods')[package_key] ?? '' %}
+
+{# Calculate shipping for this package if not already done #}
+{% do function('WC').shipping.calculate_shipping([package]) %}
+{% set rates = function('WC').shipping.get_packages()[package_key]['rates'] ?? [] %}
+
+{% if rates %}
+    <div class="shipping-methods {{ is_cart ? 'space-y-3' : 'space-y-2' }} mb-4">
+        {% for method in rates %}
+            {% include 'woocommerce/shipping/shipping-method-option.twig' with {
+                method: method,
+                package_key: package_key,
+                chosen_method: chosen_method,
+                rates: rates,
+                context: context
+            } %}
+        {% endfor %}
+    </div>
+
+    {# Shipping destination text (cart only) #}
+    {% if is_cart %}
+        {% include 'woocommerce/shipping/shipping-destination.twig' with {
+            package: package
+        } %}
+    {% endif %}
+{% endif %}

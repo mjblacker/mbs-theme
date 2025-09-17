@@ -132,8 +132,8 @@
 }
 
 /* Shipping Calculator Form Styling */
+.shipping-calculator-form,
 #shipping-calculator-form {
-  display: none !important;
   margin-top: 1rem !important;
   padding: 1.5rem !important;
   background: white !important;
@@ -142,7 +142,9 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
 }
 
-#shipping-calculator-form.open {
+/* When WooCommerce shows the form, ensure it's properly styled */
+.shipping-calculator-form[style*="block"],
+#shipping-calculator-form[style*="block"] {
   display: block !important;
 }
 

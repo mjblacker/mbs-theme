@@ -1,0 +1,17 @@
+{# Shipping Destination Component
+   Props:
+   - package: WooCommerce package object
+#}
+
+{% if function('is_cart') and function('get_theme_mod', 'cart_estimate_text', 1) %}
+    {% set formatted_destination = function('WC').countries.get_formatted_address(package.destination, ', ') %}
+    {% if formatted_destination %}
+        <p class="woocommerce-shipping-destination text-sm text-gray-600 mt-4">
+            {{ function('sprintf', function('__', 'Shipping to %s.', 'woocommerce'), '<strong>' ~ formatted_destination ~ '</strong>')|raw }}
+        </p>
+    {% else %}
+        <p class="text-sm text-gray-600 mt-4">
+            {{ function('apply_filters', 'woocommerce_shipping_estimate_html', function('__', 'Shipping options will be updated during checkout.', 'woocommerce'))|raw }}
+        </p>
+    {% endif %}
+{% endif %}

@@ -1,0 +1,80 @@
+{# Custom Shipping Calculator Component
+   Props: None (gets current customer data from WooCommerce)
+#}
+
+<div class="shipping-address-form-container mt-1">
+    {# <button type="button" class="shipping-address-toggle text-blue-600 hover:text-blue-700 text-sm font-medium cursor-pointer underline"
+            aria-expanded="false" aria-controls="custom-shipping-form">
+        Delivery
+    </button> #}
+
+    <a href="#" class="shipping-address-toggle" aria-expanded="false" aria-controls="shipping-calculator-form" role="button">Delivery</a>
+
+    <div id="custom-shipping-form" class="shipping-address-form hidden mt-4 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+        <h4 class="text-lg font-medium text-gray-900 mb-4">Calculate Shipping</h4>
+
+        <form class="custom-shipping-calculator space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="shipping_country" class="block text-sm font-medium text-gray-700 mb-1">Country / Region</label>
+                    <select name="shipping_country" id="shipping_country" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent">
+                        <option value="">Select a country...</option>
+                        {% set countries = function('WC').countries.get_shipping_countries() %}
+                        {% set current_country = function('WC').customer.get_shipping_country() %}
+                        {% for country_code, country_name in countries %}
+                            <option value="{{ country_code }}" {{ current_country == country_code ? 'selected' : '' }}>
+                                {{ country_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="shipping_state" class="block text-sm font-medium text-gray-700 mb-1">State / County</label>
+                    {% set current_state = function('WC').customer.get_shipping_state() %}
+                    {% set current_country = function('WC').customer.get_shipping_country() %}
+                    {% set states = function('WC').countries.get_states(current_country) %}
+
+                    {% if states and states|length > 0 %}
+                        <select name="shipping_state" id="shipping_state" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent">
+                            <option value="">Select a state...</option>
+                            {% for state_code, state_name in states %}
+                                <option value="{{ state_code }}" {{ current_state == state_code ? 'selected' : '' }}>
+                                    {{ state_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        <input type="text" name="shipping_state" id="shipping_state"
+                               value="{{ current_state }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent">
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="shipping_city" class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                    {% set current_city = function('WC').customer.get_shipping_city() %}
+                    <input type="text" name="shipping_city" id="shipping_city"
+                           value="{{ current_city }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent">
+                </div>
+
+                <div>
+                    <label for="shipping_postcode" class="block text-sm font-medium text-gray-700 mb-1">Postcode / ZIP</label>
+                    {% set current_postcode = function('WC').customer.get_shipping_postcode() %}
+                    <input type="text" name="shipping_postcode" id="shipping_postcode"
+                           value="{{ current_postcode }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent">
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button type="submit" class="bg-[#FFF200] hover:bg-yellow-500 text-black px-6 py-2 rounded font-medium transition-colors">
+                    Update Shipping
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

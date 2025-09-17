@@ -1,0 +1,57 @@
+{# Shipping Method Option Component
+   Props:
+   - method: WooCommerce shipping method object
+   - package_key: string
+   - chosen_method: string
+   - rates: array of shipping rates
+   - context: 'cart' or 'checkout'
+#}
+
+{% set method_id = function('sanitize_title', method.id) %}
+{% set input_id = 'shipping_method_' ~ package_key ~ '_' ~ method_id %}
+{% set is_checked = (method.id == chosen_method) %}
+{% set method_title = method.label %}
+{% set method_cost = method.cost > 0 ? function('wc_price', method.cost) : 'FREE' %}
+
+{# Split method title by colon to separate method name and location #}
+{% set title_parts = method_title|split(' : ') %}
+{% set method_name = title_parts[0]|trim %}
+{% set location_info = title_parts[1] is defined ? title_parts[1]|trim : '' %}
+
+<div class="shipping-method-option">
+    <input type="{{ rates|length > 1 ? 'radio' : 'hidden' }}"
+           name="shipping_method[{{ package_key }}]"
+           data-index="{{ package_key }}"
+           id="{{ input_id }}"
+           value="{{ method.id }}"
+           class="shipping_method sr-only"
+           {{ is_checked ? 'checked' : '' }} />
+
+    <label for="{{ input_id }}" class="shipping-method-label grid grid-cols-12 !items-start p-2 rounded-lg cursor-pointer">
+        <div class="col-span-1 flex justify-center">
+            <div class="radio-button flex-shrink-0 w-5 h-5 border-2 border-gray-300 rounded-full relative mt-[3px]">
+                <div class="radio-inner absolute inset-0.5 bg-black rounded-full scale-0 transition-transform"></div>
+            </div>
+        </div>
+
+        <div class="col-span-4">
+            <div class="method-name font-medium text-gray-900">{{ method_name }}</div>
+        </div>
+
+        <div class="col-span-5">
+            {% if location_info %}
+                <div class="method-location text-sm text-gray-600">
+                    {{ location_info }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="col-span-2 text-right">
+            <div class="method-price font-semibold text-gray-900">
+                {{ method_cost|raw }}
+            </div>
+        </div>
+    </label>
+</div>
+
+{{ function('do_action', context == 'cart' ? 'woocommerce_after_shipping_rate' : 'woocommerce_after_shipping_rate', method, package_key)|raw }}

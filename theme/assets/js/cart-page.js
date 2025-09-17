@@ -49,6 +49,7 @@ document.addEventListener("alpine:init", () => {
       this.setupQuantityTracking();
       this.setupShippingHandlers();
       this.setupCouponHandlers();
+      this.setupShippingCalculatorEvents();
     },
 
     autoHideNotices() {
@@ -270,6 +271,19 @@ document.addEventListener("alpine:init", () => {
           }
         }
 
+        // Also update any standalone shipping sections
+        const currentShippingSection = document.querySelector(".shipping-section");
+        const newShippingSection = doc.querySelector(".shipping-section");
+
+        if (currentShippingSection && newShippingSection) {
+          currentShippingSection.innerHTML = newShippingSection.innerHTML;
+
+          // Reinitialize Alpine.js for shipping section if needed
+          if (window.Alpine) {
+            Alpine.initTree(currentShippingSection);
+          }
+        }
+
         // Re-setup the update button and quantity tracking for new content
         this.setupUpdateButton();
         this.setupQuantityTracking();
@@ -333,10 +347,7 @@ document.addEventListener("alpine:init", () => {
     },
 
     setupShippingHandlers() {
-      // Prevent default WooCommerce shipping calculator behavior
-      this.disableDefaultShippingCalculator();
-
-      // Handle shipping method changes
+      // Handle shipping method changes only
       document.addEventListener("change", (e) => {
         if (
           e.target.matches(
@@ -351,57 +362,8 @@ document.addEventListener("alpine:init", () => {
       // Set initial visual state for any pre-selected shipping methods
       this.initializeShippingVisualState();
 
-      // Handle shipping calculator
-      document.addEventListener("click", (e) => {
-        // Handle shipping calculator button - look for multiple possible selectors
-        if (
-          e.target.matches(
-            '.shipping-calculator-button'
-          ) ||
-          (e.target.matches('a[href="#"]') && e.target.textContent.toLowerCase().includes('shipping'))
-        ) {
-          e.preventDefault();
-          e.stopPropagation();
-
-          // Find the calculator form - it could be a sibling or in a parent container
-          let form = e.target.nextElementSibling;
-          if (!form || (!form.classList.contains("shipping-calculator-form") && !form.classList.contains("woocommerce-shipping-calculator") && form.id !== "shipping-calculator-form")) {
-            // Try to find it as a sibling of the parent
-            const parent = e.target.parentElement;
-            form = parent.querySelector(".shipping-calculator-form, .woocommerce-shipping-calculator, #shipping-calculator-form");
-          }
-          if (!form) {
-            // Try to find it anywhere in the shipping section
-            const shippingSection = e.target.closest(
-              ".shipping, .woocommerce-shipping-totals, .shipping-section"
-            );
-            if (shippingSection) {
-              form = shippingSection.querySelector(".shipping-calculator-form, .woocommerce-shipping-calculator, #shipping-calculator-form");
-            }
-          }
-          if (!form) {
-            // Final fallback - look for it anywhere in the document
-            form = document.querySelector("#shipping-calculator-form");
-          }
-
-          if (form) {
-            // Toggle the form visibility using classes instead of inline styles
-            if (form.classList.contains("open")) {
-              form.classList.remove("open");
-            } else {
-              form.classList.add("open");
-            }
-          }
-
-          return false;
-        }
-
-        // Handle shipping calculator form submission
-        if (e.target.matches('input[name="calc_shipping"]')) {
-          e.preventDefault();
-          this.handleShippingCalculation(e.target);
-        }
-      });
+      // Setup custom shipping address form
+      this.setupCustomShippingForm();
     },
 
     async handleShippingMethodChange(target) {
@@ -462,71 +424,17 @@ document.addEventListener("alpine:init", () => {
       }
     },
 
-    async handleShippingCalculation(submitButton) {
-      const form = submitButton.closest("form");
-      const cartTotals = document.querySelector(".cart-totals");
 
-      if (!form) return;
 
-      // Show loading state
-      if (cartTotals) {
-        cartTotals.style.opacity = "0.6";
-        cartTotals.style.pointerEvents = "none";
-      }
 
-      try {
-        const formData = new FormData(form);
 
-        const response = await fetch(form.action || window.location.href, {
-          method: "POST",
-          credentials: "same-origin",
-          body: formData,
-        });
-
-        if (response.ok) {
-          // Refresh the entire cart to show calculated shipping
-          await this.refreshCartFragments();
-          this.dispatchCartUpdateEvent();
-        }
-      } catch (error) {
-        console.error("Error calculating shipping:", error);
-        // Fallback to page reload
-        window.location.reload();
-      } finally {
-        // Remove loading state
-        if (cartTotals) {
-          cartTotals.style.opacity = "";
-          cartTotals.style.pointerEvents = "";
-        }
-      }
-    },
-
-    disableDefaultShippingCalculator() {
-      // Remove any existing WooCommerce shipping calculator event listeners
-      const existingButtons = document.querySelectorAll(
-        ".woocommerce-shipping-destination a, .shipping-calculator-button"
-      );
-      existingButtons.forEach((button) => {
-        // Clone the button to remove all event listeners
-        const newButton = button.cloneNode(true);
-        button.parentNode.replaceChild(newButton, button);
-
-        // Ensure the href doesn't cause page navigation
-        if (newButton.tagName === "A") {
-          newButton.href = "#";
-          newButton.removeAttribute("onclick");
-        }
+    setupShippingCalculatorEvents() {
+      // Listen for shipping address updates from the external shipping calculator
+      document.addEventListener('shipping-address-updated', async (e) => {
+        // Refresh the cart to show updated shipping options
+        await this.refreshCartFragments();
+        this.dispatchCartUpdateEvent();
       });
-
-      // Prevent jQuery/WooCommerce from handling calculator toggles
-      if (window.jQuery) {
-        window
-          .jQuery(document)
-          .off("click.woocommerce", ".shipping-calculator-button");
-        window
-          .jQuery(document)
-          .off("click", ".woocommerce-shipping-destination a");
-      }
     },
 
     initializeShippingVisualState() {
@@ -574,6 +482,7 @@ document.addEventListener("alpine:init", () => {
         }
       });
     },
+
 
     setupCouponHandlers() {
       // Handle coupon removal clicks
@@ -674,7 +583,7 @@ document.addEventListener("alpine:init", () => {
 
       const errorDiv = document.createElement('div');
       errorDiv.className = 'coupon-error-message woocommerce-error bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-4 relative';
-      
+
       // Add close button
       errorDiv.innerHTML = `
         <div class="flex justify-between items-center">
@@ -691,7 +600,47 @@ document.addEventListener("alpine:init", () => {
       if (cartContent) {
         cartContent.insertBefore(errorDiv, cartContent.firstChild);
         errorDiv.scrollIntoView({ behavior: 'smooth' });
-        
+
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => {
+          if (errorDiv.parentNode) {
+            errorDiv.style.transition = 'opacity 0.5s ease-out';
+            errorDiv.style.opacity = '0';
+            setTimeout(() => {
+              if (errorDiv.parentNode) {
+                errorDiv.remove();
+              }
+            }, 500);
+          }
+        }, 5000);
+      }
+    },
+
+    showShippingError(message) {
+      // Remove any existing shipping error messages first
+      const existingErrors = document.querySelectorAll('.shipping-error-message');
+      existingErrors.forEach(error => error.remove());
+
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'shipping-error-message woocommerce-error bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-4 relative';
+
+      // Add close button
+      errorDiv.innerHTML = `
+        <div class="flex justify-between items-center">
+          <span>${message}</span>
+          <button type="button" class="ml-4 text-red-600 hover:text-red-800" onclick="this.parentElement.parentElement.remove()">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      `;
+
+      const shippingSection = document.querySelector('.shipping-section, .shipping-methods-container');
+      if (shippingSection) {
+        shippingSection.insertBefore(errorDiv, shippingSection.firstChild);
+        errorDiv.scrollIntoView({ behavior: 'smooth' });
+
         // Auto-dismiss after 5 seconds
         setTimeout(() => {
           if (errorDiv.parentNode) {

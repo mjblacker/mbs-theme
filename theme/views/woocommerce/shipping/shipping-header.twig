@@ -1,0 +1,11 @@
+{# Shipping Methods Header
+   Props:
+   - context: 'cart' or 'checkout'
+   - is_checkout: boolean
+#}
+
+{% if is_checkout %}
+    <h4 class="font-medium text-gray-900 mb-3 mt-5">Shipping</h4>
+{% else %}
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Select Shipping</h3>
+{% endif %}
