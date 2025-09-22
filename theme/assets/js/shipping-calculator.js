@@ -58,7 +58,7 @@ document.addEventListener("alpine:init", () => {
               Nonce: window.wpEndpoints?.storeApiNonce || "",
             },
             body: JSON.stringify({
-              shipping_address: {
+              billing_address: {
                 country: country,
                 state: state,
                 city: city,

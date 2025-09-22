@@ -30,7 +30,7 @@
         {% if product.get_description() %}
             <div class="product-description sm:mt-5 md:mt-10">
                 <div class="prose prose-sm max-w-none text-base font-normal text-gray-600">
-                    {{ product.get_description()|raw }}
+                    {{ function('wpautop', product.get_description())|raw }}
                 </div>
             </div>
         {% endif %}

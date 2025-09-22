@@ -511,9 +511,16 @@ document.addEventListener("alpine:init", () => {
       items: items,
       selectedCategories: [],
       expandedCategories: [],
-      allExpanded: false,
+      allExpanded: true,
 
       init() {
+        if (this.allExpanded) {
+          // Start with all parent categories expanded
+          const parentCategories = this.items.filter(
+            (item) => item.children?.length > 0
+          );
+          this.expandedCategories = parentCategories.map((item) => item.id);
+        }
         this.updateExpandAllState();
       },
 
