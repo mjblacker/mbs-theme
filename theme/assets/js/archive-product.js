@@ -107,31 +107,31 @@ const FilterUtils = {
 
 document.addEventListener("alpine:init", () => {
   // Header Scroll Component
-  Alpine.data("headerScroll", () => ({
-    mobileMenuOpen: false,
-    isScrolled: false,
-    lastScrollY: 0,
-    adminBarHeight: 0,
+  // Alpine.data("headerScroll", () => ({
+  //   mobileMenuOpen: false,
+  //   isScrolled: false,
+  //   lastScrollY: 0,
+  //   adminBarHeight: 0,
 
-    init() {
-      this.detectAdminBar();
-      this.lastScrollY = window.scrollY;
-      this.checkScroll();
-    },
+  //   init() {
+  //     this.detectAdminBar();
+  //     this.lastScrollY = window.scrollY;
+  //     this.checkScroll();
+  //   },
 
-    detectAdminBar() {
-      const adminBar = document.querySelector(SELECTORS.ADMIN_BAR);
-      this.adminBarHeight = adminBar ? adminBar.offsetHeight : 0;
-    },
+  //   detectAdminBar() {
+  //     const adminBar = document.querySelector(SELECTORS.ADMIN_BAR);
+  //     this.adminBarHeight = adminBar ? adminBar.offsetHeight : 0;
+  //   },
 
-    checkScroll() {
-      const threshold =
-        this.adminBarHeight > 0
-          ? this.adminBarHeight + FILTER_CONSTANTS.ADMIN_BAR_THRESHOLD
-          : FILTER_CONSTANTS.ADMIN_BAR_THRESHOLD;
-      this.isScrolled = window.scrollY > threshold;
-    },
-  }));
+  //   checkScroll() {
+  //     const threshold =
+  //       this.adminBarHeight > 0
+  //         ? this.adminBarHeight + FILTER_CONSTANTS.ADMIN_BAR_THRESHOLD
+  //         : FILTER_CONSTANTS.ADMIN_BAR_THRESHOLD;
+  //     this.isScrolled = window.scrollY > threshold;
+  //   },
+  // }));
 
   // Shop Filters Component
   Alpine.data("shopFilters", () => ({

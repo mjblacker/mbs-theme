@@ -16,20 +16,20 @@
 {# Check if WooCommerce is active by verifying core functions exist #}
 {% set wc_active = function('function_exists', 'wc_get_cart_url') and function('function_exists', 'WC') %}
 
-{# Check if we're on cart or checkout pages to disable drawer functionality #}
+{# Check if we're on cart or checkout pages to link to cart instead of opening drawer #}
 {% set is_cart_page = function('is_cart') %}
 {% set is_checkout_page = function('is_checkout') %}
-{% set disable_drawer = is_cart_page %}
+{% set link_to_cart = is_cart_page or is_checkout_page %}
 
 {# Only show cart if WooCommerce is active #}
 {% if wc_active %}
     {% if context == 'desktop' %}
         {# Desktop Cart Icon #}
         <div class="relative" x-data="cartBadge()" data-initial-count="{{ function('WC') ? function('WC').cart.get_cart_contents_count() : 0 }}">
-            {% if disable_drawer %}
-                <div class="text-gray-700 p-2 cursor-default">
+            {% if link_to_cart %}
+                <a href="{{ function('wc_get_cart_url') }}" class="text-gray-700 hover:text-gray-900 transition-colors p-2 cursor-pointer">
             {% else %}
-                <button @click="$dispatch('cart-drawer-open')" 
+                <button @click="$dispatch('cart-drawer-open')"
                         class="text-gray-700 hover:text-gray-900 transition-colors p-2 cursor-pointer">
             {% endif %}
                 <img src="{{ site.theme.uri }}/assets/images/Cart.svg" 
@@ -44,11 +44,11 @@
                       x-transition:leave="transition ease-in duration-150"
                       x-transition:leave-start="opacity-100 scale-100"
                       x-transition:leave-end="opacity-0 scale-50"
-                      class="cart-badge absolute top-1 right-1 bg-red-500 text-white text-[10px] rounded-full h-3.5 w-3.5 flex items-center justify-center font-medium"
+                      class="cart-badge absolute top-4 right-[-6px] bg-red-500 text-white text-[10px] rounded-full h-3.5 w-3.5 flex items-center justify-center font-medium"
                       style="display: none;">
                 </span>
-            {% if disable_drawer %}
-                </div>
+            {% if link_to_cart %}
+                </a>
             {% else %}
             </button>
             {% endif %}
@@ -56,10 +56,10 @@
     {% else %}
         {# Mobile Cart Link #}
         <div x-data="cartBadge()" data-initial-count="{{ function('WC') ? function('WC').cart.get_cart_contents_count() : 0 }}">
-            {% if disable_drawer %}
-                <div class="flex items-center justify-between px-4 py-3 text-gray-700 rounded-md w-full text-left cursor-default">
+            {% if link_to_cart %}
+                <a href="{{ function('wc_get_cart_url') }}" class="flex items-center justify-between px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors w-full text-left">
             {% else %}
-                <button @click="$dispatch('cart-drawer-open'); {% if mobile_menu %}mobileMenuOpen = false{% endif %}" 
+                <button @click="$dispatch('cart-drawer-open'); {% if mobile_menu %}mobileMenuOpen = false{% endif %}"
                         class="flex items-center justify-between px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors w-full text-left">
             {% endif %}
                 <span class="flex items-center">
@@ -76,8 +76,8 @@
                       class="cart-badge bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium"
                       style="display: none;">
                 </span>
-            {% if disable_drawer %}
-                </div>
+            {% if link_to_cart %}
+                </a>
             {% else %}
             </button>
             {% endif %}
