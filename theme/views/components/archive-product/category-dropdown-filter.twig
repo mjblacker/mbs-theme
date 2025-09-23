@@ -13,11 +13,8 @@
       }
 #}
 
-{% set is_link_category = function('get_field', 'is_link_category', 'option') ?: false %}
-{% set all_expanded_default = function('get_field', 'all_expanded_default', 'option') %}
-{% if all_expanded_default is null %}
-    {% set all_expanded_default = true %}
-{% endif %}
+{% set is_link_category = true %}
+{% set all_expanded_default = true %}
 
 <div class="filter-section mb-4" x-data="categoryDropdownFilter({{ items|json_encode|e('html_attr') }}, {{ is_link_category ? 'true' : 'false' }}, {{ all_expanded_default ? 'true' : 'false' }})">
     

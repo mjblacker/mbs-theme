@@ -67,17 +67,17 @@ class ThemeOptions implements SaplingPlugin
             'page_title' => 'Delivery Info Settings',
             'menu_title' => 'Delivery Info',
             'menu_slug'  => 'delivery-info',
-            'capability' => 'edit_theme_options',
+            'capability' => 'edit_theme_options', 
             'parent_slug' => 'theme-options'
         ));
 
         // Add All Product Option sub-page
-        acf_add_options_sub_page(array(
-            'page_title' => 'AShop Page Settings',
-            'menu_title' => 'Shop page Settings',
-            'menu_slug'  => 'shop-page-option',
-            'capability' => 'edit_theme_options',
-            'parent_slug' => 'theme-options'
-        ));
+        // acf_add_options_sub_page(array(
+        //     'page_title' => 'Shop Page Settings',
+        //     'menu_title' => 'Shop page Settings',
+        //     'menu_slug'  => 'shop-page-option',
+        //     'capability' => 'edit_theme_options',
+        //     'parent_slug' => 'theme-options'
+        // ));
     }
 }
