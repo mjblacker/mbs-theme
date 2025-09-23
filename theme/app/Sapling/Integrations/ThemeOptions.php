@@ -70,5 +70,14 @@ class ThemeOptions implements SaplingPlugin
             'capability' => 'edit_theme_options',
             'parent_slug' => 'theme-options'
         ));
+
+        // Add All Product Option sub-page
+        acf_add_options_sub_page(array(
+            'page_title' => 'AShop Page Settings',
+            'menu_title' => 'Shop page Settings',
+            'menu_slug'  => 'shop-page-option',
+            'capability' => 'edit_theme_options',
+            'parent_slug' => 'theme-options'
+        ));
     }
 }

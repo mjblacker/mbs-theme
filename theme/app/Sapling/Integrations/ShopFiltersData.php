@@ -64,7 +64,8 @@ class ShopFiltersData implements SaplingPlugin
                         'id' => $child->term_id,
                         'name' => $child->name,
                         'slug' => $child->slug,
-                        'count' => $child->count
+                        'count' => $child->count,
+                        'url' => get_term_link($child->term_id, 'product_cat')
                     );
                 }
             }
@@ -74,6 +75,7 @@ class ShopFiltersData implements SaplingPlugin
                 'name' => $category->name,
                 'slug' => $category->slug,
                 'count' => $category->count,
+                'url' => get_term_link($category->term_id, 'product_cat'),
                 'children' => $child_items
             );
         }

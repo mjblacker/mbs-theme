@@ -506,12 +506,13 @@ document.addEventListener("alpine:init", () => {
   }));
 
   // Category Dropdown Filter Component
-  window.categoryDropdownFilter = function (items) {
+  window.categoryDropdownFilter = function (items, isLinkCategory = false, allExpanded = true) {
     return {
       items: items,
       selectedCategories: [],
       expandedCategories: [],
-      allExpanded: true,
+      allExpanded: allExpanded,
+      isLinkCategory: isLinkCategory,
 
       init() {
         if (this.allExpanded) {
@@ -525,6 +526,15 @@ document.addEventListener("alpine:init", () => {
       },
 
       toggleCategory(categoryId) {
+        if (this.isLinkCategory) {
+          // When isLinkCategory is true, navigate to the category URL instead of filtering
+          const category = this.findCategoryById(categoryId);
+          if (category && category.url) {
+            window.location.href = category.url;
+            return;
+          }
+        }
+
         this.toggleSelection(categoryId);
         this.handleParentChildLogic(categoryId);
         this.updateCountsOnly();

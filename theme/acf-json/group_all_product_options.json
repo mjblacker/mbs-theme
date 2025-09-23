@@ -1,0 +1,65 @@
+{
+  "key": "group_all_product_options",
+  "title": "All Product Options",
+  "fields": [
+    {
+      "key": "field_all_expanded_default",
+      "label": "All Expanded by Default",
+      "name": "all_expanded_default",
+      "aria-label": "",
+      "type": "true_false",
+      "instructions": "Set whether category filters should be expanded by default when the page loads",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "message": "Expand all categories by default",
+      "default_value": 1,
+      "ui_on_text": "Yes",
+      "ui_off_text": "No",
+      "ui": 1
+    },
+    {
+      "key": "field_is_link_category",
+      "label": "Use Category Links",
+      "name": "is_link_category",
+      "aria-label": "",
+      "type": "true_false",
+      "instructions": "When enabled, clicking on categories will navigate to the category page instead of filtering products",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "message": "Use category links instead of filters",
+      "default_value": 0,
+      "ui_on_text": "Yes",
+      "ui_off_text": "No",
+      "ui": 1
+    }
+  ],
+  "location": [
+    [
+      {
+        "param": "options_page",
+        "operator": "==",
+        "value": "shop-page-option"
+      }
+    ]
+  ],
+  "menu_order": 0,
+  "position": "normal",
+  "style": "default",
+  "label_placement": "top",
+  "instruction_placement": "label",
+  "hide_on_screen": "",
+  "active": true,
+  "description": "Settings for category filter behavior on product archive pages",
+  "show_in_rest": 0,
+  "modified": 1757989646
+}
