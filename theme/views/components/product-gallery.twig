@@ -24,17 +24,34 @@
             <div class="swiper main-image-swiper aspect-square">
                 <div class="swiper-wrapper">
                     {% for image_id in all_image_ids %}
-                        {% set image_url = function('wp_get_attachment_image_src', image_id, 'large') %}
+                        {# Smart image sizing logic #}
+                        {% set image_meta = function('wp_get_attachment_metadata', image_id) %}
+                        {% set original_width = image_meta and image_meta.width ? image_meta.width : 0 %}
+                        {% set is_small_image = original_width > 0 and original_width < 250 %}
+
+                        {% set image_url = function('wp_get_attachment_image_src', image_id, is_small_image ? 'full' : 'large') %}
                         {% set image_alt = function('get_post_meta', image_id, '_wp_attachment_image_alt', true) %}
                         {% if image_url %}
                             <div class="swiper-slide">
-                                <img 
-                                    src="{{ image_url[0] }}" 
-                                    alt="{{ image_alt ?: post.title }}"
-                                    class="w-full h-full object-cover cursor-zoom-in"
-                                    @click="openLightbox({{ loop.index0 }})"
-                                    loading="{{ loop.first ? 'eager' : 'lazy' }}"
-                                >
+                                {% if is_small_image %}
+                                    <div class="h-full w-full flex items-start justify-center">
+                                        <img
+                                            src="{{ image_url[0] }}"
+                                            alt="{{ image_alt ?: post.title }}"
+                                            class="max-w-full max-h-full object-contain cursor-zoom-in"
+                                            @click="openLightbox({{ loop.index0 }})"
+                                            loading="{{ loop.first ? 'eager' : 'lazy' }}"
+                                        >
+                                    </div>
+                                {% else %}
+                                    <img
+                                        src="{{ image_url[0] }}"
+                                        alt="{{ image_alt ?: post.title }}"
+                                        class="w-full h-full object-cover cursor-zoom-in"
+                                        @click="openLightbox({{ loop.index0 }})"
+                                        loading="{{ loop.first ? 'eager' : 'lazy' }}"
+                                    >
+                                {% endif %}
                             </div>
                         {% endif %}
                     {% endfor %}

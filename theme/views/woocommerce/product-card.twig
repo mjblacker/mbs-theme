@@ -50,7 +50,7 @@
                 <div class="aspect-square rounded-md bg-gray-100 mb-4 overflow-hidden {{ is_small_image ? 'flex items-center justify-center' : '' }}">
                     <img src="{{ is_small_image ? image_full : image_thumb }}"
                          alt="{{ image_alt }}"
-                         class="{{ is_small_image ? 'max-w-full max-h-full object-contain' : 'w-full h-full object-cover' }}">
+                         class="{{ is_small_image ? 'max-w-full max-h-full object-contain mt-0 mb-0' : 'w-full h-full object-cover mt-0 mb-0' }}">
                 </div>
             {% else %}
                 <div class="aspect-square rounded-md bg-gray-100 mb-4 flex items-center justify-center">
