@@ -21,17 +21,19 @@
     <!-- Filter Header -->
     <div class="flex items-center justify-between mb-3">
         <h3 class="text-lg font-semibold text-gray-900 mt-0 mb-0">{{ title }}</h3>
+        {% if not is_link_category %}
         <div class="flex items-center space-x-2 text-xs">
-            <button @click="toggleExpandAll()" 
+            <button @click="toggleExpandAll()"
                     class="text-[#7D8184]"
                     x-text="allExpanded ? 'Collapse All' : 'Expand All'">
             </button>
             <span class="text-gray-400">|</span>
-            <button @click="if(clearAll()) $dispatch('filter-changed')" 
+            <button @click="if(clearAll()) $dispatch('filter-changed')"
                     class="text-[#7D8184]">
                 Clear
             </button>
         </div>
+        {% endif %}
     </div>
 
     <!-- Category Items -->
