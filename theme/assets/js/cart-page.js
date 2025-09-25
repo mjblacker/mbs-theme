@@ -362,8 +362,10 @@ document.addEventListener("alpine:init", () => {
       // Set initial visual state for any pre-selected shipping methods
       this.initializeShippingVisualState();
 
-      // Setup custom shipping address form
-      this.setupCustomShippingForm();
+      // Setup custom shipping address form via ShippingCalculator
+      if (window.ShippingCalculator) {
+        window.ShippingCalculator.setupCustomShippingForm();
+      }
     },
 
     async handleShippingMethodChange(target) {
