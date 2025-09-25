@@ -1,15 +1,19 @@
 {#
   Categories Grid Component
-  - Displays WooCommerce categories from global context
+  - Displays WooCommerce categories from ACF Theme Options
+  - Uses the Category Mega Menu -> Featured Categories field
 #}
 
-{% if wc_categories %}
+{# Get featured categories from ACF Category Mega Menu Options #}
+{% set featured_categories = function('get_field', 'featured_categories', 'options') %}
+
+{% if featured_categories %}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         {# First Column - Categories 1-5 #}
         <div class="space-y-1">
-            {% for category in wc_categories|slice(0, 5) %}
-                <a href="{{ category.url }}"
+            {% for category in featured_categories|slice(0, 5) %}
+                <a href="{{ function('get_term_link', category.term_id) }}"
                    class="block text-mbs-gray-light hover:text-primary-hover transition-colors duration-200 text-base py-1">
                     {{ category.name }}
                 </a>
@@ -18,8 +22,8 @@
 
         {# Second Column - Categories 6-10 #}
         <div class="space-y-1">
-            {% for category in wc_categories|slice(5, 5) %}
-                <a href="{{ category.url }}"
+            {% for category in featured_categories|slice(5, 5) %}
+                <a href="{{ function('get_term_link', category.term_id) }}"
                    class="block text-mbs-gray-light hover:text-primary-hover transition-colors duration-200 text-base py-1">
                     {{ category.name }}
                 </a>
@@ -28,8 +32,8 @@
 
         {# Third Column - Categories 11+ #}
         <div class="space-y-1">
-            {% for category in wc_categories|slice(10, 5) %}
-                <a href="{{ category.url }}"
+            {% for category in featured_categories|slice(10, 5) %}
+                <a href="{{ function('get_term_link', category.term_id) }}"
                    class="block text-mbs-gray-light hover:text-primary-hover transition-colors duration-200 text-base py-1">
                     {{ category.name }}
                 </a>
@@ -38,8 +42,8 @@
 
     </div>
 {% else %}
-    {# No categories found #}
+    {# No categories selected in Theme Options #}
     <div class="text-center py-8 text-gray-500">
-        <p>No categories found.</p>
+        <p>No featured categories configured. Please select categories in Theme Options > Category Mega Menu.</p>
     </div>
 {% endif %}

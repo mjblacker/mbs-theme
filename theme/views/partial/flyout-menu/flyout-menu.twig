@@ -19,7 +19,9 @@
             {# Left Column - Categories Grid #}
             <div class="w-full py-8">
                 <div class="px-4 sm:px-6 lg:pt-12 lg:pb-8">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6 underline">All Categories</h2>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6 underline">
+                        <a href="{{ function('wc_get_page_permalink', 'shop') }}" class="hover:text-gray-700 transition-colors">All Categories</a>
+                    </h2>
                     {% include "partial/flyout-menu/categories-grid.twig" %}
                 </div>
             </div>

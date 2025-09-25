@@ -67,7 +67,16 @@ class ThemeOptions implements SaplingPlugin
             'page_title' => 'Delivery Info Settings',
             'menu_title' => 'Delivery Info',
             'menu_slug'  => 'delivery-info',
-            'capability' => 'edit_theme_options', 
+            'capability' => 'edit_theme_options',
+            'parent_slug' => 'theme-options'
+        ));
+
+        // Add Category Mega Menu sub-page
+        acf_add_options_sub_page(array(
+            'page_title' => 'Category Mega Menu Settings',
+            'menu_title' => 'Category Mega Menu',
+            'menu_slug'  => 'category-mega-menu',
+            'capability' => 'edit_theme_options',
             'parent_slug' => 'theme-options'
         ));
 
