@@ -26,12 +26,12 @@
 <!-- Local Pick Up Info -->
 <div class="p-4 mt-4 text-center">
     <div class="flex items-center justify-center">
-        <img src="{{ function('get_template_directory_uri') }}/assets/images/Icon-Shop.svg" 
-             alt="Shop Icon" 
+        <img src="{{ function('get_template_directory_uri') }}/assets/images/Icon-Shop.svg"
+             alt="Shop Icon"
              class="w-7 h-7 mr-2">
         <span class="text-base font-medium text-gray-800">
-            Local pick up available. 
-            <a href="/locations" class="underline hover:text-gray-900 transition-colors font-light">View Locations</a>
+            Local pick up available.
+            <a href="/locations" @click.prevent="locationsDialogOpen=true" class="underline hover:text-gray-900 transition-colors font-light">View Locations</a>
         </span>
     </div>
 </div>
