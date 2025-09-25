@@ -1,95 +1,100 @@
-{# 
+{#
   Product Card Component
-  
+
   Parameters:
   - post: WP_Post object for the product
-  - product: WC_Product object (optional, will be fetched if not provided)  
+  - product: WC_Product object (optional, will be fetched if not provided)
   - show_brand: boolean - whether to show brand/category (default: true)
   - show_sale_badge: boolean - whether to show sale badge (default: true)
 #}
 
+{# Initialize variables #}
 {% set product = product ?: function('wc_get_product', post.ID) %}
 {% set show_brand = show_brand is defined ? show_brand : true %}
 {% set show_sale_badge = show_sale_badge is defined ? show_sale_badge : true %}
 
+{# Product image configuration #}
+{% set attachment_id = function('get_post_thumbnail_id', post.ID) %}
+{% set image_meta = attachment_id ? function('wp_get_attachment_metadata', attachment_id) : false %}
+{% set original_width = image_meta and image_meta.width ? image_meta.width : 0 %}
+{% set is_small_image = original_width > 0 and original_width < 250 %}
+
+{# Image sources #}
+{% set image_full = post.thumbnail ? post.thumbnail.src('full') : function('get_the_post_thumbnail_url', post.ID, 'full') %}
+{% set image_thumb = post.thumbnail ? post.thumbnail.src('woocommerce_thumbnail') : function('get_the_post_thumbnail_url', post.ID, 'woocommerce_thumbnail') %}
+{% set image_alt = post.thumbnail ? post.thumbnail.alt : (post.post_title ?: post.title) %}
+
+{# Sale badge configuration #}
+{% set regular_price = product ? product.get_regular_price() : null %}
+{% set sale_price = product ? product.get_sale_price() : null %}
+{% set discount_percent = (regular_price and sale_price) ? (((regular_price - sale_price) / regular_price) * 100)|round : 0 %}
+
+{# Brand configuration #}
+{% set product_brands = function('get_the_terms', post.ID, 'product_brand') %}
+{% set brand_name = (product_brands and product_brands is not same as(false)) ? product_brands[0].name : 'BRAND NAME' %}
+
 {% if product %}
     <div class="product-item relative group h-full flex flex-col transition-transform duration-200 ease-in-out hover:-translate-y-1">
-        <!-- Sale Badge -->
-        {% if show_sale_badge and product.is_on_sale() %}
-            {% set regular_price = product.get_regular_price() %}
-            {% set sale_price = product.get_sale_price() %}
-            {% if regular_price and sale_price %}
-                {% set discount_percent = (((regular_price - sale_price) / regular_price) * 100)|round %}
-                <div class="absolute top-3 left-3 bg-green-500 text-white px-2 py-1 rounded z-10 text-xs font-semibold">
-                    -{{ discount_percent }}%
-                </div>
-            {% endif %}
+
+        {# Sale Badge #}
+        {% if show_sale_badge and product.is_on_sale() and discount_percent > 0 %}
+            <div class="absolute top-3 left-3 bg-green-500 text-white px-2 py-1 rounded z-10 text-xs font-semibold">
+                -{{ discount_percent }}%
+            </div>
         {% endif %}
 
         <a href="{{ post.link ?: function('get_permalink', post.ID) }}" class="flex-1 flex flex-col">
-            <!-- Product Image -->
-            {% if post.thumbnail %}
-                <div class="aspect-square overflow-hidden rounded-md bg-gray-100 mb-4">
-                    <img src="{{ post.thumbnail.src('woocommerce_thumbnail') }}" 
-                         alt="{{ post.thumbnail.alt }}"
-                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-out mt-0 mb-0">
+
+            {# Product Image #}
+            {% if image_thumb %}
+                <div class="aspect-square rounded-md bg-gray-100 mb-4 overflow-hidden {{ is_small_image ? 'flex items-center justify-center' : '' }}">
+                    <img src="{{ is_small_image ? image_full : image_thumb }}"
+                         alt="{{ image_alt }}"
+                         class="{{ is_small_image ? 'max-w-full max-h-full object-contain' : 'w-full h-full object-cover' }}">
                 </div>
             {% else %}
-                {% set thumbnail = function('get_the_post_thumbnail_url', post.ID, 'woocommerce_thumbnail') %}
-                {% if thumbnail %}
-                    <div class="aspect-square rounded-md overflow-hidden bg-gray-100 mb-4">
-                        <img src="{{ thumbnail }}" 
-                             alt="{{ post.post_title ?: post.title }}"
-                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-out mt-0 mb-0">
-                    </div>
-                {% else %}
-                    <div class="aspect-square rounded-md bg-gray-100 mb-4 flex items-center justify-center">
-                        <span class="text-gray-400 text-sm">No Image</span>
-                    </div>
-                {% endif %}
+                <div class="aspect-square rounded-md bg-gray-100 mb-4 flex items-center justify-center">
+                    <span class="text-gray-400 text-sm">No Image</span>
+                </div>
             {% endif %}
-            
-            <!-- Product Info -->
+
+            {# Product Info #}
             <div class="flex flex-col flex-1">
-                <!-- Brand Name -->
+
+                {# Brand Name #}
                 {% if show_brand %}
-                    {% set product_brands = function('get_the_terms', post.ID, 'product_brand') %}
-                    {% if product_brands and product_brands is not same as(false) %}
-                        <div class="text-gray-500 uppercase tracking-wide mb-1 text-xs font-normal leading-tight">
-                            {{ product_brands[0].name }}
-                        </div>
-                    {% else %}
-                        <div class="text-gray-500 uppercase tracking-wide mb-1 text-xs font-normal leading-tight">
-                            BRAND NAME
-                        </div>
-                    {% endif %}
+                    <div class="text-gray-500 uppercase tracking-wide mb-1 text-xs font-normal leading-tight">
+                        {{ brand_name }}
+                    </div>
                 {% endif %}
-                
-                <!-- Product Name -->
-                <h3 class="text-gray-900 leading-tight mb-2 flex-1 text-product-title font-semibold mt-2.5 line-clamp-2">{{ post.title ?: post.post_title }}</h3>
-                
-                <!-- Price -->
+
+                {# Product Name #}
+                <h3 class="text-gray-900 leading-tight mb-2 flex-1 text-product-title font-semibold mt-2.5 line-clamp-2">
+                    {{ post.title ?: post.post_title }}
+                </h3>
+
+                {# Price #}
                 <div class="flex items-center flex-wrap mb-2">
                     {% if product.is_type('variable') %}
-                        <!-- Variable product - show price range -->
+                        {# Variable product - show price range #}
                         {% set price_html = product.get_price_html() %}
                         {% if price_html %}
                             <span class="text-gray-900 text-product-title font-normal leading-tight">
                                 {{ price_html|raw }}
                             </span>
                         {% endif %}
-                    {% elseif product.is_on_sale() and product.get_sale_price() %}
-                        <!-- Simple product on sale -->
+                    {% elseif product.is_on_sale() and sale_price %}
+                        {# Simple product on sale #}
                         <span class="text-gray-900 text-product-title font-normal leading-tight">
-                            {{ function('wc_price', product.get_sale_price())|raw }}
+                            {{ function('wc_price', sale_price)|raw }}
                         </span>
-                        {% if product.get_regular_price() %}
+                        {% if regular_price %}
                             <span class="text-gray-500 line-through ml-2 text-base font-normal">
-                                {{ function('wc_price', product.get_regular_price())|raw }}
+                                {{ function('wc_price', regular_price)|raw }}
                             </span>
                         {% endif %}
                     {% else %}
-                        <!-- Regular product price -->
+                        {# Regular product price #}
                         <span class="text-gray-900 text-product-title font-normal leading-tight">
                             {{ function('wc_price', product.get_price())|raw }}
                         </span>
@@ -98,11 +103,11 @@
                 </div>
             </div>
         </a>
-        
-        <!-- Add to Cart Button -->
+
+        {# Add to Cart / View Options Button #}
         {% if product.is_type('simple') %}
             <div x-data="productCardCart()" class="flex items-center gap-3 mt-2">
-                <button @click="addToCart('{{ product.get_id() }}')" 
+                <button @click="addToCart('{{ product.get_id() }}')"
                         :class="addToCartButtonClasses"
                         :disabled="loading"
                         class="bg-[#FFF200] text-black transition-colors py-2 px-4 text-xs font-semibold uppercase border-0 rounded-none flex-shrink-0 cursor-pointer">
@@ -115,9 +120,9 @@
                         Adding...
                     </span>
                 </button>
-                
-                <!-- Success Message -->
-                <div x-show="showSuccess" 
+
+                {# Success Message #}
+                <div x-show="showSuccess"
                      @click="goToCart()"
                      x-text="successMessage"
                      :class="{ 'cursor-pointer hover:underline': isViewCartLink, 'cursor-default': !isViewCartLink }"
@@ -132,12 +137,12 @@
                 </div>
             </div>
         {% else %}
-        <div class="flex items-center gap-3 mt-2">
-            <a href="{{ post.link ?: function('get_permalink', post.ID) }}" 
-               class="bg-[#FFF200] !text-black transition-colors py-2 px-4 mt-2 inline-block text-xs font-semibold uppercase no-underline border-0 rounded-none">
-                View Options
-            </a>
-        </div>
+            <div class="flex items-center gap-3 mt-2">
+                <a href="{{ post.link ?: function('get_permalink', post.ID) }}"
+                   class="bg-[#FFF200] !text-black transition-colors py-2 px-4 mt-2 inline-block text-xs font-semibold uppercase no-underline border-0 rounded-none">
+                    View Options
+                </a>
+            </div>
         {% endif %}
     </div>
 {% endif %}
