@@ -2,14 +2,23 @@
   Footer Categories Section - Part 1
   - First half of product category navigation links using reusable component
   - Shows "Categories" heading
-  - Displays first 5 categories
+  - Uses first half of Footer Categories menu with fallback to WooCommerce categories
 #}
 
-{# WooCommerce categories are now available globally via context #}
+{# Use custom menu if available, otherwise fallback to WooCommerce categories #}
+{% set footer_menu_items = [] %}
+{% if menu.footer_categories and menu.footer_categories.items %}
+    {% for item in menu.footer_categories.items %}
+        {% set footer_menu_items = footer_menu_items|merge([{
+            'name': item.title,
+            'url': item.link
+        }]) %}
+    {% endfor %}
+{% endif %}
 
 {% include "partial/category-column.twig" with {
     'show_heading': true,
-    'categories': wc_categories,
+    'categories': footer_menu_items|length > 0 ? footer_menu_items : wc_categories,
     'start_index': 0,
     'limit': 5
 } %}

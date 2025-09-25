@@ -29,7 +29,8 @@ class Sapling extends \Timber\Site
         $context['site'] = $this;
         $context['menu'] = array(
             'primary' => Timber::get_menu('primary'),
-            'footer'  => Timber::get_menu('footer')
+            'footer'  => Timber::get_menu('footer'),
+            'footer_categories' => Timber::get_menu('footer-categories')
         );
 
         // Add theme options if ACF is available
@@ -93,7 +94,8 @@ class Sapling extends \Timber\Site
         add_theme_support('menus');
         register_nav_menus( array(
 			'primary' => __( 'Primary Menu', 'sapling' ),
-			'footer'  => __( 'Footer Menu', 'sapling' )
+			'footer'  => __( 'Footer Menu', 'sapling' ),
+			'footer-categories' => __( 'Footer Categories', 'sapling' )
 		) );
         add_theme_support('post-thumbnails');
         add_theme_support('title-tag');
