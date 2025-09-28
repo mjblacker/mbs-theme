@@ -1,27 +1,53 @@
-document.addEventListener("alpine:init", () => {
+// Initialize shipping calculator functionality
+const initShippingCalculator = () => {
+  // Prevent multiple initializations more aggressively
+  if (window.ShippingCalculatorInitialized) {
+    return;
+  }
+
+  window.ShippingCalculatorInitialized = true;
+
   const ShippingCalculator = {
     setupCustomShippingForm() {
-      // Handle toggle button
-      document.addEventListener("click", (e) => {
-        if (e.target.matches(".shipping-address-toggle")) {
-          e.preventDefault();
-          const form = document.querySelector("#custom-shipping-form");
-          const button = e.target;
-
-          if (form) {
-            const isHidden = form.classList.contains("hidden");
-
-            if (isHidden) {
-              form.classList.remove("hidden");
-              button.setAttribute("aria-expanded", "true");
-            } else {
-              form.classList.add("hidden");
-              button.setAttribute("aria-expanded", "false");
-            }
-          }
+      // Always try to set up, as DOM might have been refreshed
+      const toggleButton = document.querySelector(".shipping-address-toggle");
+      if (toggleButton) {
+        // Check if we already have our event listener
+        if (!toggleButton.hasAttribute('data-shipping-calculator-attached')) {
+          // Add our event listener directly to the button
+          toggleButton.addEventListener("click", this.handleToggleClick.bind(this));
+          toggleButton.setAttribute('data-shipping-calculator-attached', 'true');
         }
-      });
+      }
+    },
 
+    // Method to re-initialize after DOM updates
+    reinitialize() {
+      this.setupCustomShippingForm();
+      this.setupFormSubmission();
+    },
+
+    handleToggleClick(e) {
+      e.preventDefault();
+      e.stopPropagation(); // Prevent event bubbling
+
+      const form = document.querySelector("#custom-shipping-form");
+      const button = e.target;
+
+      if (form) {
+        const isHidden = form.classList.contains("hidden");
+
+        if (isHidden) {
+          form.classList.remove("hidden");
+          button.setAttribute("aria-expanded", "true");
+        } else {
+          form.classList.add("hidden");
+          button.setAttribute("aria-expanded", "false");
+        }
+      }
+    },
+
+    setupFormSubmission() {
       // Handle form submission
       document.addEventListener("submit", (e) => {
         if (e.target.matches(".custom-shipping-calculator")) {
@@ -100,7 +126,6 @@ document.addEventListener("alpine:init", () => {
           throw new Error("Failed to update shipping address");
         }
       } catch (error) {
-        console.error("Error updating shipping address:", error);
         this.showShippingError(
           "Failed to update shipping address. Please try again."
         );
@@ -158,6 +183,7 @@ document.addEventListener("alpine:init", () => {
 
     init() {
       this.setupCustomShippingForm();
+      this.setupFormSubmission();
     },
   };
 
@@ -166,4 +192,11 @@ document.addEventListener("alpine:init", () => {
 
   // Make available globally for other scripts
   window.ShippingCalculator = ShippingCalculator;
-});
+};
+
+// Initialize only once when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initShippingCalculator);
+} else {
+  initShippingCalculator();
+}

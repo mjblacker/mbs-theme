@@ -219,7 +219,7 @@ document.addEventListener("alpine:init", () => {
 
     async refreshCartFragments() {
       const cartItemsSection = document.querySelector(".cart-items-section");
-      const cartTotals = document.querySelector(".lg\\:col-span-5");
+      const cartTotals = document.querySelector(".woocommerce-cart-form__contents");
 
       // Disable cart areas during refresh
       this.disableCartAreas(cartItemsSection, cartTotals);
@@ -259,8 +259,8 @@ document.addEventListener("alpine:init", () => {
         }
 
         // Update cart totals area
-        const currentCartTotals = document.querySelector(".lg\\:col-span-5");
-        const newCartTotals = doc.querySelector(".lg\\:col-span-5");
+        const currentCartTotals = document.querySelector(".woocommerce-cart-form__contents");
+        const newCartTotals = doc.querySelector(".woocommerce-cart-form__contents");
 
         if (currentCartTotals && newCartTotals) {
           currentCartTotals.innerHTML = newCartTotals.innerHTML;
@@ -290,6 +290,11 @@ document.addEventListener("alpine:init", () => {
 
         // Re-initialize shipping visual state after fragment refresh
         this.initializeShippingVisualState();
+
+        // Re-initialize shipping calculator after DOM refresh
+        if (window.ShippingCalculator && window.ShippingCalculator.reinitialize) {
+          window.ShippingCalculator.reinitialize();
+        }
       } catch (error) {
         console.error("Error refreshing cart fragments:", error);
         // Fallback to page reload if fragment update fails
@@ -297,6 +302,32 @@ document.addEventListener("alpine:init", () => {
       } finally {
         // Re-enable cart areas after refresh
         this.enableCartAreas(cartItemsSection, cartTotals);
+      }
+    },
+
+    updateCartFragmentsFromResponse(fragments) {
+      // Update cart fragments directly from WooCommerce response
+      // This is the standard WooCommerce way to update cart content
+      for (const [selector, html] of Object.entries(fragments)) {
+        const element = document.querySelector(selector);
+        if (element) {
+          element.innerHTML = html;
+
+          // Reinitialize Alpine.js for updated content
+          if (window.Alpine) {
+            Alpine.initTree(element);
+          }
+        }
+      }
+
+      // Re-setup handlers for new content
+      this.setupUpdateButton();
+      this.setupQuantityTracking();
+      this.initializeShippingVisualState();
+
+      // Re-initialize shipping calculator
+      if (window.ShippingCalculator && window.ShippingCalculator.reinitialize) {
+        window.ShippingCalculator.reinitialize();
       }
     },
 
@@ -389,31 +420,62 @@ document.addEventListener("alpine:init", () => {
             shippingMethods[index] = input.value;
           });
 
+        // Use the same approach as checkout page for better compatibility
+        const formData = new FormData();
+
+        // Add shipping methods to form data
+        Object.keys(shippingMethods).forEach((index) => {
+          formData.set(`shipping_method[${index}]`, shippingMethods[index]);
+        });
+
+        // Add required WooCommerce parameters
+        formData.set("action", "woocommerce_update_shipping_method");
+        formData.set("security", window.wc_cart_params?.update_shipping_method_nonce || "");
+
+        const ajaxUrl = window.wc_cart_params?.wc_ajax_url?.replace(
+          "%%endpoint%%",
+          "update_shipping_method"
+        ) || "/wp-admin/admin-ajax.php?action=woocommerce_update_shipping_method";
+
         // Update shipping method via AJAX
-        const response = await fetch(
-          window.wc_cart_params?.wc_ajax_url?.replace(
-            "%%endpoint%%",
-            "update_shipping_method"
-          ) ||
-            "/wp-admin/admin-ajax.php?action=woocommerce_update_shipping_method",
-          {
-            method: "POST",
-            credentials: "same-origin",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: new URLSearchParams({
-              shipping_method: JSON.stringify(shippingMethods),
-              security:
-                window.wc_cart_params?.update_shipping_method_nonce || "",
-            }),
-          }
-        );
+        const response = await fetch(ajaxUrl, {
+          method: "POST",
+          credentials: "same-origin",
+          body: formData,
+        });
 
         if (response.ok) {
-          // Refresh cart fragments to show updated totals
-          await this.refreshCartFragments();
-          this.dispatchCartUpdateEvent();
+          // Get response text first, then try to parse
+          const responseText = await response.text();
+
+          try {
+            // Try to parse as JSON
+            const result = JSON.parse(responseText);
+
+            // Check if we have fragments to update
+            if (result && result.fragments) {
+              // Update fragments directly (WooCommerce standard approach)
+              this.updateCartFragmentsFromResponse(result.fragments);
+            } else {
+              // Fallback to full refresh
+              await this.refreshCartFragments();
+            }
+            this.dispatchCartUpdateEvent();
+          } catch (error) {
+            // Response is HTML, not JSON
+            if (responseText && responseText.includes('cart_totals')) {
+              // Wait a bit to ensure the server-side session is updated
+              await new Promise(resolve => setTimeout(resolve, 200));
+
+              // Refresh cart fragments to show updated totals
+              await this.refreshCartFragments();
+              this.dispatchCartUpdateEvent();
+            } else {
+              // Fallback to fragment refresh
+              await this.refreshCartFragments();
+              this.dispatchCartUpdateEvent();
+            }
+          }
         }
       } catch (error) {
         console.error("Error updating shipping method:", error);
