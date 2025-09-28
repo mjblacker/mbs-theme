@@ -58,8 +58,10 @@ document.addEventListener("alpine:init", () => {
 
       // Initialize selected payment method
       const selectedPayment = document.querySelector(".payment_method:checked");
+
       if (selectedPayment) {
         this.selectedPaymentMethod = selectedPayment.value;
+        this.updatePaymentMethodVisuals(selectedPayment);
         this.togglePaymentBox(selectedPayment.value, true);
       }
     },
@@ -135,8 +137,27 @@ document.addEventListener("alpine:init", () => {
         if (e.target.matches(".payment_method")) {
           const paymentMethod = e.target.value;
           this.selectedPaymentMethod = paymentMethod;
+          this.updatePaymentMethodVisuals(e.target);
           this.togglePaymentBox(paymentMethod, true);
-          this.updateCheckout();
+          // Don't call updateCheckout() for payment method changes - it resets the selection
+          // WooCommerce will handle payment method validation during form submission
+        }
+      });
+
+      // Also handle clicks on labels for better UX
+      document.addEventListener("click", (e) => {
+        if (e.target.closest(".payment-method-label")) {
+          const label = e.target.closest(".payment-method-label");
+          const forAttr = label.getAttribute("for");
+
+          if (forAttr) {
+            const radioInput = document.querySelector(`#${forAttr}`);
+
+            if (radioInput && !radioInput.checked) {
+              radioInput.checked = true;
+              radioInput.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+          }
         }
       });
     },
@@ -221,18 +242,24 @@ document.addEventListener("alpine:init", () => {
 
           if (contentType && contentType.includes("application/json")) {
             // Handle JSON response from our custom handler
-            const result = await response.json();
+            try {
+              const result = await response.json();
 
-            if (result.success) {
-              this.updateCheckout();
-              this.couponCode = "";
-              // Update applied coupons display
-              setTimeout(() => {
-                this.updateAppliedCoupons();
-              }, 1000);
-            } else {
-              // Show error message from server
-              this.showError(result.data || "Failed to apply coupon.");
+              if (result.success) {
+                this.updateCheckout();
+                this.couponCode = "";
+                // Update applied coupons display
+                setTimeout(() => {
+                  this.updateAppliedCoupons();
+                }, 1000);
+              } else {
+                // Show error message from server
+                this.showError(result.data || "Failed to apply coupon.");
+              }
+            } catch (jsonError) {
+              console.error("JSON parsing error:", jsonError);
+              console.error("Response was supposed to be JSON but parsing failed");
+              this.showError("Server returned invalid response. Please try again.");
             }
           } else {
             // Handle HTML response from WooCommerce default handler
@@ -303,6 +330,28 @@ document.addEventListener("alpine:init", () => {
       }
     },
 
+    updatePaymentMethodVisuals(selectedInput) {
+      // Update visual state of all payment method radio buttons
+      document.querySelectorAll(".payment_method").forEach((input) => {
+        const option = input.closest(".payment-method-option");
+        const label = option?.querySelector(".payment-method-label");
+        const radioButton = label?.querySelector(".radio-button");
+        const radioInner = radioButton?.querySelector(".radio-inner");
+
+        if (input === selectedInput) {
+          // Selected state - only show radio dot
+          radioButton?.classList.add("border-gray-400");
+          radioInner?.classList.remove("scale-0");
+          radioInner?.classList.add("scale-100");
+        } else {
+          // Unselected state - hide radio dot
+          radioButton?.classList.remove("border-gray-400");
+          radioInner?.classList.remove("scale-100");
+          radioInner?.classList.add("scale-0");
+        }
+      });
+    },
+
     togglePaymentBox(paymentMethod, show) {
       // Hide all payment boxes
       document.querySelectorAll(".payment-box").forEach((box) => {
@@ -366,6 +415,10 @@ document.addEventListener("alpine:init", () => {
 
       this.lastUpdateId = updateId;
 
+      // Save current payment method selection before refresh
+      const currentPaymentMethod = document.querySelector(".payment_method:checked");
+      const savedPaymentMethodValue = currentPaymentMethod ? currentPaymentMethod.value : null;
+
       try {
         // Fetch the current checkout page to get updated totals
         const response = await fetch(window.location.href, {
@@ -399,6 +452,17 @@ document.addEventListener("alpine:init", () => {
 
             // Re-initialize shipping visual state (but don't trigger updates)
             this.initializeShippingVisualState();
+
+            // Restore payment method selection if it was saved
+            if (savedPaymentMethodValue) {
+              const paymentMethodToRestore = document.querySelector(`input[name="payment_method"][value="${savedPaymentMethodValue}"]`);
+              if (paymentMethodToRestore) {
+                paymentMethodToRestore.checked = true;
+                this.selectedPaymentMethod = savedPaymentMethodValue;
+                this.updatePaymentMethodVisuals(paymentMethodToRestore);
+                this.togglePaymentBox(savedPaymentMethodValue, true);
+              }
+            }
 
             // Restore update state
             this.isUpdating = wasUpdating;

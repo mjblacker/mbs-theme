@@ -14,16 +14,17 @@
             {% for gateway_id, gateway in available_gateways %}
                 {% if gateway.enabled == 'yes' %}
                     <div class="payment-method-option">
-                        <input type="radio" 
-                               id="payment_method_{{ gateway_id }}" 
-                               class="payment_method sr-only" 
-                               name="payment_method" 
-                               value="{{ gateway_id }}" 
+                        <input type="radio"
+                               id="payment_method_{{ gateway_id }}"
+                               class="payment_method"
+                               name="payment_method"
+                               value="{{ gateway_id }}"
+                               style="position: absolute; opacity: 0;"
                                {{ loop.first ? 'checked' : '' }} />
                         
-                        <label for="payment_method_{{ gateway_id }}" class="payment-method-label flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300 transition-colors">
-                            <div class="radio-button flex-shrink-0 w-4 h-4 border-2 border-gray-300 rounded-full mr-3 relative">
-                                <div class="radio-inner absolute inset-0.5 bg-black rounded-full scale-0 transition-transform"></div>
+                        <label for="payment_method_{{ gateway_id }}" class="payment-method-label flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-gray-300 transition-all duration-200">
+                            <div class="radio-button flex-shrink-0 w-5 h-5 border-2 border-gray-300 rounded-full mr-3 relative transition-all duration-200">
+                                <div class="radio-inner absolute inset-1 bg-black rounded-full scale-0 transition-transform duration-200"></div>
                             </div>
                             
                             <div class="payment-details flex-1">
@@ -51,7 +52,7 @@
                                             <input type="text" 
                                                    id="card_number" 
                                                    name="card_number"
-                                                   class="w-full px-3 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                                   class="w-full px-3 py-3 border border-gray-300 rounded-md" 
                                                    placeholder="1234 5678 9123 1111" />
                                         </div>
                                         
@@ -63,7 +64,7 @@
                                                 <input type="text" 
                                                        id="card_expiry" 
                                                        name="card_expiry"
-                                                       class="w-full px-3 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                                       class="w-full px-3 py-3 border border-gray-300 rounded-md " 
                                                        placeholder="MM / YY" />
                                             </div>
                                             
@@ -74,7 +75,7 @@
                                                 <input type="text" 
                                                        id="card_cvc" 
                                                        name="card_cvc"
-                                                       class="w-full px-3 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                                       class="w-full px-3 py-3 border border-gray-300 rounded-md" 
                                                        placeholder="CVC" />
                                             </div>
                                         </div>
