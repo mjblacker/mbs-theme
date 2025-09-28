@@ -2,9 +2,9 @@
    Props: cart_item_key, cart_item, product, product_post, image_id, brand_id
 #}
 
-<div class="cart-item grid grid-cols-1 md:grid-cols-12 gap-4 py-6 border-b border-gray-100 last:border-b-0" x-data="cartItem()">
+<div class="cart-item grid grid-cols-1 lg:grid-cols-12 gap-2 lg:gap-4 py-6 border-b border-gray-100 last:border-b-0" x-data="cartItem()">
     <!-- Remove Button -->
-    <div class="md:col-span-1 flex items-center justify-center">
+    <div class="lg:col-span-1 flex items-center justify-center">
         <button @click="removeItem('{{ cart_item_key }}')"
                 :disabled="removing"
                 class="cart-remove-item text-gray-400 hover:text-red-500 focus:outline-none transition-colors"
@@ -16,7 +16,7 @@
     </div>
 
     <!-- Product Info -->
-    <div class="md:col-span-5 flex items-start space-x-4">
+    <div class="lg:col-span-5 flex items-start space-x-2 lg:space-x-4">
         <!-- Product Image -->
         <div class="flex-shrink-0 w-20 h-20 bg-gray-100 rounded">
             {% set product_image = function('wp_get_attachment_image_url', function('get_post_thumbnail_id', image_id), 'thumbnail') %}
@@ -57,9 +57,9 @@
     </div>
 
     <!-- Quantity -->
-    <div class="md:col-span-2 flex items-center justify-center md:justify-center">
+    <div class="lg:col-span-2 flex items-center justify-center lg:justify-center">
         <input type="number" 
-               class="cart-qty-input w-16 text-center border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-opacity" 
+               class="cart-qty-input w-16 max-w-full text-center border border-gray-300 rounded px-2 lg:px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-opacity" 
                value="{{ cart_item.quantity }}"
                :disabled="updating || removing"
                :class="{ 'opacity-50': updating || removing }"
@@ -70,7 +70,7 @@
     </div>
 
     <!-- Subtotal -->
-    <div class="md:col-span-4 flex items-center justify-end">
+    <div class="lg:col-span-4 flex items-center justify-end">
         {% include 'components/cart/cart-item-subtotal.twig' with {
             product: product,
             cart_item: cart_item
