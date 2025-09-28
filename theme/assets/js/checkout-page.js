@@ -30,8 +30,14 @@ document.addEventListener("alpine:init", () => {
     shipToDifferentAddress: false,
     selectedPaymentMethod: "",
     couponCode: "",
+    isUpdating: false,
+    shippingUpdateTimeout: null,
+    lastUpdateId: null,
 
     init() {
+      // Store instance globally for debugging and direct access
+      window.checkoutPageInstance = this;
+
       this.setupEventListeners();
       this.setupShippingHandlers();
       this.setupPaymentHandlers();
@@ -233,110 +239,42 @@ document.addEventListener("alpine:init", () => {
     },
 
     async handleShippingMethodChange(target) {
-      const reviewOrder = document.querySelector(
-        CheckoutUtils.selectors.reviewOrder
-      );
-
-      // Show loading state
-      if (reviewOrder) {
-        reviewOrder.style.opacity = "0.6";
-        reviewOrder.style.pointerEvents = "none";
-      }
-
-      try {
-        const shippingMethods = {};
-        document
-          .querySelectorAll(
-            '.shipping_method:checked, .shipping_method[type="hidden"]'
-          )
-          .forEach((input) => {
-            const index = input.getAttribute("data-index") || "0";
-            shippingMethods[index] = input.value;
-          });
-
-        // Update shipping method via AJAX
-        await this.updateShippingMethod(shippingMethods);
-      } catch (error) {
-        console.error("Error updating shipping method:", error);
-      } finally {
-        // Remove loading state
-        if (reviewOrder) {
-          reviewOrder.style.opacity = "";
-          reviewOrder.style.pointerEvents = "";
-        }
-      }
-    },
-
-    async updateShippingMethod(shippingMethods) {
-      // console.log('Updating shipping method:', shippingMethods);
-
-      // Collect form data for proper checkout update
-      const form = document.querySelector(CheckoutUtils.selectors.form);
-      if (!form) {
-        console.error("Checkout form not found");
+      // Don't trigger update if we're already updating (prevents loops)
+      if (this.isUpdating) {
         return;
       }
 
-      const formData = new FormData(form);
-
-      // Override shipping methods in form data
-      Object.keys(shippingMethods).forEach((index) => {
-        formData.set(`shipping_method[${index}]`, shippingMethods[index]);
-      });
-
-      // Add security nonce and action
-      formData.set(
-        "security",
-        window.wc_checkout_params?.update_order_review_nonce || ""
-      );
-      formData.set("action", "woocommerce_update_order_review");
-
-      // Also add it as URL parameter for compatibility
-      const ajaxUrl =
-        window.wc_checkout_params?.wc_ajax_url?.replace(
-          "%%endpoint%%",
-          "update_order_review"
-        ) || "/wp-admin/admin-ajax.php?action=woocommerce_update_order_review";
-
-      // console.log('Making request to:', ajaxUrl);
-
-      try {
-        const response = await fetch(ajaxUrl, {
-          method: "POST",
-          credentials: "same-origin",
-          body: formData,
-        });
-
-        // console.log('Response status:', response.status);
-
-        if (response.ok) {
-          const result = await response.json();
-          // console.log('Update result:', result);
-
-          // Handle both fragments and HTML response
-          if (result.fragments) {
-            this.updateCheckoutFragments(result);
-          } else if (result.result) {
-            this.handleCheckoutResponse(result.result);
-          } else if (result.html) {
-            this.handleCheckoutResponse(result.html);
-          } else {
-            // Fallback: trigger full checkout update
-            this.updateCheckout();
-          }
-        } else {
-          console.error(
-            "Failed to update shipping method:",
-            response.statusText
-          );
-          // Fallback: trigger full checkout update
-          this.updateCheckout();
-        }
-      } catch (error) {
-        console.error("Error updating shipping method:", error);
-        // Fallback: trigger full checkout update
-        this.updateCheckout();
+      // Clear any existing timeout
+      if (this.shippingUpdateTimeout) {
+        clearTimeout(this.shippingUpdateTimeout);
       }
+
+      // Debounce the update to prevent rapid consecutive calls
+      this.shippingUpdateTimeout = setTimeout(async () => {
+        const reviewOrder = document.querySelector(
+          CheckoutUtils.selectors.reviewOrder
+        );
+
+        // Show loading state
+        if (reviewOrder) {
+          reviewOrder.style.opacity = "0.6";
+          reviewOrder.style.pointerEvents = "none";
+        }
+
+        try {
+          // Simply trigger the standard WooCommerce checkout update
+          // This is more reliable than trying to update just shipping methods
+          await this.updateCheckout();
+        } catch (error) {
+          console.error("Error updating shipping method:", error);
+        } finally {
+          // Remove loading state
+          if (reviewOrder) {
+            reviewOrder.style.opacity = "";
+            reviewOrder.style.pointerEvents = "";
+          }
+        }
+      }, 300); // 300ms debounce
     },
 
     async applyCoupon() {
@@ -475,47 +413,86 @@ document.addEventListener("alpine:init", () => {
     },
 
     async updateCheckout() {
-      try {
-        const form = document.querySelector(CheckoutUtils.selectors.form);
-        if (!form) {
-          return;
-        }
+      // Prevent rapid consecutive calls
+      if (this.isUpdating) {
+        return;
+      }
 
+      // Set flag immediately and keep it set longer to prevent cascading calls
+      this.isUpdating = true;
+
+      try {
         // Show loading state
         this.showCheckoutLoadingState(true);
 
-        const formData = new FormData(form);
-        formData.set("action", "woocommerce_update_order_review");
-        formData.set(
-          "security",
-          window.wc_checkout_params?.update_order_review_nonce || ""
-        );
+        // Use the manual refresh approach directly since it's reliable
+        await this.manualRefreshOrderSummary();
 
-        const ajaxUrl =
-          window.wc_checkout_params?.wc_ajax_url?.replace(
-            "%%endpoint%%",
-            "update_order_review"
-          ) ||
-          "/wp-admin/admin-ajax.php?action=woocommerce_update_order_review";
+        // Keep the flag set for a brief period to prevent immediate re-triggers
+        setTimeout(() => {
+          this.isUpdating = false;
+        }, 500);
 
-        const response = await fetch(ajaxUrl, {
-          method: "POST",
-          body: formData,
-          credentials: "same-origin",
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-
-          if (result.fragments || result.result) {
-            this.updateCheckoutFragments(result);
-          }
-        }
       } catch (error) {
-        // Silent fail - checkout will still work on page refresh
+        console.error('updateCheckout error:', error);
+        this.isUpdating = false;
       } finally {
         // Remove loading state
         this.showCheckoutLoadingState(false);
+      }
+    },
+
+    async manualRefreshOrderSummary() {
+      // Create unique execution ID for this call
+      const updateId = Date.now() + Math.random();
+
+      // Check if this is a duplicate call
+      if (this.lastUpdateId && (updateId - this.lastUpdateId) < 1000) {
+        return;
+      }
+
+      this.lastUpdateId = updateId;
+
+      try {
+        // Fetch the current checkout page to get updated totals
+        const response = await fetch(window.location.href, {
+          method: 'GET',
+          credentials: 'same-origin',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+        });
+
+        if (response.ok) {
+          const html = await response.text();
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+
+          // Update the order summary section
+          const currentOrderSummary = document.querySelector('.order-summary');
+          const newOrderSummary = doc.querySelector('.order-summary');
+
+          if (currentOrderSummary && newOrderSummary) {
+            // Temporarily disable update to prevent loops during refresh
+            const wasUpdating = this.isUpdating;
+            this.isUpdating = true;
+
+            currentOrderSummary.innerHTML = newOrderSummary.innerHTML;
+
+            // Re-initialize Alpine.js for the updated content (but disable event handling temporarily)
+            if (window.Alpine) {
+              Alpine.initTree(currentOrderSummary);
+            }
+
+            // Re-initialize shipping visual state (but don't trigger updates)
+            this.initializeShippingVisualState();
+
+            // Restore update state
+            this.isUpdating = wasUpdating;
+          }
+        }
+      } catch (error) {
+        console.error('Manual refresh failed:', error);
       }
     },
 
@@ -1000,20 +977,8 @@ document.addEventListener("alpine:init", () => {
     },
 
     checkAndRefreshShippingOnLoad() {
-      // Check if there's already a postcode filled in and refresh shipping methods
-      const billingPostcode = document.querySelector('input[name="billing_postcode"]');
-      const shippingPostcode = document.querySelector('input[name="shipping_postcode"]');
-
-      // Check if either billing or shipping postcode has a value
-      const hasBillingPostcode = billingPostcode && billingPostcode.value.trim().length > 0;
-      const hasShippingPostcode = shippingPostcode && shippingPostcode.value.trim().length > 0;
-
-      if (hasBillingPostcode || hasShippingPostcode) {
-        // Delay the update slightly to ensure the page is fully loaded
-        setTimeout(() => {
-          this.updateCheckout();
-        }, 500);
-      }
+      // Note: Automatic refresh on load disabled since we now use manual refresh
+      // This was causing duplicate updates when shipping methods are selected
     },
 
     updateOrderSummaryFromTable(tableHtml, orderSummary) {

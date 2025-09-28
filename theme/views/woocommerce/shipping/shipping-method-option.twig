@@ -24,10 +24,11 @@
            data-index="{{ package_key }}"
            id="{{ input_id }}"
            value="{{ method.id }}"
-           class="shipping_method sr-only"
+           class="shipping_method"
+           style="position: absolute; opacity: 0; pointer-events: none;"
            {{ is_checked ? 'checked' : '' }} />
 
-    <label for="{{ input_id }}" class="shipping-method-label grid grid-cols-12 !items-start p-2 rounded-lg cursor-pointer">
+    <label for="{{ input_id }}" class="shipping-method-label grid grid-cols-12 !items-start p-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
         <div class="col-span-1 flex justify-center">
             <div class="radio-button flex-shrink-0 w-5 h-5 border-2 border-gray-300 rounded-full relative mt-[3px]">
                 <div class="radio-inner absolute inset-0.5 bg-black rounded-full scale-0 transition-transform"></div>

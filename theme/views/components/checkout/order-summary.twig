@@ -101,11 +101,10 @@
 
     <!-- Place Order Button -->
     <div class="place-order-section">
-        {{ function('wp_nonce_field', 'woocommerce-process_checkout', 'woocommerce-process-checkout-nonce')|raw }}
-        <button type="submit" 
+        <button type="submit"
                 class="w-full bg-[#FFF200] hover:bg-yellow-500 text-black py-4 px-6 rounded-lg font-semibold text-lg transition-colors"
-                name="woocommerce_checkout_place_order" 
-                id="place_order" 
+                name="woocommerce_checkout_place_order"
+                id="place_order"
                 value="{{ function('esc_attr', wc_checkout.get_value('order_button_text') ?: 'Place Order') }}"
                 data-value="{{ function('esc_attr', wc_checkout.get_value('order_button_text') ?: 'Place Order') }}">
             Place Order
