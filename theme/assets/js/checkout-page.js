@@ -65,11 +65,8 @@ document.addEventListener("alpine:init", () => {
     },
 
     setupEventListeners() {
-      // Form submission
-      const form = document.querySelector(CheckoutUtils.selectors.form);
-      if (form) {
-        form.addEventListener("submit", (e) => this.handleFormSubmit(e));
-      }
+      // Note: Let WooCommerce handle form submission natively for proper order processing
+      // Custom AJAX submission was causing order processing errors
 
       // Country/state changes for field updates
       document.addEventListener("change", (e) => {
@@ -153,90 +150,6 @@ document.addEventListener("alpine:init", () => {
       });
     },
 
-    async handleFormSubmit(e) {
-      e.preventDefault();
-
-      if (this.processing) return;
-
-      this.processing = true;
-      const form = e.target;
-      const submitBtn = form.querySelector(
-        CheckoutUtils.selectors.placeOrderBtn
-      );
-
-      // Show loading state
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.classList.add(...CheckoutUtils.classes.loading);
-        const originalText = submitBtn.textContent;
-        submitBtn.innerHTML = `${CheckoutUtils.createSpinner()}Processing Order...`;
-      }
-
-      try {
-        // Validate form before submission
-        if (!this.validateForm(form)) {
-          throw new Error("Please fill in all required fields correctly.");
-        }
-
-        // Submit form via AJAX
-        const formData = new FormData(form);
-        const response = await fetch(form.action || window.location.href, {
-          method: "POST",
-          body: formData,
-          credentials: "same-origin",
-        });
-
-        if (response.ok) {
-          const result = await response.text();
-
-          // Check if the response contains a redirect or success
-          if (
-            result.includes("woocommerce-order-received") ||
-            result.includes("order-received")
-          ) {
-            // Redirect to thank you page
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(result, "text/html");
-            const redirectUrl = doc
-              .querySelector('meta[http-equiv="refresh"]')
-              ?.getAttribute("content");
-
-            if (redirectUrl) {
-              const url = redirectUrl.split("url=")[1];
-              window.location.href = url;
-            } else {
-              // Fallback: try to extract order received URL
-              const orderReceivedLink = doc.querySelector(
-                'a[href*="order-received"]'
-              );
-              if (orderReceivedLink) {
-                window.location.href = orderReceivedLink.href;
-              } else {
-                window.location.reload();
-              }
-            }
-          } else {
-            // Handle errors or update checkout
-            this.handleCheckoutResponse(result);
-          }
-        } else {
-          throw new Error("Network error occurred. Please try again.");
-        }
-      } catch (error) {
-        console.error("Checkout error:", error);
-        this.showError(error.message);
-      } finally {
-        this.processing = false;
-
-        // Reset submit button
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.classList.remove(...CheckoutUtils.classes.loading);
-          submitBtn.innerHTML =
-            submitBtn.getAttribute("data-value") || "Place Order";
-        }
-      }
-    },
 
     async handleShippingMethodChange(target) {
       // Don't trigger update if we're already updating (prevents loops)

@@ -1,13 +1,20 @@
 {% extends "base.twig" %}
 
 {% block content %}
-    <div class="woocommerce-checkout mb-10">
-        <!-- Breadcrumbs -->
-        {% include 'woocommerce/breadcrumbs.twig' %}
+    {# Check if this is the order-received page #}
+    {% set is_order_received = function('is_wc_endpoint_url', 'order-received') %}
 
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 overflow-x-hidden">
-            <!-- Check if WooCommerce checkout is available -->
-            {% if function('WC') and function('WC').cart %}
+    {% if is_order_received %}
+        {# Include the thankyou template for order-received pages #}
+        {% include 'woocommerce/checkout/thankyou.twig' %}
+    {% else %}
+        <div class="woocommerce-checkout mb-10">
+            <!-- Breadcrumbs -->
+            {% include 'woocommerce/breadcrumbs.twig' %}
+
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 overflow-x-hidden">
+                <!-- Check if WooCommerce checkout is available -->
+                {% if function('WC') and function('WC').cart %}
                 {% set wc_cart = function('WC').cart %}
                 {% set wc_checkout = function('WC').checkout %}
                 
@@ -24,8 +31,7 @@
 
                     <form name="checkout" method="post" class="checkout woocommerce-checkout col-span-full" action="{{ function('wc_get_checkout_url') }}" enctype="multipart/form-data" novalidate="novalidate">
 
-                        {# Add essential WooCommerce hidden fields #}
-                        <input type="hidden" name="woocommerce_checkout_update_totals" value="1" />
+                        {# Essential WooCommerce checkout fields #}
                         {{ function('wp_nonce_field', 'woocommerce-process_checkout', 'woocommerce-process-checkout-nonce', true, false)|raw }}
 
                         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8">
@@ -52,11 +58,12 @@
 
                 {{ function('do_action', 'woocommerce_after_checkout_form_table')|raw }}
                 
-            {% else %}
-                <div class="text-center py-12">
-                    <p class="text-gray-600 text-lg">WooCommerce is not available.</p>
-                </div>
-            {% endif %}
+                {% else %}
+                    <div class="text-center py-12">
+                        <p class="text-gray-600 text-lg">WooCommerce is not available.</p>
+                    </div>
+                {% endif %}
+            </div>
         </div>
-    </div>
+    {% endif %}
 {% endblock %}

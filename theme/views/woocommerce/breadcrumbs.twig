@@ -19,6 +19,17 @@
         {% if function('is_cart') %}
             {# Cart page breadcrumb #}
             <span class="text-gray-900 font-medium">Cart</span>
+        {% elseif function('is_wc_endpoint_url', 'order-received') %}
+            {# Order received (thank you) page breadcrumb #}
+            <a href="{{ function('wc_get_cart_url') }}" class="hover:text-gray-900 transition-colors">
+                Cart
+            </a>
+            <span class="mx-2">/</span>
+            <a href="{{ function('wc_get_checkout_url') }}" class="hover:text-gray-900 transition-colors">
+                Checkout
+            </a>
+            <span class="mx-2">/</span>
+            <span class="text-gray-900 font-medium">Order Complete</span>
         {% elseif function('is_checkout') %}
             {# Checkout page breadcrumb #}
             <a href="{{ function('wc_get_cart_url') }}" class="hover:text-gray-900 transition-colors">

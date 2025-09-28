@@ -1,0 +1,189 @@
+{# WooCommerce Order Received (Thank You) Page
+   This template is used for the order-received page after successful checkout
+   Context: order, is_order_received_page
+#}
+
+{# Get the order from WooCommerce globals #}
+{% set order = function('wc_get_order', function('get_query_var', 'order-received')) %}
+    <div class="woocommerce-order-received">
+        <!-- Breadcrumbs -->
+        {% include 'woocommerce/breadcrumbs.twig' %}
+
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {% if order %}
+                {% set order_id = order.get_id() %}
+                {% set order_key = order.get_order_key() %}
+                {% set order_date = order.get_date_created() %}
+                {% set order_total = order.get_total() %}
+                {% set order_status = order.get_status() %}
+                {% set billing_info = order.get_address('billing') %}
+                {% set shipping_info = order.get_address('shipping') %}
+                {% set order_items = order.get_items() %}
+                {% set shipping_methods = order.get_shipping_methods() %}
+                {% set order_notes = order.get_customer_order_notes() %}
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- Left Column - Thank you message and details -->
+                    <div class="lg:col-span-7">
+                        <!-- Thank you header -->
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold text-secondary-tertiary mb-6">Thank you for your order!</h1>
+
+                            <!-- Delivery notification -->
+                            <div class="bg-yellow-100 border border-yellow-300 rounded-lg p-4 mb-6">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0">
+                                        <svg class="w-5 h-5 text-yellow-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <h3 class="text-sm font-medium text-yellow-800">Your Delivery is being processed, we will be in touch shortly to arrange delivery.</h3>
+                                        <div class="mt-2 text-sm text-yellow-700">
+                                            {% set delivery_phone = function('get_field', 'delivery_phone', 'option') ?: '(Add phone number in Theme Options -> Delivery Info Settings)' %}
+                                            <p>Please check your email for order details and pick up instructions. Spot an issue? Please call us on {{ delivery_phone }} and quote your order number</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Return Home button -->
+                            <a href="{{ function('home_url') }}" class="inline-block bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                                Return Home
+                            </a>
+                        </div>
+
+                        <!-- Billing Details -->
+                        <div class="billing-details">
+                            <h2 class="text-2xl font-semibold text-secondary-tertiary mb-6">Billing Details</h2>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-secondary-tertiary mb-1">First Name*</label>
+                                    <div class="text-mbs-gray-light">{{ billing_info.first_name ?: 'i.e. John' }}</div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-secondary-tertiary mb-1">Last Name*</label>
+                                    <div class="text-mbs-gray-light">{{ billing_info.last_name ?: 'i.e. Smith' }}</div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-secondary-tertiary mb-1">Email Address*</label>
+                                    <div class="text-mbs-gray-light">{{ billing_info.email ?: 'i.e. john.smith@email.com' }}</div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-secondary-tertiary mb-1">Company Name</label>
+                                    <div class="text-mbs-gray-light">{{ billing_info.company ?: 'Company Name' }}</div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-secondary-tertiary mb-1">Contact Number*</label>
+                                    <div class="text-mbs-gray-light">{{ billing_info.phone ?: 'Contact number' }}</div>
+                                </div>
+                            </div>
+
+                            <!-- Billing Address -->
+                            <h3 class="text-xl font-semibold text-mbs-gray-light mb-4">Shipping Address</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-secondary-tertiary mb-1">Street Address*</label>
+                                    <div class="text-mbs-gray-light mb-2">{{ billing_info.address_1 ?: '' }}</div>
+                                    <div class="text-mbs-gray-light">{{ billing_info.address_2 ?: '' }}</div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-secondary-tertiary mb-1">Suburb*</label>
+                                    <div class="text-mbs-gray-light">{{ billing_info.city ?: '' }}</div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-secondary-tertiary mb-1">State*</label>
+                                    <div class="text-mbs-gray-light">{{ billing_info.state ?: '' }}</div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-secondary-tertiary mb-1">Postcode*</label>
+                                    <div class="text-mbs-gray-light">{{ billing_info.postcode ?: '' }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Order Notes -->
+                        {% if order.get_customer_note() %}
+                            <div class="order-notes">
+                                <h3 class="text-xl font-semibold text-mbs-gray-light mb-4">Order Notes</h3>
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <p class="text-gray-700">{{ order.get_customer_note() }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Right Column - Order Details -->
+                    <div class="lg:col-span-5">
+                        <div class="bg-gray-50 rounded-lg p-6 sticky top-8">
+                            <h2 class="text-xl font-semibold text-secondary-tertiary mb-6">Your Order Details</h2>
+
+                            <!-- Order Items -->
+                            <div class="order-items mb-6">
+                                {% for item in order_items %}
+                                    {% set product = item.get_product() %}
+                                    {% set quantity = item.get_quantity() %}
+                                    {% set item_total = item.get_total() %}
+
+                                    <div class="flex justify-between items-center py-3 border-b border-gray-200 last:border-b-0">
+                                        <div class="flex-1">
+                                            <span class="font-medium text-secondary-tertiary">{{ item.get_name() }}</span>
+                                            <span class="text-sm text-gray-600 ml-2">x {{ quantity }}</span>
+                                        </div>
+                                        <div class="font-semibold text-secondary-tertiary">
+                                            {{ function('wc_price', item_total)|raw }}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Shipping -->
+                            <div class="shipping-section mb-6">
+                                <h3 class="font-semibold text-secondary-tertiary mb-3">Shipping</h3>
+                                {% for shipping_method in shipping_methods %}
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <div class="font-medium text-secondary-tertiary">{{ shipping_method.get_method_title() }}</div>
+                                            {% if shipping_info.address_1 %}
+                                                <div class="text-sm text-gray-600">
+                                                    {{ shipping_info.address_1 }}
+                                                    {% if shipping_info.address_2 %}, {{ shipping_info.address_2 }}{% endif %}<br>
+                                                    {{ shipping_info.city }} {{ shipping_info.state }} {{ shipping_info.postcode }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="font-semibold text-secondary-tertiary">
+                                            {% if shipping_method.get_total() > 0 %}
+                                                {{ function('wc_price', shipping_method.get_total())|raw }}
+                                            {% else %}
+                                                FREE
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Order Total -->
+                            <div class="total-section border-t border-gray-200 pt-4">
+                                <div class="flex justify-between items-center text-lg font-semibold">
+                                    <span>Total (inc GST)</span>
+                                    <span>{{ function('wc_price', order_total)|raw }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            {% else %}
+                <!-- No order found -->
+                <div class="text-center py-12">
+                    <h1 class="text-3xl font-bold text-mbs-gray-light mb-4">Order not found</h1>
+                    <p class="text-gray-600 mb-6">The order you are looking for could not be found.</p>
+                    <a href="{{ function('home_url') }}" class="inline-block bg-[#FFF200] hover:bg-yellow-500 text-black px-6 py-3 rounded-lg font-medium transition-colors">
+                        Return Home
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>

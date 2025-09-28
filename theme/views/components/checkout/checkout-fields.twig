@@ -19,5 +19,6 @@
     {% include 'components/checkout/additional-info.twig' with { wc_checkout: wc_checkout } %}
 </div>
 
+{{ function('do_action', 'woocommerce_checkout_after_customer_details')|raw }}
 {{ function('do_action', 'woocommerce_checkout_before_order_review')|raw }}
 {{ function('do_action', 'woocommerce_checkout_after_order_review')|raw }}
