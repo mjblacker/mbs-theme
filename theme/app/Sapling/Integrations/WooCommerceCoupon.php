@@ -40,17 +40,13 @@ class WooCommerceCoupon implements SaplingPlugin
         }
 
         // Ensure WooCommerce checkout parameters are available for our custom coupon functionality
-        wp_localize_script('main', 'wc_checkout_params', array(
+        // Only add our custom parameters, let WooCommerce handle the main checkout parameters
+        wp_localize_script('main', 'wc_coupon_params', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'wc_ajax_url' => \WC_AJAX::get_endpoint('%%endpoint%%'),
-            'update_order_review_nonce' => wp_create_nonce('update-order-review'),
             'apply_coupon_nonce' => wp_create_nonce('apply-coupon'),
             'remove_coupon_nonce' => wp_create_nonce('remove-coupon'),
-            'checkout_url' => wc_get_checkout_url(),
-            'is_checkout' => is_checkout() ? 1 : 0,
-            'is_cart' => is_cart() ? 1 : 0,
             'debug_mode' => defined('WP_DEBUG') && WP_DEBUG,
-            'i18n_checkout_error' => esc_attr__('Error processing checkout. Please try again.', 'woocommerce'),
         ));
     }
 

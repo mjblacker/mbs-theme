@@ -45,16 +45,19 @@ class ProductFilters implements SaplingPlugin
             wp_localize_script('main', 'wpEndpoints', $script_data);
         } else {
             // Fallback: add to wp_head for development mode
-            add_action('wp_head', function() use ($script_data) {
-                echo '<script type="text/javascript">';
-                // For shop/archive functionality
-                if (is_shop() || is_product_category() || is_product_tag()) {
-                    echo 'window.shopFiltersAjax = ' . json_encode($script_data) . ';';
-                }
-                // For single product and general functionality
-                echo 'window.wpEndpoints = ' . json_encode($script_data) . ';';
-                echo '</script>';
-            }, 5);
+            // But only if this is not an AJAX request to prevent interfering with JSON responses
+            if (!wp_doing_ajax()) {
+                add_action('wp_head', function() use ($script_data) {
+                    echo '<script type="text/javascript">';
+                    // For shop/archive functionality
+                    if (is_shop() || is_product_category() || is_product_tag()) {
+                        echo 'window.shopFiltersAjax = ' . json_encode($script_data) . ';';
+                    }
+                    // For single product and general functionality
+                    echo 'window.wpEndpoints = ' . json_encode($script_data) . ';';
+                    echo '</script>';
+                }, 5);
+            }
         }
     }
 

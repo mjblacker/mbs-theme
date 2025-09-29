@@ -222,11 +222,11 @@ document.addEventListener("alpine:init", () => {
         formData.append("coupon_code", this.couponCode);
         formData.append(
           "security",
-          window.wc_checkout_params?.apply_coupon_nonce || ""
+          window.wc_coupon_params?.apply_coupon_nonce || ""
         );
 
         const ajaxUrl =
-          window.wc_checkout_params?.wc_ajax_url?.replace(
+          window.wc_coupon_params?.wc_ajax_url?.replace(
             "%%endpoint%%",
             "apply_coupon"
           ) || "/wp-admin/admin-ajax.php?action=woocommerce_apply_coupon";
@@ -301,11 +301,11 @@ document.addEventListener("alpine:init", () => {
         formData.append("coupon_code", couponCode);
         formData.append(
           "security",
-          window.wc_checkout_params?.remove_coupon_nonce || ""
+          window.wc_coupon_params?.remove_coupon_nonce || ""
         );
 
         const ajaxUrl =
-          window.wc_checkout_params?.wc_ajax_url?.replace(
+          window.wc_coupon_params?.wc_ajax_url?.replace(
             "%%endpoint%%",
             "remove_coupon"
           ) || "/wp-admin/admin-ajax.php?action=woocommerce_remove_coupon";

@@ -113,7 +113,12 @@ class Sapling extends \Timber\Site
         // wp_dequeue_style('wp-block-library');
         wp_dequeue_style('wp-block-library-theme');
         wp_dequeue_style('wc-block-style');
-        wp_dequeue_script('jquery');
+
+        // Don't dequeue jQuery on checkout/cart pages as WooCommerce needs it for AJAX
+        if (!is_checkout() && !is_cart()) {
+            wp_dequeue_script('jquery');
+        }
+
         wp_dequeue_style('global-styles');
 
         $vite_env = 'production';
@@ -157,11 +162,19 @@ class Sapling extends \Timber\Site
         if ($vite_env === 'development') {
             function vite_head_module_hook()
             {
-                echo '<script type="module" crossorigin src="http://localhost:3012/@vite/client"></script>';
-                echo '<script type="module" crossorigin src="http://localhost:3012/theme/assets/main.js"></script>';
+                // Don't output during AJAX requests to prevent interfering with JSON responses
+                if (!wp_doing_ajax()) {
+                    echo '<script type="module" crossorigin src="http://localhost:3012/@vite/client"></script>';
+                    echo '<script type="module" crossorigin src="http://localhost:3012/theme/assets/main.js"></script>';
+                }
             }
 
             add_action('wp_head', 'vite_head_module_hook');
+        }
+
+        // Ensure WooCommerce checkout script is available on checkout page
+        if (function_exists('is_checkout') && is_checkout() && function_exists('WC')) {
+            wp_enqueue_script('wc-checkout');
         }
     }
 
