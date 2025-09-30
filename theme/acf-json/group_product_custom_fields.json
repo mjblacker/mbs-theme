@@ -57,12 +57,12 @@
         "id": ""
       },
       "default_value": "",
-      "placeholder": "e.g. 1.5",
+      "placeholder": "e.g. 1.5 or 1.05",
       "prepend": "",
       "append": "M²",
       "min": 0,
       "max": "",
-      "step": 0.1
+      "step": 0.01
     },
     {
       "key": "field_panel_weight_kg",

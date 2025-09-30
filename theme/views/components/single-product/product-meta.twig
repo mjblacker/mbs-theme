@@ -12,8 +12,8 @@
     {% set product_categories = function('get_the_terms', post.ID, 'product_cat') %}
     {% if product_categories and product_categories is not same as(false) %}
         <div class="flex py-3 mb-0 border-t border-[#F5F5F5]">
-            <span class="text-[11px] font-light text-gray-700 mr-3">Categories:</span>
-            <span class="text-gray-600 text-[11px] font-light">
+            <span class="text-[12px] font-light text-gray-700 mr-3 uppercase">Categories:</span>
+            <span class="text-gray-600 text-[12px] font-light uppercase">
                 {% for category in product_categories %}
                     <a href="{{ function('get_term_link', category.term_id) }}" 
                        class="hover:text-gray-900 underline transition-colors">{{ category.name }}</a>{% if not loop.last %}, {% endif %}
