@@ -19,7 +19,7 @@
         <span class="text-base font-medium text-yellow-800">{{ delivery_title }}</span>
     </div>
     <p class="text-sm font-light text-yellow-700">
-        {{ delivery_message }} <a href="tel:{{ delivery_phone|replace({' ': ''}) }}" class="underline hover:text-yellow-900 transition-colors">{{ delivery_phone }}</a>.
+        {{ delivery_message }} <a href="tel:{{ delivery_phone|replace({' ': '', '(': '', ')': ''}) }}" class="underline hover:text-yellow-900 transition-colors">{{ delivery_phone }}</a>.
     </p>
 </div>
 
