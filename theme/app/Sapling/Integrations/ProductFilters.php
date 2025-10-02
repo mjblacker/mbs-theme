@@ -233,7 +233,7 @@ class ProductFilters implements SaplingPlugin
         
         if ($posts && !empty($posts)) {
             echo '<div class="woocommerce-products sm:mb-6 lg:mb-10">';
-            echo '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">';
+            echo '<div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">';
             
             foreach ($posts as $post) {
                 // Use Timber::get_post to create Timber Post object properly
