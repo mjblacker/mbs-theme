@@ -140,6 +140,7 @@ document.addEventListener("alpine:init", () => {
     sortOrder: FILTER_CONSTANTS.DEFAULT_SORT,
     currentCategoryId: null,
     currentPage: 1,
+    mobileFiltersOpen: false,
 
     activeFilters: {
       categories: [],
