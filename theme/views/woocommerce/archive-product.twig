@@ -26,15 +26,17 @@
             <div x-data="shopFilters" {% if term %}x-init="initializeCategoryPage({{ term.term_id }})"{% endif %} @filter-changed="applyFilters()">
 
                 <div class="flex items-center justify-between gap-4 mb-4">
-                    <!-- Sort Dropdown -->
-                    {% include 'components/archive-product/sort-dropdown.twig' %}
-
-                    <!-- Mobile Filter Toggle Button -->
+                    <!-- Mobile Filter Toggle Button - Shows on left on mobile -->
                     <button @click="mobileFiltersOpen = !mobileFiltersOpen"
                             class="lg:hidden flex items-center gap-2 px-4 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap">
                         <img src="{{ site.theme.uri }}/assets/images/filter-icon.png" alt="Filter" class="!m-0">
                         All Filters
                     </button>
+
+                    <!-- Sort Dropdown - Right side on both mobile and desktop -->
+                    <div class="ml-auto">
+                        {% include 'components/archive-product/sort-dropdown.twig' %}
+                    </div>
                 </div>
 
                 <div class="flex flex-col lg:flex-row gap-8">

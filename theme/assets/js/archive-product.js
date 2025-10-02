@@ -425,7 +425,17 @@ document.addEventListener("alpine:init", () => {
       );
       if (resultsContainer && data.html) {
         resultsContainer.innerHTML = data.html;
+
+        // Scroll to top of product results after updating
+        this.scrollToProductResults();
       }
+    },
+
+    scrollToProductResults() {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
     },
 
     updateFilterCounts(updatedFilters) {
