@@ -211,6 +211,26 @@
                     "append": ""
                 },
                 {
+                    "key": "field_company_phone",
+                    "label": "Phone Number",
+                    "name": "phone",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Enter the main company phone number",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "(03) 9707 0269",
+                    "prepend": "",
+                    "append": ""
+                },
+                {
                     "key": "field_company_email",
                     "label": "General Email",
                     "name": "email",
@@ -318,5 +338,5 @@
     "active": true,
     "description": "Configuration options for theme contact information and company details",
     "show_in_rest": 0,
-    "modified": 1757989646
+    "modified": 1738483200
 }

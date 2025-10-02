@@ -10,18 +10,25 @@
 
 {% set context = context is defined ? context : 'desktop' %}
 {% set mobile_menu = mobile_menu is defined ? mobile_menu : false %}
+{% set company_phone = function('get_field', 'phone', 'options') ? function('get_field', 'phone', 'options') : (theme_options.company_info.phone ?: '1300 xxx xxx') %}
 
 {% if context == 'desktop' %}
     {# Desktop Contact Button #}
-    <a href="/contact" 
+    <a href="/contact"
        class="bg-[#FFF200] hover:bg-yellow-300 text-black font-medium px-6 py-2 rounded-md transition-colors duration-200">
         Contact Us
     </a>
-{% else %}
-    {# Mobile Contact Button #}
-    <a href="/contact" 
+{% elseif mobile_menu %}
+    {# Mobile Menu Contact Button #}
+    <a href="/contact"
        class="block w-full bg-[#FFF200] hover:bg-yellow-300 text-black font-medium px-4 py-3 rounded-md transition-colors duration-200 text-center"
-       {% if mobile_menu %}@click="mobileMenuOpen = false"{% endif %}>
+       @click="mobileMenuOpen = false">
         Contact Us
+    </a>
+{% else %}
+    {# Mobile Header Contact Button #}
+    <a href="tel:{{ company_phone|replace({' ': '', '(': '', ')': ''}) }}"
+       class="bg-[#FFF200] hover:bg-yellow-300 text-black font-medium px-3 py-1.5 rounded text-sm whitespace-nowrap transition-colors duration-200">
+        Call Us
     </a>
 {% endif %}

@@ -1,8 +1,9 @@
 {#
   Mobile Menu Overlay Component
-  - Sliding overlay menu for mobile navigation
-  - Contains navigation, contact button, and cart components
-  - Smooth slide-down/slide-up transitions with Alpine.js
+  - Full-screen overlay menu for mobile navigation
+  - Dark background with pattern overlay
+  - Contains All Products, All Categories, Locations, and action buttons
+  - Smooth slide-in/slide-out transitions with Alpine.js
 
   Parameters:
   - None required (relies on parent Alpine.js context)
@@ -13,23 +14,147 @@
   - Includes transition directives for smooth animations
 #}
 
-<div x-show="mobileMenuOpen"
-     x-transition:enter="transition ease-out duration-200"
-     x-transition:enter-start="opacity-0 transform -translate-y-full"
-     x-transition:enter-end="opacity-100 transform translate-y-0"
-     x-transition:leave="transition ease-in duration-250"
-     x-transition:leave-start="opacity-100 transform translate-y-0"
-     x-transition:leave-end="opacity-0 transform -translate-y-full"
-     class="lg:hidden absolute top-full left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50"
-     x-cloak>
-    <div class="px-4 py-4 space-y-2">
-        {# Mobile Navigation #}
-        {% include "partial/header/navigation.twig" with {'context': 'mobile'} %}
+{# Get featured categories from ACF Category Mega Menu Options #}
+{% set featured_categories = function('get_field', 'featured_categories', 'options') %}
+{% set company_phone = function('get_field', 'phone', 'options') ? function('get_field', 'phone', 'options') : (theme_options.company_info.phone ?: '1300 xxx xxx') %}
 
-        {# Mobile Contact Button and Cart #}
-        <div class="pt-4 border-t border-gray-200 space-y-3">
-            {% include "partial/header/contact-button.twig" with {'context': 'mobile', 'mobile_menu': true} %}
-            {% include "partial/header/cart.twig" with {'context': 'mobile', 'mobile_menu': true} %}
+<div x-show="mobileMenuOpen"
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     class="lg:hidden fixed inset-0 bg-[#2D2D2D] overflow-y-auto"
+     style="background-image: url('{{ site.theme.uri }}/assets/images/Menu-overlay-Pattern.png'); background-repeat: no-repeat; background-position: bottom; background-size: contain; z-index: 999999 !important;"
+     @click.away="mobileMenuOpen = false"
+     x-cloak>
+
+    {# Header Section with Logo, Call Us Button, and Close Button #}
+    <div class="flex items-center justify-between p-4 border-b border-gray-700">
+        {# Mobile Menu Logo #}
+        <div class="flex-shrink-0">
+            <a href="{{ site.link }}" @click="mobileMenuOpen = false">
+                <img src="{{ site.theme.uri }}/assets/images/mobile-logo.png"
+                     alt="{{ site.name }}"
+                     class="h-10">
+            </a>
+        </div>
+
+        {# Call Us Button #}
+        <a href="tel:{{ company_phone|replace({' ': '', '(': '', ')': ''}) }}"
+           class="bg-[#FFF200] hover:bg-yellow-300 text-black font-medium px-4 py-2 rounded text-sm transition-colors duration-200">
+            Call Us
+        </a>
+
+        {# Close Button #}
+        <button @click="mobileMenuOpen = false"
+                class="text-white hover:text-gray-300 focus:outline-none p-2"
+                type="button"
+                aria-label="Close mobile menu">
+            <img src="{{ site.theme.uri }}/assets/images/Cross.png"
+                 alt="Close"
+                 class="h-6 w-6">
+        </button>
+    </div>
+
+    {# Main Content Area #}
+    <div class="p-6">
+        <div class="grid grid-cols-2 gap-8">
+
+            {# Left Column - All Products & All Categories #}
+            <div>
+                {# All Products Link #}
+                <div class="mb-8">
+                    <h2 class="text-white text-[20px] font-semibold mb-4 pb-2 border-b border-gray-600">
+                        <a href="{{ function('wc_get_page_permalink', 'shop') }}"
+                           @click="mobileMenuOpen = false"
+                           class="hover:text-[#FFF200] transition-colors">
+                            All Products
+                        </a>
+                    </h2>
+                </div>
+
+                {# All Categories Section #}
+                <div>
+                    <h2 class="text-white text-[20px] font-semibold mb-4 pb-2 border-b border-gray-600">All Categories</h2>
+
+                    {% if featured_categories %}
+                        <div class="space-y-2">
+                            {% for category in featured_categories %}
+                                <a href="{{ function('get_term_link', category.term_id) }}"
+                                   @click="mobileMenuOpen = false"
+                                   class="block text-gray-400 hover:text-[#FFF200] transition-colors duration-200 text-base py-1">
+                                    {{ category.name }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-gray-500 text-sm">No categories available</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Right Column - Locations #}
+            <div>
+                <h2 class="text-white text-[20px] font-semibold mb-4 pb-2 border-b border-gray-600">Locations</h2>
+
+                {% if theme_options.locations %}
+                    <div class="space-y-6">
+                        {% for location in theme_options.locations %}
+                            {% set address_lines = [] %}
+                            {% if location.address_lines %}
+                                {# Split textarea content by line breaks and filter out empty lines #}
+                                {% set lines = location.address_lines|split('\n')|filter(line => line|trim) %}
+                                {% for line in lines %}
+                                    {% set address_lines = address_lines|merge([line|trim]) %}
+                                {% endfor %}
+                            {% endif %}
+
+                            <div class="mb-6">
+                                <h3 class="font-medium text-white mb-2 text-base">
+                                    {% if location.is_head_office %}Head Office {% endif %}
+                                    {{ location.name }}
+                                </h3>
+                                <div class="text-gray-400 text-base space-y-1">
+                                    {% for line in address_lines %}
+                                        <p>{{ line }}</p>
+                                    {% endfor %}
+                                    {% if location.city_state %}
+                                        <p>{{ location.city_state }}</p>
+                                    {% endif %}
+                                    {% if location.phone %}
+                                        <p class="mt-1">Phone: {{ location.phone }}</p>
+                                    {% endif %}
+                                </div>
+
+                                {# Get Directions Button #}
+                                {% if location.google_maps_url %}
+                                    <a href="{{ location.google_maps_url }}"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       class="inline-block mt-3 px-4 py-2 border border-white text-white text-xs rounded hover:bg-white hover:text-black transition-colors duration-200">
+                                        Get Directions
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-500 text-sm">No locations available</p>
+                {% endif %}
+            </div>
+
+        </div>
+
+        {# Contact Us Button - Full Width at Bottom #}
+        <div class="mt-8 pt-8">
+            <a href="/contact"
+               @click="mobileMenuOpen = false"
+               class="block w-full bg-[#FFF200] hover:bg-yellow-300 text-black font-medium px-6 py-4 rounded text-center transition-colors duration-200">
+                Contact Us
+            </a>
         </div>
     </div>
+
 </div>

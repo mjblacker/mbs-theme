@@ -9,3 +9,13 @@
 body.admin-bar {
   max-height: calc(100vh - 32px);
 }
+
+/* Force admin bar below mobile menu overlay on all screen sizes */
+body.admin-bar #wpadminbar {
+  z-index: 10 !important;
+}
+
+/* Additional admin bar overrides */
+#wpadminbar {
+  z-index: 10 !important;
+}

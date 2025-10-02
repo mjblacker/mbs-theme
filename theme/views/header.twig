@@ -32,8 +32,12 @@
                 </div>
             </div>
 
-            {# Mobile Menu Button #}
-            {% include "partial/header/mobile-menu-button.twig" %}
+            {# Mobile Actions - Call Us, Cart, and Menu Button #}
+            <div class="flex lg:hidden items-center space-x-2">
+                {% include "partial/header/contact-button.twig" with {'context': 'mobile'} %}
+                {% include "partial/header/cart.twig" with {'context': 'mobile'} %}
+                {% include "partial/header/mobile-menu-button.twig" %}
+            </div>
         </div>
     </div>
 

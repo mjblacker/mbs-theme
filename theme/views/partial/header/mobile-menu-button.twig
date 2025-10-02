@@ -3,31 +3,29 @@
   - Hamburger menu button for mobile navigation
   - Toggles mobile menu overlay with Alpine.js
   - Animated icon that changes between hamburger and X
-  
+
   Parameters:
   - None required (relies on parent Alpine.js context)
-  
+
   Requirements:
   - Parent element must have Alpine.js x-data with mobileMenuOpen state
   - Uses @click handler to toggle mobileMenuOpen boolean
 #}
 
-<div class="lg:hidden">
-    <button @click="mobileMenuOpen = !mobileMenuOpen" 
-            class="text-gray-700 hover:text-gray-900 focus:outline-none focus:text-gray-900 p-2"
-            type="button"
-            aria-label="Toggle mobile menu">
-        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path x-show="!mobileMenuOpen" 
-                  stroke-linecap="round" 
-                  stroke-linejoin="round" 
-                  stroke-width="2" 
-                  d="M4 6h16M4 12h16M4 18h16"/>
-            <path x-show="mobileMenuOpen" 
-                  stroke-linecap="round" 
-                  stroke-linejoin="round" 
-                  stroke-width="2" 
-                  d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-    </button>
-</div>
+<button @click="mobileMenuOpen = !mobileMenuOpen"
+        class="text-gray-700 hover:text-gray-900 focus:outline-none focus:text-gray-900 p-1.5"
+        type="button"
+        aria-label="Toggle mobile menu">
+    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path x-show="!mobileMenuOpen"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"/>
+        <path x-show="mobileMenuOpen"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"/>
+    </svg>
+</button>
