@@ -1,17 +1,24 @@
 {# Shipping Destination Component
    Props:
-   - package: WooCommerce package object
+   - package: WooCommerce package object (contains shipping destination)
 #}
 
 {% if function('is_cart') and function('get_theme_mod', 'cart_estimate_text', 1) %}
-    {% set formatted_destination = function('WC').countries.get_formatted_address(package.destination, ', ') %}
+    {# Get shipping address from customer if package.destination is empty #}
+    {% set destination = package.destination|length > 0 ? package.destination : {
+        'country': function('WC').customer.get_shipping_country(),
+        'state': function('WC').customer.get_shipping_state(),
+        'postcode': function('WC').customer.get_shipping_postcode(),
+        'city': function('WC').customer.get_shipping_city()
+    } %}
+    {% set formatted_destination = function('WC').countries.get_formatted_address(destination, ', ') %}
     {% if formatted_destination %}
         <p class="woocommerce-shipping-destination text-sm text-gray-600 mt-4">
             {{ function('sprintf', function('__', 'Shipping to %s.', 'woocommerce'), '<strong>' ~ formatted_destination ~ '</strong>')|raw }}
         </p>
     {% else %}
         <p class="text-sm text-gray-600 mt-4">
-            {{ function('apply_filters', 'woocommerce_shipping_estimate_html', function('__', 'Shipping options will be updated during checkout.', 'woocommerce'))|raw }}
+            {{ function('apply_filters', 'woocommerce_shipping_estimate_html', function('__', 'Shipping options will be updated after adding an addess', 'woocommerce'))|raw }}
         </p>
     {% endif %}
 {% endif %}

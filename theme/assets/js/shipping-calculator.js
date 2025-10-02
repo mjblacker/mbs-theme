@@ -73,7 +73,14 @@ const initShippingCalculator = () => {
       const postcode = formData.get("shipping_postcode");
 
       try {
-        // Use WooCommerce Store API to update customer address
+        // Use WooCommerce Store API to update customer address (both billing and shipping)
+        const addressData = {
+          country: country,
+          state: state,
+          city: city,
+          postcode: postcode,
+        };
+
         const response = await fetch(
           "/wp-json/wc/store/v1/cart/update-customer",
           {
@@ -84,12 +91,8 @@ const initShippingCalculator = () => {
               Nonce: window.wpEndpoints?.storeApiNonce || "",
             },
             body: JSON.stringify({
-              billing_address: {
-                country: country,
-                state: state,
-                city: city,
-                postcode: postcode,
-              },
+              shipping_address: addressData,
+              billing_address: addressData,
             }),
           }
         );

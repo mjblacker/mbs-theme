@@ -41,7 +41,7 @@
                                         <h3 class="text-sm font-medium text-yellow-800">Your Delivery is being processed, we will be in touch shortly to arrange delivery.</h3>
                                         <div class="mt-2 text-sm text-yellow-700">
                                             {% set delivery_phone = function('get_field', 'delivery_phone', 'option') ?: '(Add phone number in Theme Options -> Delivery Info Settings)' %}
-                                            <p>Please check your email for order details and pick up instructions. Spot an issue? Please call us on {{ delivery_phone }} and quote your order number</p>
+                                            <p>Please check your email for order details and pick up instructions. Spot an issue? Please call us on <a href="tel:{{ delivery_phone|replace({' ': '', '(': '', ')': ''}) }}" class="underline hover:text-yellow-900 transition-colors">{{ delivery_phone }}</a> and quote your order number</p>
                                         </div>
                                     </div>
                                 </div>
@@ -70,35 +70,39 @@
                                     <label class="block text-sm font-medium text-secondary-tertiary mb-1">Email Address*</label>
                                     <div class="text-mbs-gray-light">{{ billing_info.email ?: 'i.e. john.smith@email.com' }}</div>
                                 </div>
+                                {% if billing_info.company %}
                                 <div>
                                     <label class="block text-sm font-medium text-secondary-tertiary mb-1">Company Name</label>
-                                    <div class="text-mbs-gray-light">{{ billing_info.company ?: 'Company Name' }}</div>
+                                    <div class="text-mbs-gray-light">{{ billing_info.company }}</div>
                                 </div>
+                                {% endif %}
+                                {% if billing_info.phone %}
                                 <div>
                                     <label class="block text-sm font-medium text-secondary-tertiary mb-1">Contact Number*</label>
-                                    <div class="text-mbs-gray-light">{{ billing_info.phone ?: 'Contact number' }}</div>
+                                    <div class="text-mbs-gray-light">{{ billing_info.phone }}</div>
                                 </div>
+                                {% endif %}
                             </div>
 
-                            <!-- Billing Address -->
+                            <!-- Shipping Address -->
                             <h3 class="text-xl font-semibold text-mbs-gray-light mb-4">Shipping Address</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div>
                                     <label class="block text-sm font-medium text-secondary-tertiary mb-1">Street Address*</label>
-                                    <div class="text-mbs-gray-light mb-2">{{ billing_info.address_1 ?: '' }}</div>
-                                    <div class="text-mbs-gray-light">{{ billing_info.address_2 ?: '' }}</div>
+                                    <div class="text-mbs-gray-light mb-2">{{ shipping_info.address_1 ?: '' }}</div>
+                                    <div class="text-mbs-gray-light">{{ shipping_info.address_2 ?: '' }}</div>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-secondary-tertiary mb-1">Suburb*</label>
-                                    <div class="text-mbs-gray-light">{{ billing_info.city ?: '' }}</div>
+                                    <div class="text-mbs-gray-light">{{ shipping_info.city ?: '' }}</div>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-secondary-tertiary mb-1">State*</label>
-                                    <div class="text-mbs-gray-light">{{ billing_info.state ?: '' }}</div>
+                                    <div class="text-mbs-gray-light">{{ shipping_info.state ?: '' }}</div>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-secondary-tertiary mb-1">Postcode*</label>
-                                    <div class="text-mbs-gray-light">{{ billing_info.postcode ?: '' }}</div>
+                                    <div class="text-mbs-gray-light">{{ shipping_info.postcode ?: '' }}</div>
                                 </div>
                             </div>
                         </div>
@@ -142,10 +146,11 @@
                             <div class="shipping-section mb-6">
                                 <h3 class="font-semibold text-secondary-tertiary mb-3">Shipping</h3>
                                 {% for shipping_method in shipping_methods %}
+                                    {% set is_local_pickup = shipping_method.get_method_id() == 'local_pickup' %}
                                     <div class="flex justify-between items-start">
                                         <div>
                                             <div class="font-medium text-secondary-tertiary">{{ shipping_method.get_method_title() }}</div>
-                                            {% if shipping_info.address_1 %}
+                                            {% if not is_local_pickup and shipping_info.address_1 %}
                                                 <div class="text-sm text-gray-600">
                                                     {{ shipping_info.address_1 }}
                                                     {% if shipping_info.address_2 %}, {{ shipping_info.address_2 }}{% endif %}<br>
