@@ -79,15 +79,20 @@ document.addEventListener("alpine:init", () => {
         }
       });
 
-      // Listen for all checkout field changes that might affect shipping
+      // Listen for country/state changes that might affect shipping
       document.addEventListener("change", (e) => {
-        if (
-          e.target.matches(
-            'select[name="billing_country"], select[name="billing_state"], ' +
-            'select[name="shipping_country"], select[name="shipping_state"]'
-          )
-        ) {
-          this.debouncedUpdateCheckout();
+        // Billing country/state - only trigger if ship_to_different is unchecked
+        if (e.target.matches('select[name="billing_country"], select[name="billing_state"]')) {
+          if (!this.shipToDifferentAddress) {
+            this.debouncedUpdateCheckout();
+          }
+        }
+
+        // Shipping country/state - only trigger if ship_to_different is checked
+        if (e.target.matches('select[name="shipping_country"], select[name="shipping_state"]')) {
+          if (this.shipToDifferentAddress) {
+            this.debouncedUpdateCheckout();
+          }
         }
       });
     },
@@ -101,25 +106,118 @@ document.addEventListener("alpine:init", () => {
         }
       });
 
+      // Handle "ship to different address" checkbox changes
+      document.addEventListener("change", (e) => {
+        if (e.target.matches("#ship-to-different-address-checkbox")) {
+          // Update Alpine.js state
+          this.shipToDifferentAddress = e.target.checked;
+
+          // Immediately trigger shipping method update based on relevant postcode
+          // This ensures shipping recalculates when switching between billing/shipping address
+          setTimeout(() => {
+            this.updateCheckout();
+          }, 100);
+        }
+      });
+
       // Set initial visual state for any pre-selected shipping methods
       this.initializeShippingVisualState();
 
       // Update shipping when address fields change
       document.addEventListener("blur", (e) => {
+        // Billing address fields - only trigger if ship_to_different is unchecked
         if (
           e.target.matches(
-            'input[name="billing_address_1"], input[name="billing_address_2"], input[name="billing_city"], input[name="billing_postcode"], input[name="billing_state"], ' +
+            'input[name="billing_address_1"], input[name="billing_address_2"], input[name="billing_city"], input[name="billing_postcode"], input[name="billing_state"]'
+          )
+        ) {
+          if (!this.shipToDifferentAddress) {
+            this.debouncedUpdateCheckout();
+          }
+        }
+
+        // Shipping address fields - only trigger if ship_to_different is checked
+        if (
+          e.target.matches(
             'input[name="shipping_address_1"], input[name="shipping_address_2"], input[name="shipping_city"], input[name="shipping_postcode"], input[name="shipping_state"]'
           )
         ) {
-          this.debouncedUpdateCheckout();
+          if (this.shipToDifferentAddress) {
+            this.debouncedUpdateCheckout();
+          }
         }
       });
 
-      // Real-time updates for postcode changes (both billing and shipping)
+      // Postcode field handling with smart debouncing
+      let postcodeInputTimer = null;
+      let lastPostcodeValue = {};
+
       document.addEventListener("input", (e) => {
-        if (e.target.matches('input[name="billing_postcode"], input[name="shipping_postcode"]')) {
-          this.debouncedUpdateCheckoutFast();
+        if (e.target.matches('input[name="billing_postcode"]') || e.target.matches('input[name="shipping_postcode"]')) {
+          const fieldName = e.target.name;
+          const isBilling = fieldName === 'billing_postcode';
+
+          // Only proceed if relevant to current shipping mode
+          if ((isBilling && this.shipToDifferentAddress) || (!isBilling && !this.shipToDifferentAddress)) {
+            return;
+          }
+
+          // Clear existing timer
+          if (postcodeInputTimer) {
+            clearTimeout(postcodeInputTimer);
+          }
+
+          // Store the current value
+          lastPostcodeValue[fieldName] = e.target.value;
+
+          // Set timer - only trigger if user stops typing for 1 second
+          postcodeInputTimer = setTimeout(() => {
+            if (e.target.value === lastPostcodeValue[fieldName]) {
+              this.updateCheckout();
+            }
+          }, 1000);
+        }
+      });
+
+      // Trigger immediate update when user leaves the postcode field (blur, tab, click outside)
+      document.addEventListener("blur", (e) => {
+        if (e.target.matches('input[name="billing_postcode"]') || e.target.matches('input[name="shipping_postcode"]')) {
+          const isBilling = e.target.name === 'billing_postcode';
+
+          // Only proceed if relevant to current shipping mode
+          if ((isBilling && !this.shipToDifferentAddress) || (!isBilling && this.shipToDifferentAddress)) {
+            // Clear any pending timer
+            if (postcodeInputTimer) {
+              clearTimeout(postcodeInputTimer);
+              postcodeInputTimer = null;
+            }
+
+            // Trigger update with short delay to ensure value is saved
+            setTimeout(() => {
+              this.updateCheckout();
+            }, 100);
+          }
+        }
+      }, true);
+
+      // Trigger update on Enter key
+      document.addEventListener("keydown", (e) => {
+        if ((e.target.matches('input[name="billing_postcode"]') || e.target.matches('input[name="shipping_postcode"]')) && e.key === 'Enter') {
+          const isBilling = e.target.name === 'billing_postcode';
+
+          // Only proceed if relevant to current shipping mode
+          if ((isBilling && !this.shipToDifferentAddress) || (!isBilling && this.shipToDifferentAddress)) {
+            e.preventDefault();
+
+            // Clear any pending timer
+            if (postcodeInputTimer) {
+              clearTimeout(postcodeInputTimer);
+              postcodeInputTimer = null;
+            }
+
+            // Trigger immediate update
+            this.updateCheckout();
+          }
         }
       });
 
@@ -387,6 +485,9 @@ document.addEventListener("alpine:init", () => {
         // Show loading state
         this.showCheckoutLoadingState(true);
 
+        // Update customer address in session using Store API (like shipping calculator)
+        await this.updateCustomerAddressInSession();
+
         // Use the manual refresh approach directly since it's reliable
         await this.manualRefreshOrderSummary();
 
@@ -401,6 +502,64 @@ document.addEventListener("alpine:init", () => {
       } finally {
         // Remove loading state
         this.showCheckoutLoadingState(false);
+      }
+    },
+
+    async updateCustomerAddressInSession() {
+      // Collect current address data from form fields
+      const getFieldValue = (name) => {
+        const field = document.querySelector(`[name="${name}"]`);
+        return field ? field.value : '';
+      };
+
+      // Determine which address to use for shipping calculation
+      const useShippingAddress = this.shipToDifferentAddress;
+
+      const shippingAddressData = {
+        country: getFieldValue(useShippingAddress ? 'shipping_country' : 'billing_country'),
+        state: getFieldValue(useShippingAddress ? 'shipping_state' : 'billing_state'),
+        city: getFieldValue(useShippingAddress ? 'shipping_city' : 'billing_city'),
+        postcode: getFieldValue(useShippingAddress ? 'shipping_postcode' : 'billing_postcode'),
+      };
+
+      // Only update if we have at least a country and postcode
+      if (!shippingAddressData.country || !shippingAddressData.postcode) {
+        return;
+      }
+
+      try {
+        // Build request body
+        const requestBody = {
+          shipping_address: shippingAddressData,
+        };
+
+        // If shipping to same address as billing, also update billing address
+        if (!useShippingAddress) {
+          const billingAddressData = {
+            country: getFieldValue('billing_country'),
+            state: getFieldValue('billing_state'),
+            city: getFieldValue('billing_city'),
+            postcode: getFieldValue('billing_postcode'),
+          };
+          requestBody.billing_address = billingAddressData;
+        }
+
+        // Use WooCommerce Store API to update customer address (same as shipping calculator)
+        const response = await fetch('/wp-json/wc/store/v1/cart/update-customer', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            'Nonce': window.wpEndpoints?.storeApiNonce || '',
+          },
+          body: JSON.stringify(requestBody),
+        });
+
+        if (!response.ok) {
+          console.warn('Failed to update customer address in session');
+        }
+      } catch (error) {
+        console.warn('Error updating customer address:', error);
       }
     },
 
@@ -652,18 +811,23 @@ document.addEventListener("alpine:init", () => {
       if (shippingCity && city) shippingCity.value = city;
       if (shippingPostcode && postcode) shippingPostcode.value = postcode;
 
-      // Also update billing fields if "ship to different address" is not checked
+      // Always check "ship to different address" when using shipping calculator
+      // This prevents WooCommerce from copying billing → shipping on reload
       const shipToDifferent = document.querySelector('#ship-to-different-address-checkbox');
-      if (!shipToDifferent || !shipToDifferent.checked) {
-        const billingCountry = document.querySelector('select[name="billing_country"]');
-        const billingState = document.querySelector('select[name="billing_state"], input[name="billing_state"]');
-        const billingCity = document.querySelector('input[name="billing_city"]');
-        const billingPostcode = document.querySelector('input[name="billing_postcode"]');
+      if (shipToDifferent && !shipToDifferent.checked) {
+        shipToDifferent.checked = true;
+        this.shipToDifferentAddress = true; // Update Alpine.js state
 
-        if (billingCountry && country) billingCountry.value = country;
-        if (billingState && state) billingState.value = state;
-        if (billingCity && city) billingCity.value = city;
-        if (billingPostcode && postcode) billingPostcode.value = postcode;
+        // Store checkbox state in session immediately
+        const formData = new FormData();
+        formData.append('action', 'store_ship_to_different');
+        formData.append('value', '1');
+
+        fetch(window.location.origin + '/wp-admin/admin-ajax.php', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin'
+        });
       }
     },
 

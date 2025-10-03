@@ -92,12 +92,23 @@ const initShippingCalculator = () => {
             },
             body: JSON.stringify({
               shipping_address: addressData,
-              billing_address: addressData,
+              //billing_address: addressData,
             }),
           }
         );
 
         if (response.ok) {
+          // Mark that shipping address is different from billing
+          const flagFormData = new FormData();
+          flagFormData.append('action', 'store_ship_to_different');
+          flagFormData.append('value', '1');
+
+          await fetch(window.location.origin + '/wp-admin/admin-ajax.php', {
+            method: 'POST',
+            body: flagFormData,
+            credentials: 'same-origin'
+          });
+
           // Try to refresh cart fragments via cart page component
           const cartPageElement = document.querySelector(
             '[x-data*="cartPage"]'

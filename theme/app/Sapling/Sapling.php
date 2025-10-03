@@ -7,6 +7,7 @@ use Sapling\Integrations\ShopFiltersData;
 use Sapling\Integrations\WooCommercePricing;
 use Sapling\Integrations\WooCommerceCoupon;
 use Sapling\Integrations\Breadcrumbs;
+use Sapling\Integrations\CheckoutAddressHandler;
 
 class Sapling extends \Timber\Site
 {
@@ -207,6 +208,7 @@ class Sapling extends \Timber\Site
             new WooCommercePricing(),
             new WooCommerceCoupon(),
             new Breadcrumbs(),
+            new CheckoutAddressHandler(),
         ];
 
         $plugins = array_filter($plugins, function ($plugin) {
