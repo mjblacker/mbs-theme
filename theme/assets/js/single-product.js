@@ -869,13 +869,18 @@ document.addEventListener("alpine:init", () => {
 
         if (response.ok) {
           const responseText = await response.text();
-          
+
           if (responseText.includes('error') || responseText === '0') {
             throw new Error("Add to cart failed");
           }
 
           await ProductUtils.updateCartBadge(1);
-          this.showSuccessMessage();
+
+          // If on cart page, reload to show new item
+          if (window.location.pathname.includes('/cart')) {
+            window.location.reload();
+          } 
+          
         } else {
           throw new Error("Failed to add to cart");
         }

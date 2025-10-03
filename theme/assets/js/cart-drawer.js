@@ -98,12 +98,12 @@ document.addEventListener("alpine:init", () => {
 
     async processCartItem(item) {
       const hasVariation = item.variation?.length > 0;
-        
+
       const cartItem = {
         key: item.key,
         id: item.id,
         variation_id: hasVariation ? item.id : null,
-        name: item.name,
+        name: this.decodeHtmlEntities(item.name),
         quantity: item.quantity,
         line_total: item.totals.line_total,
         line_subtotal: item.totals.line_subtotal,
@@ -120,6 +120,12 @@ document.addEventListener("alpine:init", () => {
       }
 
       return cartItem;
+    },
+
+    decodeHtmlEntities(text) {
+      const textarea = document.createElement('textarea');
+      textarea.innerHTML = text;
+      return textarea.value;
     },
 
     // Brand Extraction
