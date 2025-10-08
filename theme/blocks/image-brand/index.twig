@@ -41,7 +41,7 @@
               <div class="image-brand__item flex items-center justify-center p-4 transition-all duration-300 hover:scale-105">
                 {% if brand.link and brand.link.url %}
                   <a href="{{ brand.link.url }}" 
-                     class="block w-full h-full flex items-center justify-center"
+                     class="w-full h-full flex items-center justify-center"
                      {% if brand.link.target %}target="{{ brand.link.target }}"{% endif %}
                      {% if brand.link.title %}aria-label="{{ brand.link.title }}"{% endif %}>
                     <img src="{{ brand.image.url }}" 
