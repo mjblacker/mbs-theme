@@ -16,17 +16,17 @@
 #}
 
 {# Get banner configuration from Top Header Banner options page #}
-{% set banner_enabled = function('get_field', 'alert_banner_enabled', 'option') %}
-{% set banner_tag = function('get_field', 'alert_banner_tag', 'option') ?: 'default' %}
-{% set banner_text = function('get_field', 'alert_banner_text', 'option') %}
-{% set banner_button_text = function('get_field', 'alert_banner_button_text', 'option') %}
-{% set banner_button_link = function('get_field', 'alert_banner_button_link', 'option') %}
+{% set banner_enabled = function('function_exists', 'get_field') ? function('get_field', 'alert_banner_enabled', 'option') : false %}
+{% set banner_tag = function('function_exists', 'get_field') ? (function('get_field', 'alert_banner_tag', 'option') ?: 'default') : 'default' %}
+{% set banner_text = function('function_exists', 'get_field') ? function('get_field', 'alert_banner_text', 'option') : null %}
+{% set banner_button_text = function('function_exists', 'get_field') ? function('get_field', 'alert_banner_button_text', 'option') : null %}
+{% set banner_button_link = function('function_exists', 'get_field') ? function('get_field', 'alert_banner_button_link', 'option') : null %}
 
 {# Set banner variables with fallbacks #}
-{% set alert_text = banner_text ?: (theme_options.alert_banner.text ?: 'Alert Banner goes here in case you need to alert anyone to special offers!') %}
-{% set show_banner = banner_enabled ?: (theme_options.alert_banner.enabled ? true : false) %}
-{% set contact_url = banner_button_link ?: (theme_options.alert_banner.button_link ?: '/contact') %}
-{% set button_text = banner_button_text ?: (theme_options.alert_banner.button_text ?: 'Contact Us') %}
+{% set alert_text = banner_text ?: ((theme_options.alert_banner.text ?? null) ?: 'Alert Banner goes here in case you need to alert anyone to special offers!') %}
+{% set show_banner = banner_enabled ?: ((theme_options.alert_banner.enabled ?? false) ? true : false) %}
+{% set contact_url = banner_button_link ?: ((theme_options.alert_banner.button_link ?? null) ?: '/contact') %}
+{% set button_text = banner_button_text ?: ((theme_options.alert_banner.button_text ?? null) ?: 'Contact Us') %}
 
 {% if show_banner == true %}
 <div x-data="AlertPersist('{{banner_tag}}')"

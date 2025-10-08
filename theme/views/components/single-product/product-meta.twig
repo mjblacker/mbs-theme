@@ -9,7 +9,7 @@
     {% endif %}
 
     <!-- Categories -->
-    {% set product_categories = function('get_the_terms', post.ID, 'product_cat') %}
+    {% set product_categories = function('function_exists', 'get_the_terms') ? function('get_the_terms', post.ID, 'product_cat') : false %}
     {% if product_categories and product_categories is not same as(false) %}
         <div class="flex py-3 mb-0 border-t border-[#F5F5F5]">
             <span class="text-[12px] font-light text-gray-700 mr-3 uppercase">Categories:</span>

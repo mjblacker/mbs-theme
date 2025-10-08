@@ -4,7 +4,7 @@
 #}
 
 {# Get the order from WooCommerce globals #}
-{% set order = function('wc_get_order', function('get_query_var', 'order-received')) %}
+{% set order = function('function_exists', 'wc_get_order') ? function('wc_get_order', function('get_query_var', 'order-received')) : null %}
     <div class="woocommerce-order-received">
         <!-- Breadcrumbs -->
         {% include 'woocommerce/breadcrumbs.twig' %}

@@ -10,7 +10,7 @@
 
 {% set context = context is defined ? context : 'desktop' %}
 {% set mobile_menu = mobile_menu is defined ? mobile_menu : false %}
-{% set company_phone = function('get_field', 'phone', 'options') ? function('get_field', 'phone', 'options') : (theme_options.company_info.phone ?: '1300 xxx xxx') %}
+{% set company_phone = function('function_exists', 'get_field') ? (function('get_field', 'phone', 'options') ?: (theme_options.company_info.phone ?? '1300 xxx xxx')) : (theme_options.company_info.phone ?? '1300 xxx xxx') %}
 
 {% if context == 'desktop' %}
     {# Desktop Contact Button #}

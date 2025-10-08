@@ -7,7 +7,7 @@
 #}
 
 {# Get featured section data from ACF Category Mega Menu Options #}
-{% set featured_section = function('get_field', 'featured_section', 'options') %}
+{% set featured_section = function('function_exists', 'get_field') ? function('get_field', 'featured_section', 'options') : {} %}
 
 <div class="grid grid-cols-1 lg:grid-cols-5 gap-10">
 

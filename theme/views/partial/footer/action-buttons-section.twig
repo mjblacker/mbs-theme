@@ -11,11 +11,11 @@
     {# <div class="h-[28px] mb-6"></div> #}
 
     {# Get footer action buttons configuration from new options page #}
-    {% set footer_buttons_enabled = function('get_field', 'footer_action_buttons_enabled', 'option') %}
-    {% set footer_buttons_list = function('get_field', 'footer_action_buttons', 'option') %}
+    {% set footer_buttons_enabled = function('function_exists', 'get_field') ? function('get_field', 'footer_action_buttons_enabled', 'option') : false %}
+    {% set footer_buttons_list = function('function_exists', 'get_field') ? function('get_field', 'footer_action_buttons', 'option') : [] %}
 
     {# Fallback to old structure for backward compatibility #}
-    {% set legacy_footer_buttons = theme_options.footer_action_buttons %}
+    {% set legacy_footer_buttons = theme_options.footer_action_buttons ?? [] %}
     {% set show_buttons = footer_buttons_enabled ?: (legacy_footer_buttons.enabled ? true : false) %}
     {% set buttons_list = footer_buttons_list ?: (legacy_footer_buttons.buttons ?: []) %}
 

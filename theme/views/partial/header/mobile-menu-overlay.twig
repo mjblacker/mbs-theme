@@ -15,8 +15,8 @@
 #}
 
 {# Get featured categories from ACF Category Mega Menu Options #}
-{% set featured_categories = function('get_field', 'featured_categories', 'options') %}
-{% set company_phone = function('get_field', 'phone', 'options') ? function('get_field', 'phone', 'options') : (theme_options.company_info.phone ?: '1300 xxx xxx') %}
+{% set featured_categories = function('function_exists', 'get_field') ? function('get_field', 'featured_categories', 'options') : [] %}
+{% set company_phone = function('function_exists', 'get_field') ? (function('get_field', 'phone', 'options') ?: (theme_options.company_info.phone ?? '1300 xxx xxx')) : (theme_options.company_info.phone ?? '1300 xxx xxx') %}
 
 <div x-show="mobileMenuOpen"
      x-transition:enter="transition ease-out duration-300"

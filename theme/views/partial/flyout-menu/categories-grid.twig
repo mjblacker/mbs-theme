@@ -5,7 +5,7 @@
 #}
 
 {# Get featured categories from ACF Category Mega Menu Options #}
-{% set featured_categories = function('get_field', 'featured_categories', 'options') %}
+{% set featured_categories = function('function_exists', 'get_field') ? function('get_field', 'featured_categories', 'options') : [] %}
 
 {% if featured_categories %}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
