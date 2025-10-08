@@ -10,17 +10,17 @@
       {# Header Section #}
       <div class="text-center mb-12 lg:mb-16">
         <h2 class="text-4xl lg:text-5xl font-medium text-white mb-4" style="font-size: 48px; color: #ffffff;">
-          {{ heading }}
+          {{ fields.heading }}
         </h2>
         <p class="text-lg lg:text-xl text-gray-400" style="font-size: 20px; color: #7D8184;">
-          {{ sub_heading }}
+          {{ fields.sub_heading }}
         </p>
       </div>
 
       {# Locations Grid #}
-      {% if locations %}
+      {% if theme_options.locations %}
         <div class="grid {{ grid_classes }} gap-8 lg:gap-12">
-          {% for location in locations %}
+          {% for location in theme_options.locations %}
             <div class="location-card bg-white text-center overflow-hidden transform transition-all duration-300 hover:-translate-y-2 w-full ">
 
               {# Location Image #}
