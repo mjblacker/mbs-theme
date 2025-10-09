@@ -1,0 +1,139 @@
+{#
+/**
+ * Pay for order form
+ *
+ * @package WooCommerce\Templates
+ * @version 8.2.0
+ */
+#}
+
+{% set totals = order.get_order_item_totals() %}
+
+<style>
+    /* Style the NAB Confirm and Pay button */
+    .woocommerce-order-pay input[type="submit"],
+    .woocommerce-order-pay button[type="submit"] {
+        display: inline-block !important;
+        padding: 1rem 1.5rem !important;
+        background-color: #FFF200 !important;
+        color: #000 !important;
+        text-transform: uppercase;
+        border-radius: 0.5rem !important;
+        font-weight: 500 !important;
+        border: none !important;
+        cursor: pointer !important;
+        transition: background-color 0.2s !important;
+        font-family: Lexend;
+    }
+
+    .woocommerce-order-pay input[type="submit"]:hover,
+    .woocommerce-order-pay button[type="submit"]:hover {
+        background-color: #FFF200 !important;
+    }
+</style>
+
+<div class="woocommerce-order-pay">
+    <form id="order_review" method="post" class="woocommerce-checkout">
+
+        {# Order Items Table #}
+        <div class="order-review-wrapper bg-white rounded-lg shadow-sm border border-gray-200 mb-6 overflow-hidden">
+            <div class="p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Order Review</h2>
+
+                <table class="shop_table w-full">
+                    <thead>
+                        <tr class="border-b border-gray-200">
+                            <th class="product-name text-left py-3 px-2 text-sm font-medium text-gray-700">Product</th>
+                            <th class="product-quantity text-center py-3 px-2 text-sm font-medium text-gray-700">Qty</th>
+                            <th class="product-total text-right py-3 px-2 text-sm font-medium text-gray-700">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if order.get_items()|length > 0 %}
+                            {% for item_id, item in order.get_items() %}
+                                {% if function('apply_filters', 'woocommerce_order_item_visible', true, item) %}
+                                    <tr class="{{ function('apply_filters', 'woocommerce_order_item_class', 'order_item', item, order)|e('html_attr') }} border-b border-gray-100">
+                                        <td class="product-name py-4 px-2">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ function('apply_filters', 'woocommerce_order_item_name', item.get_name(), item, false)|raw }}
+                                            </div>
+                                            {% do function('do_action', 'woocommerce_order_item_meta_start', item_id, item, order, false) %}
+                                            {{ function('wc_display_item_meta', item)|raw }}
+                                            {% do function('do_action', 'woocommerce_order_item_meta_end', item_id, item, order, false) %}
+                                        </td>
+                                        <td class="product-quantity text-center py-4 px-2 text-sm text-gray-600">
+                                            {{ function('apply_filters', 'woocommerce_order_item_quantity_html', '<strong class="product-quantity">&times;&nbsp;' ~ item.get_quantity() ~ '</strong>', item)|raw }}
+                                        </td>
+                                        <td class="product-subtotal text-right py-4 px-2 text-sm font-medium text-gray-900">
+                                            {{ order.get_formatted_line_subtotal(item)|raw }}
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                    <tfoot>
+                        {% if totals %}
+                            {% for total in totals %}
+                                <tr class="border-t border-gray-200">
+                                    <th scope="row" colspan="2" class="text-left py-3 px-2 text-sm font-medium text-gray-700">
+                                        {{ total.label|raw }}
+                                    </th>
+                                    <td class="product-total text-right py-3 px-2 text-sm font-medium text-gray-900">
+                                        {{ total.value|raw }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        {% do function('do_action', 'woocommerce_pay_order_before_payment') %}
+
+        {# Payment Section #}
+        <div id="payment" class="woocommerce-checkout-payment">
+            {% if order.needs_payment() %}
+                {% if available_gateways is not empty %}
+                    <div class="payment-methods-section bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-6">Payment Method</h3>
+
+                        <ul class="wc_payment_methods payment_methods methods">
+                            {% for gateway_id, gateway in available_gateways %}
+                                <li class="wc_payment_method payment_method_{{ gateway_id }} mb-6">
+                                    <input type="radio"
+                                           id="payment_method_{{ gateway_id }}"
+                                           class="payment_method"
+                                           name="payment_method"
+                                           value="{{ gateway_id }}"
+                                           {{ loop.first ? 'checked="checked"' : '' }}
+                                           data-order_button_text="{{ gateway.order_button_text|e('html_attr') }}" />
+
+                                    <label for="payment_method_{{ gateway_id }}" class="inline-block ml-2 font-medium text-gray-900 mb-3">
+                                        {{ gateway.get_title()|raw }}
+                                    </label>
+
+                                    {# Payment description and fields #}
+                                    <div class="payment_box payment_method_{{ gateway_id }} mt-4" style="{{ loop.first ? '' : 'display:none;' }}">
+                                        {# Try payment_fields() first (for gateways with has_fields = true) #}
+                                        {{ gateway.payment_fields()|raw }}
+
+                                        {# If gateway uses receipt page (like NAB Direct Post), trigger that action #}
+                                        {# Note: payment_fields() already outputs the description, so no need to duplicate it #}
+                                        {{ function('do_action', 'woocommerce_receipt_' ~ gateway_id, order.get_id())|raw }}
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% else %}
+                    <div class="woocommerce-notice woocommerce-notice--info woocommerce-info bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded mb-6">
+                        {{ function('apply_filters', 'woocommerce_no_available_payment_methods_message', 'Sorry, it seems that there are no available payment methods for your location. Please contact us if you require assistance or wish to make alternate arrangements.')|e }}
+                    </div>
+                {% endif %}
+            {% endif %}
+
+        </div>
+    </form>
+</div>

@@ -1,12 +1,70 @@
 {% extends "base.twig" %}
 
 {% block content %}
-    {# Check if this is the order-received page #}
+    {# Check for WooCommerce endpoints #}
     {% set is_order_received = function('is_wc_endpoint_url', 'order-received') %}
+    {% set is_order_pay = function('is_wc_endpoint_url', 'order-pay') %}
 
     {% if is_order_received %}
         {# Include the thankyou template for order-received pages #}
         {% include 'woocommerce/checkout/thankyou.twig' %}
+    {% elseif is_order_pay %}
+        {# Use custom styled order-pay template #}
+        <div class="woocommerce container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {{ function('wc_print_notices')|raw }}
+
+            {% do function('do_action', 'before_woocommerce_pay') %}
+
+            {% set order_id = function('absint', function('get_query_var', 'order-pay')) %}
+            {% set order_key_param = function('filter_input', constant('INPUT_GET'), 'key', constant('FILTER_SANITIZE_FULL_SPECIAL_CHARS')) %}
+
+            {# Check if this is a pay_for_order request - key is required #}
+            {% if order_key_param and order_id %}
+                {% set order_key = function('wc_clean', function('wp_unslash', order_key_param)) %}
+                {% set order = function('wc_get_order', order_id) %}
+
+                {# Validate order #}
+                {% if not order %}
+                    <div class="woocommerce-error bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-4">
+                        Invalid order.
+                    </div>
+                {% elseif not order.key_is_valid(order_key) %}
+                    <div class="woocommerce-error bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-4">
+                        Invalid order.
+                    </div>
+                {% elseif order.get_status() == 'cancelled' %}
+                    <div class="woocommerce-error bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-4">
+                        This order has been cancelled. Please contact us if you need assistance.
+                    </div>
+                {% elseif not order.needs_payment() %}
+                    <div class="woocommerce-notice woocommerce-notice--success bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded mb-4">
+                        This order's payment has already been processed.
+                    </div>
+                {% else %}
+                    {# Valid order that needs payment #}
+                    {% do function('wc_enqueue_js', "
+                        jQuery(function($) {
+                            $('input[name=\"payment_method\"]:checked').eq(0).trigger('click');
+                        });
+                    ") %}
+
+                    {% set available_gateways = function('WC').payment_gateways.get_available_payment_gateways() %}
+                    {% set order_button_text = function('apply_filters', 'woocommerce_pay_order_button_text', 'Pay for order') %}
+
+                    {% include 'woocommerce/checkout/form-pay.twig' with {
+                        order: order,
+                        available_gateways: available_gateways,
+                        order_button_text: order_button_text
+                    } %}
+                {% endif %}
+            {% else %}
+                <div class="woocommerce-error bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-4">
+                    Invalid order.
+                </div>
+            {% endif %}
+
+            {% do function('do_action', 'after_woocommerce_pay') %}
+        </div>
     {% else %}
         <div class="woocommerce-checkout mb-10">
             <!-- Breadcrumbs -->
