@@ -1,29 +1,71 @@
+/**
+ * WooCommerce Checkout Page Enhancement
+ *
+ * Provides real-time checkout updates, shipping calculations, payment method handling,
+ * and coupon management using Alpine.js and WooCommerce Store API.
+ *
+ * @module checkout-page
+ */
+
 document.addEventListener("alpine:init", () => {
-  const CheckoutUtils = {
-    selectors: {
-      form: "form.checkout",
-      placeOrderBtn: "#place_order",
-      shippingMethods: ".shipping_method",
-      paymentMethods: ".payment_method",
-      couponField: "#coupon_code",
-      notices: ".woocommerce-message, .woocommerce-info, .woocommerce-error",
-      reviewOrder: ".woocommerce-checkout-review-order",
-    },
+  // DOM Selectors
+  const SELECTORS = {
+    form: "form.checkout",
+    placeOrderBtn: "#place_order",
+    shippingMethods: ".shipping_method",
+    paymentMethods: ".payment_method",
+    couponField: "#coupon_code",
+    notices: ".woocommerce-message, .woocommerce-info, .woocommerce-error",
+    reviewOrder: ".woocommerce-checkout-review-order",
+    orderSummary: ".order-summary",
+    shippingSection: ".shipping-section",
+    shipToDifferentCheckbox: "#ship-to-different-address-checkbox",
+  };
 
-    classes: {
-      loading: ["opacity-75", "cursor-not-allowed"],
-      disabled: ["opacity-50", "pointer-events-none"],
-    },
+  const CSS_CLASSES = {
+    loading: ["opacity-75", "cursor-not-allowed"],
+    disabled: ["opacity-50", "pointer-events-none"],
+    borderBlack: "border-black",
+    borderGray: "border-gray-300",
+    scale100: "scale-100",
+    scale0: "scale-0",
+  };
 
-    createSpinner() {
-      return (
-        '<svg class="animate-spin h-5 w-5 inline mr-2" fill="none" viewBox="0 0 24 24">' +
-        '<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>' +
-        '<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0 1 4 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>' +
-        "</svg>"
-      );
+  const DEBOUNCE_DELAYS = {
+    standard: 1000,
+    fast: 500,
+    shippingMethod: 300,
+    postcode: 1000,
+    postcodeFastExit: 100,
+    updateCooldown: 500,
+    duplicateCheck: 1000,
+  };
+
+  const FIELD_NAMES = {
+    billing: {
+      country: "billing_country",
+      state: "billing_state",
+      city: "billing_city",
+      postcode: "billing_postcode",
+      address1: "billing_address_1",
+      address2: "billing_address_2",
+    },
+    shipping: {
+      country: "shipping_country",
+      state: "shipping_state",
+      city: "shipping_city",
+      postcode: "shipping_postcode",
+      address1: "shipping_address_1",
+      address2: "shipping_address_2",
     },
   };
+
+  const createSpinner = () => `
+    <svg class="animate-spin h-5 w-5 inline mr-2" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0 1 4 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+  `;
 
   Alpine.data("checkoutPage", () => ({
     processing: false,
@@ -49,16 +91,13 @@ document.addEventListener("alpine:init", () => {
 
     initializeDefaultValues() {
       // Initialize shipping address toggle
-      const shipCheckbox = document.querySelector(
-        "#ship-to-different-address-checkbox"
-      );
+      const shipCheckbox = document.querySelector(SELECTORS.shipToDifferentCheckbox);
       if (shipCheckbox) {
         this.shipToDifferentAddress = shipCheckbox.checked;
       }
 
       // Initialize selected payment method
-      const selectedPayment = document.querySelector(".payment_method:checked");
-
+      const selectedPayment = document.querySelector(`${SELECTORS.paymentMethods}:checked`);
       if (selectedPayment) {
         this.selectedPaymentMethod = selectedPayment.value;
         this.updatePaymentMethodVisuals(selectedPayment);
@@ -81,18 +120,17 @@ document.addEventListener("alpine:init", () => {
 
       // Listen for country/state changes that might affect shipping
       document.addEventListener("change", (e) => {
+        const billingSelector = `select[name="${FIELD_NAMES.billing.country}"], select[name="${FIELD_NAMES.billing.state}"]`;
+        const shippingSelector = `select[name="${FIELD_NAMES.shipping.country}"], select[name="${FIELD_NAMES.shipping.state}"]`;
+
         // Billing country/state - only trigger if ship_to_different is unchecked
-        if (e.target.matches('select[name="billing_country"], select[name="billing_state"]')) {
-          if (!this.shipToDifferentAddress) {
-            this.debouncedUpdateCheckout();
-          }
+        if (e.target.matches(billingSelector) && !this.shipToDifferentAddress) {
+          this.debouncedUpdateCheckout();
         }
 
         // Shipping country/state - only trigger if ship_to_different is checked
-        if (e.target.matches('select[name="shipping_country"], select[name="shipping_state"]')) {
-          if (this.shipToDifferentAddress) {
-            this.debouncedUpdateCheckout();
-          }
+        if (e.target.matches(shippingSelector) && this.shipToDifferentAddress) {
+          this.debouncedUpdateCheckout();
         }
       });
     },
@@ -100,7 +138,7 @@ document.addEventListener("alpine:init", () => {
     setupShippingHandlers() {
       // Handle shipping method changes
       document.addEventListener("change", (e) => {
-        if (e.target.matches(".shipping_method")) {
+        if (e.target.matches(SELECTORS.shippingMethods)) {
           this.updateShippingVisualState(e.target);
           this.handleShippingMethodChange(e.target);
         }
@@ -108,15 +146,9 @@ document.addEventListener("alpine:init", () => {
 
       // Handle "ship to different address" checkbox changes
       document.addEventListener("change", (e) => {
-        if (e.target.matches("#ship-to-different-address-checkbox")) {
-          // Update Alpine.js state
+        if (e.target.matches(SELECTORS.shipToDifferentCheckbox)) {
           this.shipToDifferentAddress = e.target.checked;
-
-          // Immediately trigger shipping method update based on relevant postcode
-          // This ensures shipping recalculates when switching between billing/shipping address
-          setTimeout(() => {
-            this.updateCheckout();
-          }, 100);
+          setTimeout(() => this.updateCheckout(), DEBOUNCE_DELAYS.postcodeFastExit);
         }
       });
 
@@ -125,99 +157,72 @@ document.addEventListener("alpine:init", () => {
 
       // Update shipping when address fields change
       document.addEventListener("blur", (e) => {
+        const billingFields = `input[name="${FIELD_NAMES.billing.address1}"], input[name="${FIELD_NAMES.billing.address2}"], input[name="${FIELD_NAMES.billing.city}"], input[name="${FIELD_NAMES.billing.postcode}"], input[name="${FIELD_NAMES.billing.state}"]`;
+        const shippingFields = `input[name="${FIELD_NAMES.shipping.address1}"], input[name="${FIELD_NAMES.shipping.address2}"], input[name="${FIELD_NAMES.shipping.city}"], input[name="${FIELD_NAMES.shipping.postcode}"], input[name="${FIELD_NAMES.shipping.state}"]`;
+
         // Billing address fields - only trigger if ship_to_different is unchecked
-        if (
-          e.target.matches(
-            'input[name="billing_address_1"], input[name="billing_address_2"], input[name="billing_city"], input[name="billing_postcode"], input[name="billing_state"]'
-          )
-        ) {
-          if (!this.shipToDifferentAddress) {
-            this.debouncedUpdateCheckout();
-          }
+        if (e.target.matches(billingFields) && !this.shipToDifferentAddress) {
+          this.debouncedUpdateCheckout();
         }
 
         // Shipping address fields - only trigger if ship_to_different is checked
-        if (
-          e.target.matches(
-            'input[name="shipping_address_1"], input[name="shipping_address_2"], input[name="shipping_city"], input[name="shipping_postcode"], input[name="shipping_state"]'
-          )
-        ) {
-          if (this.shipToDifferentAddress) {
-            this.debouncedUpdateCheckout();
-          }
+        if (e.target.matches(shippingFields) && this.shipToDifferentAddress) {
+          this.debouncedUpdateCheckout();
         }
       });
 
       // Postcode field handling with smart debouncing
       let postcodeInputTimer = null;
-      let lastPostcodeValue = {};
+      const lastPostcodeValue = {};
+      const postcodeSelector = `input[name="${FIELD_NAMES.billing.postcode}"], input[name="${FIELD_NAMES.shipping.postcode}"]`;
 
       document.addEventListener("input", (e) => {
-        if (e.target.matches('input[name="billing_postcode"]') || e.target.matches('input[name="shipping_postcode"]')) {
-          const fieldName = e.target.name;
-          const isBilling = fieldName === 'billing_postcode';
+        if (!e.target.matches(postcodeSelector)) return;
 
-          // Only proceed if relevant to current shipping mode
-          if ((isBilling && this.shipToDifferentAddress) || (!isBilling && !this.shipToDifferentAddress)) {
-            return;
-          }
+        const fieldName = e.target.name;
+        const isBilling = fieldName === FIELD_NAMES.billing.postcode;
 
-          // Clear existing timer
-          if (postcodeInputTimer) {
-            clearTimeout(postcodeInputTimer);
-          }
-
-          // Store the current value
-          lastPostcodeValue[fieldName] = e.target.value;
-
-          // Set timer - only trigger if user stops typing for 1 second
-          postcodeInputTimer = setTimeout(() => {
-            if (e.target.value === lastPostcodeValue[fieldName]) {
-              this.updateCheckout();
-            }
-          }, 1000);
+        // Only proceed if relevant to current shipping mode
+        if ((isBilling && this.shipToDifferentAddress) || (!isBilling && !this.shipToDifferentAddress)) {
+          return;
         }
+
+        clearTimeout(postcodeInputTimer);
+        lastPostcodeValue[fieldName] = e.target.value;
+
+        postcodeInputTimer = setTimeout(() => {
+          if (e.target.value === lastPostcodeValue[fieldName]) {
+            this.updateCheckout();
+          }
+        }, DEBOUNCE_DELAYS.postcode);
       });
 
-      // Trigger immediate update when user leaves the postcode field (blur, tab, click outside)
+      // Trigger immediate update when user leaves the postcode field
       document.addEventListener("blur", (e) => {
-        if (e.target.matches('input[name="billing_postcode"]') || e.target.matches('input[name="shipping_postcode"]')) {
-          const isBilling = e.target.name === 'billing_postcode';
+        if (!e.target.matches(postcodeSelector)) return;
 
-          // Only proceed if relevant to current shipping mode
-          if ((isBilling && !this.shipToDifferentAddress) || (!isBilling && this.shipToDifferentAddress)) {
-            // Clear any pending timer
-            if (postcodeInputTimer) {
-              clearTimeout(postcodeInputTimer);
-              postcodeInputTimer = null;
-            }
+        const isBilling = e.target.name === FIELD_NAMES.billing.postcode;
+        const shouldUpdate = (isBilling && !this.shipToDifferentAddress) || (!isBilling && this.shipToDifferentAddress);
 
-            // Trigger update with short delay to ensure value is saved
-            setTimeout(() => {
-              this.updateCheckout();
-            }, 100);
-          }
+        if (shouldUpdate) {
+          clearTimeout(postcodeInputTimer);
+          postcodeInputTimer = null;
+          setTimeout(() => this.updateCheckout(), DEBOUNCE_DELAYS.postcodeFastExit);
         }
       }, true);
 
       // Trigger update on Enter key
       document.addEventListener("keydown", (e) => {
-        if ((e.target.matches('input[name="billing_postcode"]') || e.target.matches('input[name="shipping_postcode"]')) && e.key === 'Enter') {
-          const isBilling = e.target.name === 'billing_postcode';
+        if (!e.target.matches(postcodeSelector) || e.key !== 'Enter') return;
 
-          // Only proceed if relevant to current shipping mode
-          if ((isBilling && !this.shipToDifferentAddress) || (!isBilling && this.shipToDifferentAddress)) {
-            e.preventDefault();
+        const isBilling = e.target.name === FIELD_NAMES.billing.postcode;
+        const shouldUpdate = (isBilling && !this.shipToDifferentAddress) || (!isBilling && this.shipToDifferentAddress);
 
-            // Clear any pending timer
-            if (postcodeInputTimer) {
-              clearTimeout(postcodeInputTimer);
-              postcodeInputTimer = null;
-            }
-
-            // Trigger immediate update
-            this.updateCheckout();
-          }
+        if (shouldUpdate) {
+          e.preventDefault();
+          clearTimeout(postcodeInputTimer);
+          postcodeInputTimer = null;
+          this.updateCheckout();
         }
       });
 
@@ -232,30 +237,25 @@ document.addEventListener("alpine:init", () => {
     setupPaymentHandlers() {
       // Handle payment method changes
       document.addEventListener("change", (e) => {
-        if (e.target.matches(".payment_method")) {
-          const paymentMethod = e.target.value;
-          this.selectedPaymentMethod = paymentMethod;
-          this.updatePaymentMethodVisuals(e.target);
-          this.togglePaymentBox(paymentMethod, true);
-          // Don't call updateCheckout() for payment method changes - it resets the selection
-          // WooCommerce will handle payment method validation during form submission
-        }
+        if (!e.target.matches(SELECTORS.paymentMethods)) return;
+
+        this.selectedPaymentMethod = e.target.value;
+        this.updatePaymentMethodVisuals(e.target);
+        this.togglePaymentBox(e.target.value, true);
       });
 
-      // Also handle clicks on labels for better UX
+      // Handle clicks on labels for better UX
       document.addEventListener("click", (e) => {
-        if (e.target.closest(".payment-method-label")) {
-          const label = e.target.closest(".payment-method-label");
-          const forAttr = label.getAttribute("for");
+        const label = e.target.closest(".payment-method-label");
+        if (!label) return;
 
-          if (forAttr) {
-            const radioInput = document.querySelector(`#${forAttr}`);
+        const forAttr = label.getAttribute("for");
+        if (!forAttr) return;
 
-            if (radioInput && !radioInput.checked) {
-              radioInput.checked = true;
-              radioInput.dispatchEvent(new Event("change", { bubbles: true }));
-            }
-          }
+        const radioInput = document.querySelector(`#${forAttr}`);
+        if (radioInput && !radioInput.checked) {
+          radioInput.checked = true;
+          radioInput.dispatchEvent(new Event("change", { bubbles: true }));
         }
       });
     },
@@ -270,43 +270,30 @@ document.addEventListener("alpine:init", () => {
     },
 
 
-    async handleShippingMethodChange(target) {
-      // Don't trigger update if we're already updating (prevents loops)
-      if (this.isUpdating) {
-        return;
-      }
+    async handleShippingMethodChange() {
+      if (this.isUpdating) return;
 
-      // Clear any existing timeout
-      if (this.shippingUpdateTimeout) {
-        clearTimeout(this.shippingUpdateTimeout);
-      }
+      clearTimeout(this.shippingUpdateTimeout);
 
-      // Debounce the update to prevent rapid consecutive calls
       this.shippingUpdateTimeout = setTimeout(async () => {
-        const reviewOrder = document.querySelector(
-          CheckoutUtils.selectors.reviewOrder
-        );
+        const reviewOrder = document.querySelector(SELECTORS.reviewOrder);
 
-        // Show loading state
         if (reviewOrder) {
           reviewOrder.style.opacity = "0.6";
           reviewOrder.style.pointerEvents = "none";
         }
 
         try {
-          // Simply trigger the standard WooCommerce checkout update
-          // This is more reliable than trying to update just shipping methods
           await this.updateCheckout();
         } catch (error) {
           console.error("Error updating shipping method:", error);
         } finally {
-          // Remove loading state
           if (reviewOrder) {
             reviewOrder.style.opacity = "";
             reviewOrder.style.pointerEvents = "";
           }
         }
-      }, 300); // 300ms debounce
+      }, DEBOUNCE_DELAYS.shippingMethod);
     },
 
     async applyCoupon() {
@@ -429,24 +416,17 @@ document.addEventListener("alpine:init", () => {
     },
 
     updatePaymentMethodVisuals(selectedInput) {
-      // Update visual state of all payment method radio buttons
-      document.querySelectorAll(".payment_method").forEach((input) => {
+      document.querySelectorAll(SELECTORS.paymentMethods).forEach((input) => {
         const option = input.closest(".payment-method-option");
         const label = option?.querySelector(".payment-method-label");
         const radioButton = label?.querySelector(".radio-button");
         const radioInner = radioButton?.querySelector(".radio-inner");
 
-        if (input === selectedInput) {
-          // Selected state - only show radio dot
-          radioButton?.classList.add("border-gray-400");
-          radioInner?.classList.remove("scale-0");
-          radioInner?.classList.add("scale-100");
-        } else {
-          // Unselected state - hide radio dot
-          radioButton?.classList.remove("border-gray-400");
-          radioInner?.classList.remove("scale-100");
-          radioInner?.classList.add("scale-0");
-        }
+        const isSelected = input === selectedInput;
+
+        radioButton?.classList.toggle("border-gray-400", isSelected);
+        radioInner?.classList.toggle(CSS_CLASSES.scale0, !isSelected);
+        radioInner?.classList.toggle(CSS_CLASSES.scale100, isSelected);
       });
     },
 
@@ -473,78 +453,56 @@ document.addEventListener("alpine:init", () => {
     },
 
     async updateCheckout() {
-      // Prevent rapid consecutive calls
-      if (this.isUpdating) {
-        return;
-      }
+      if (this.isUpdating) return;
 
-      // Set flag immediately and keep it set longer to prevent cascading calls
       this.isUpdating = true;
 
       try {
-        // Show loading state
         this.showCheckoutLoadingState(true);
-
-        // Update customer address in session using Store API (like shipping calculator)
         await this.updateCustomerAddressInSession();
-
-        // Use the manual refresh approach directly since it's reliable
         await this.manualRefreshOrderSummary();
 
-        // Keep the flag set for a brief period to prevent immediate re-triggers
         setTimeout(() => {
           this.isUpdating = false;
-        }, 500);
-
+        }, DEBOUNCE_DELAYS.updateCooldown);
       } catch (error) {
         console.error('updateCheckout error:', error);
         this.isUpdating = false;
       } finally {
-        // Remove loading state
         this.showCheckoutLoadingState(false);
       }
     },
 
     async updateCustomerAddressInSession() {
-      // Collect current address data from form fields
       const getFieldValue = (name) => {
         const field = document.querySelector(`[name="${name}"]`);
-        return field ? field.value : '';
+        return field?.value || '';
       };
 
-      // Determine which address to use for shipping calculation
       const useShippingAddress = this.shipToDifferentAddress;
+      const addressType = useShippingAddress ? FIELD_NAMES.shipping : FIELD_NAMES.billing;
 
       const shippingAddressData = {
-        country: getFieldValue(useShippingAddress ? 'shipping_country' : 'billing_country'),
-        state: getFieldValue(useShippingAddress ? 'shipping_state' : 'billing_state'),
-        city: getFieldValue(useShippingAddress ? 'shipping_city' : 'billing_city'),
-        postcode: getFieldValue(useShippingAddress ? 'shipping_postcode' : 'billing_postcode'),
+        country: getFieldValue(addressType.country),
+        state: getFieldValue(addressType.state),
+        city: getFieldValue(addressType.city),
+        postcode: getFieldValue(addressType.postcode),
       };
 
-      // Only update if we have at least a country and postcode
-      if (!shippingAddressData.country || !shippingAddressData.postcode) {
-        return;
-      }
+      if (!shippingAddressData.country || !shippingAddressData.postcode) return;
 
       try {
-        // Build request body
-        const requestBody = {
-          shipping_address: shippingAddressData,
-        };
+        const requestBody = { shipping_address: shippingAddressData };
 
-        // If shipping to same address as billing, also update billing address
         if (!useShippingAddress) {
-          const billingAddressData = {
-            country: getFieldValue('billing_country'),
-            state: getFieldValue('billing_state'),
-            city: getFieldValue('billing_city'),
-            postcode: getFieldValue('billing_postcode'),
+          requestBody.billing_address = {
+            country: getFieldValue(FIELD_NAMES.billing.country),
+            state: getFieldValue(FIELD_NAMES.billing.state),
+            city: getFieldValue(FIELD_NAMES.billing.city),
+            postcode: getFieldValue(FIELD_NAMES.billing.postcode),
           };
-          requestBody.billing_address = billingAddressData;
         }
 
-        // Use WooCommerce Store API to update customer address (same as shipping calculator)
         const response = await fetch('/wp-json/wc/store/v1/cart/update-customer', {
           method: 'POST',
           credentials: 'same-origin',
@@ -564,69 +522,57 @@ document.addEventListener("alpine:init", () => {
     },
 
     async manualRefreshOrderSummary() {
-      // Create unique execution ID for this call
       const updateId = Date.now() + Math.random();
 
-      // Check if this is a duplicate call
-      if (this.lastUpdateId && (updateId - this.lastUpdateId) < 1000) {
+      if (this.lastUpdateId && (updateId - this.lastUpdateId) < DEBOUNCE_DELAYS.duplicateCheck) {
         return;
       }
 
       this.lastUpdateId = updateId;
 
-      // Save current payment method selection before refresh
-      const currentPaymentMethod = document.querySelector(".payment_method:checked");
-      const savedPaymentMethodValue = currentPaymentMethod ? currentPaymentMethod.value : null;
+      const currentPaymentMethod = document.querySelector(`${SELECTORS.paymentMethods}:checked`);
+      const savedPaymentMethodValue = currentPaymentMethod?.value || null;
 
       try {
-        // Fetch the current checkout page to get updated totals
         const response = await fetch(window.location.href, {
           method: 'GET',
           credentials: 'same-origin',
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-          },
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
         });
 
-        if (response.ok) {
-          const html = await response.text();
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, 'text/html');
+        if (!response.ok) return;
 
-          // Update the order summary section
-          const currentOrderSummary = document.querySelector('.order-summary');
-          const newOrderSummary = doc.querySelector('.order-summary');
+        const html = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
 
-          if (currentOrderSummary && newOrderSummary) {
-            // Temporarily disable update to prevent loops during refresh
-            const wasUpdating = this.isUpdating;
-            this.isUpdating = true;
+        const currentOrderSummary = document.querySelector(SELECTORS.orderSummary);
+        const newOrderSummary = doc.querySelector(SELECTORS.orderSummary);
 
-            currentOrderSummary.innerHTML = newOrderSummary.innerHTML;
+        if (!currentOrderSummary || !newOrderSummary) return;
 
-            // Re-initialize Alpine.js for the updated content (but disable event handling temporarily)
-            if (window.Alpine) {
-              Alpine.initTree(currentOrderSummary);
-            }
+        const wasUpdating = this.isUpdating;
+        this.isUpdating = true;
 
-            // Re-initialize shipping visual state (but don't trigger updates)
-            this.initializeShippingVisualState();
+        currentOrderSummary.innerHTML = newOrderSummary.innerHTML;
 
-            // Restore payment method selection if it was saved
-            if (savedPaymentMethodValue) {
-              const paymentMethodToRestore = document.querySelector(`input[name="payment_method"][value="${savedPaymentMethodValue}"]`);
-              if (paymentMethodToRestore) {
-                paymentMethodToRestore.checked = true;
-                this.selectedPaymentMethod = savedPaymentMethodValue;
-                this.updatePaymentMethodVisuals(paymentMethodToRestore);
-                this.togglePaymentBox(savedPaymentMethodValue, true);
-              }
-            }
+        if (window.Alpine) {
+          Alpine.initTree(currentOrderSummary);
+        }
 
-            // Restore update state
-            this.isUpdating = wasUpdating;
+        this.initializeShippingVisualState();
+
+        if (savedPaymentMethodValue) {
+          const paymentMethodToRestore = document.querySelector(`input[name="payment_method"][value="${savedPaymentMethodValue}"]`);
+          if (paymentMethodToRestore) {
+            paymentMethodToRestore.checked = true;
+            this.selectedPaymentMethod = savedPaymentMethodValue;
+            this.updatePaymentMethodVisuals(paymentMethodToRestore);
+            this.togglePaymentBox(savedPaymentMethodValue, true);
           }
         }
+
+        this.isUpdating = wasUpdating;
       } catch (error) {
         console.error('Manual refresh failed:', error);
       }
@@ -636,7 +582,7 @@ document.addEventListener("alpine:init", () => {
       let timeout;
       return function () {
         clearTimeout(timeout);
-        timeout = setTimeout(() => this.updateCheckout(), 1000);
+        timeout = setTimeout(() => this.updateCheckout(), DEBOUNCE_DELAYS.standard);
       };
     })(),
 
@@ -644,7 +590,7 @@ document.addEventListener("alpine:init", () => {
       let timeout;
       return function () {
         clearTimeout(timeout);
-        timeout = setTimeout(() => this.updateCheckout(), 500);
+        timeout = setTimeout(() => this.updateCheckout(), DEBOUNCE_DELAYS.fast);
       };
     })(),
 
@@ -708,43 +654,27 @@ document.addEventListener("alpine:init", () => {
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, "text/html");
 
-      // Update notices
-      const notices = doc.querySelectorAll(CheckoutUtils.selectors.notices);
-      if (notices.length > 0) {
+      const notices = doc.querySelectorAll(SELECTORS.notices);
+      if (notices.length) {
         this.displayNotices(notices);
       }
 
-      // Update checkout review/order summary if present
-      const newReviewOrder = doc.querySelector(
-        CheckoutUtils.selectors.reviewOrder
-      );
-      const currentReviewOrder = document.querySelector(
-        CheckoutUtils.selectors.reviewOrder
-      );
+      const newReviewOrder = doc.querySelector(SELECTORS.reviewOrder);
+      const currentReviewOrder = document.querySelector(SELECTORS.reviewOrder);
 
       if (newReviewOrder && currentReviewOrder) {
         currentReviewOrder.innerHTML = newReviewOrder.innerHTML;
-
-        // Re-initialize Alpine.js for the updated content
-        if (window.Alpine) {
-          Alpine.initTree(currentReviewOrder);
-        }
+        window.Alpine?.initTree(currentReviewOrder);
       } else {
-        // Fallback: try to update order summary specifically
-        const newOrderSummary = doc.querySelector(".order-summary");
-        const currentOrderSummary = document.querySelector(".order-summary");
+        const newOrderSummary = doc.querySelector(SELECTORS.orderSummary);
+        const currentOrderSummary = document.querySelector(SELECTORS.orderSummary);
 
         if (newOrderSummary && currentOrderSummary) {
           currentOrderSummary.innerHTML = newOrderSummary.innerHTML;
-
-          // Re-initialize Alpine.js for the updated content
-          if (window.Alpine) {
-            Alpine.initTree(currentOrderSummary);
-          }
+          window.Alpine?.initTree(currentOrderSummary);
         }
       }
 
-      // Re-initialize shipping visual state after content update
       this.initializeShippingVisualState();
     },
 
@@ -800,30 +730,26 @@ document.addEventListener("alpine:init", () => {
     },
 
     updateCheckoutFormFields(country, state, city, postcode) {
-      // Update shipping fields in the checkout form
-      const shippingCountry = document.querySelector('select[name="shipping_country"]');
-      const shippingState = document.querySelector('select[name="shipping_state"], input[name="shipping_state"]');
-      const shippingCity = document.querySelector('input[name="shipping_city"]');
-      const shippingPostcode = document.querySelector('input[name="shipping_postcode"]');
+      const shippingCountry = document.querySelector(`select[name="${FIELD_NAMES.shipping.country}"]`);
+      const shippingState = document.querySelector(`select[name="${FIELD_NAMES.shipping.state}"], input[name="${FIELD_NAMES.shipping.state}"]`);
+      const shippingCity = document.querySelector(`input[name="${FIELD_NAMES.shipping.city}"]`);
+      const shippingPostcode = document.querySelector(`input[name="${FIELD_NAMES.shipping.postcode}"]`);
 
       if (shippingCountry && country) shippingCountry.value = country;
       if (shippingState && state) shippingState.value = state;
       if (shippingCity && city) shippingCity.value = city;
       if (shippingPostcode && postcode) shippingPostcode.value = postcode;
 
-      // Always check "ship to different address" when using shipping calculator
-      // This prevents WooCommerce from copying billing → shipping on reload
-      const shipToDifferent = document.querySelector('#ship-to-different-address-checkbox');
+      const shipToDifferent = document.querySelector(SELECTORS.shipToDifferentCheckbox);
       if (shipToDifferent && !shipToDifferent.checked) {
         shipToDifferent.checked = true;
-        this.shipToDifferentAddress = true; // Update Alpine.js state
+        this.shipToDifferentAddress = true;
 
-        // Store checkbox state in session immediately
         const formData = new FormData();
         formData.append('action', 'store_ship_to_different');
         formData.append('value', '1');
 
-        fetch(window.location.origin + '/wp-admin/admin-ajax.php', {
+        fetch(`${window.location.origin}/wp-admin/admin-ajax.php`, {
           method: 'POST',
           body: formData,
           credentials: 'same-origin'
@@ -862,32 +788,21 @@ document.addEventListener("alpine:init", () => {
     },
 
     displayNotices(notices) {
-      // Remove existing notices
-      document
-        .querySelectorAll(CheckoutUtils.selectors.notices)
-        .forEach((notice) => {
-          notice.remove();
-        });
+      document.querySelectorAll(SELECTORS.notices).forEach((notice) => notice.remove());
 
-      // Add new notices
-      const form = document.querySelector(CheckoutUtils.selectors.form);
-      if (form && notices.length > 0) {
-        notices.forEach((notice) => {
-          form.insertBefore(notice.cloneNode(true), form.firstChild);
-        });
-      }
+      const form = document.querySelector(SELECTORS.form);
+      if (!form || !notices.length) return;
+
+      notices.forEach((notice) => {
+        form.insertBefore(notice.cloneNode(true), form.firstChild);
+      });
     },
 
     showError(message) {
-      // Remove any existing error messages first
-      const existingErrors = document.querySelectorAll(".coupon-error-message");
-      existingErrors.forEach((error) => error.remove());
+      document.querySelectorAll(".coupon-error-message").forEach((error) => error.remove());
 
       const errorDiv = document.createElement("div");
-      errorDiv.className =
-        "coupon-error-message woocommerce-error bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-4 relative";
-
-      // Add close button
+      errorDiv.className = "coupon-error-message woocommerce-error bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-4 relative";
       errorDiv.innerHTML = `
         <div class="flex justify-between items-center">
           <span>${message}</span>
@@ -899,24 +814,18 @@ document.addEventListener("alpine:init", () => {
         </div>
       `;
 
-      const form = document.querySelector(CheckoutUtils.selectors.form);
-      if (form) {
-        form.insertBefore(errorDiv, form.firstChild);
-        errorDiv.scrollIntoView({ behavior: "smooth" });
+      const form = document.querySelector(SELECTORS.form);
+      if (!form) return;
 
-        // Auto-dismiss after 5 seconds
-        setTimeout(() => {
-          if (errorDiv.parentNode) {
-            errorDiv.style.transition = "opacity 0.5s ease-out";
-            errorDiv.style.opacity = "0";
-            setTimeout(() => {
-              if (errorDiv.parentNode) {
-                errorDiv.remove();
-              }
-            }, 500);
-          }
-        }, 5000);
-      }
+      form.insertBefore(errorDiv, form.firstChild);
+      errorDiv.scrollIntoView({ behavior: "smooth" });
+
+      setTimeout(() => {
+        if (!errorDiv.parentNode) return;
+        errorDiv.style.transition = "opacity 0.5s ease-out";
+        errorDiv.style.opacity = "0";
+        setTimeout(() => errorDiv.remove(), 500);
+      }, 5000);
     },
 
     updateCustomOrderSummaryFromWooCommerceTable(tableHtml, orderSummary) {
@@ -1030,73 +939,55 @@ document.addEventListener("alpine:init", () => {
 
     async refreshShippingMethodsSection() {
       try {
-        // Fetch fresh checkout page content
         const response = await fetch(window.location.href, {
           method: 'GET',
           credentials: 'same-origin',
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-          },
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
         });
 
-        if (!response.ok) {
-          return;
-        }
+        if (!response.ok) return;
 
         const html = await response.text();
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
 
-        // Update the shipping section in the order summary
-        const currentShippingSection = document.querySelector('.order-summary .shipping-section');
-        const newShippingSection = doc.querySelector('.order-summary .shipping-section');
+        const shippingSelector = `${SELECTORS.orderSummary} ${SELECTORS.shippingSection}`;
+        const currentShippingSection = document.querySelector(shippingSelector);
+        const newShippingSection = doc.querySelector(shippingSelector);
 
-        if (currentShippingSection && newShippingSection) {
-          currentShippingSection.innerHTML = newShippingSection.innerHTML;
+        if (!currentShippingSection || !newShippingSection) return;
 
-          // Reinitialize Alpine.js components for the updated content
-          if (window.Alpine) {
-            Alpine.initTree(currentShippingSection);
-          }
-
-          // Re-initialize shipping visual state
-          this.initializeShippingVisualState();
-        }
-
+        currentShippingSection.innerHTML = newShippingSection.innerHTML;
+        window.Alpine?.initTree(currentShippingSection);
+        this.initializeShippingVisualState();
       } catch (error) {
         // Silent fail
       }
     },
 
     showCheckoutLoadingState(show) {
-      const orderSummary = document.querySelector('.order-summary');
-      const placeOrderBtn = document.querySelector(CheckoutUtils.selectors.placeOrderBtn);
-      const shippingSection = document.querySelector('.order-summary .shipping-section');
+      const orderSummary = document.querySelector(SELECTORS.orderSummary);
+      const placeOrderBtn = document.querySelector(SELECTORS.placeOrderBtn);
+      const shippingSection = document.querySelector(`${SELECTORS.orderSummary} ${SELECTORS.shippingSection}`);
 
       if (show) {
-        // Disable place order button
         if (placeOrderBtn) {
           placeOrderBtn.disabled = true;
-          placeOrderBtn.classList.add(...CheckoutUtils.classes.disabled);
+          placeOrderBtn.classList.add(...CSS_CLASSES.disabled);
           placeOrderBtn.setAttribute('data-original-text', placeOrderBtn.textContent);
           placeOrderBtn.textContent = 'Updating...';
         }
 
-        // Add loading state to order summary
-        if (orderSummary) {
-          orderSummary.classList.add(...CheckoutUtils.classes.disabled);
-        }
+        orderSummary?.classList.add(...CSS_CLASSES.disabled);
 
-        // Add loading state to shipping section
         if (shippingSection) {
           shippingSection.style.opacity = '0.6';
           shippingSection.style.pointerEvents = 'none';
         }
       } else {
-        // Re-enable place order button
         if (placeOrderBtn) {
           placeOrderBtn.disabled = false;
-          placeOrderBtn.classList.remove(...CheckoutUtils.classes.disabled);
+          placeOrderBtn.classList.remove(...CSS_CLASSES.disabled);
           const originalText = placeOrderBtn.getAttribute('data-original-text');
           if (originalText) {
             placeOrderBtn.textContent = originalText;
@@ -1104,12 +995,8 @@ document.addEventListener("alpine:init", () => {
           }
         }
 
-        // Remove loading state from order summary
-        if (orderSummary) {
-          orderSummary.classList.remove(...CheckoutUtils.classes.disabled);
-        }
+        orderSummary?.classList.remove(...CSS_CLASSES.disabled);
 
-        // Remove loading state from shipping section
         if (shippingSection) {
           shippingSection.style.opacity = '';
           shippingSection.style.pointerEvents = '';
@@ -1140,36 +1027,22 @@ document.addEventListener("alpine:init", () => {
     },
 
     updateShippingVisualState(changedInput) {
-      // Get the package index for this input
       const packageIndex = changedInput.getAttribute("data-index") || "0";
-
-      // Find all shipping method inputs for the same package
-      const packageInputs = document.querySelectorAll(
-        `input[name^="shipping_method"][data-index="${packageIndex}"]`
-      );
+      const packageInputs = document.querySelectorAll(`input[name^="shipping_method"][data-index="${packageIndex}"]`);
 
       packageInputs.forEach((input) => {
-        const label = input
-          .closest(".shipping-method-option")
-          ?.querySelector(".shipping-method-label");
+        const label = input.closest(".shipping-method-option")?.querySelector(".shipping-method-label");
         const radioButton = label?.querySelector(".radio-button");
         const radioInner = label?.querySelector(".radio-inner");
 
-        if (label && radioButton && radioInner) {
-          if (input === changedInput && input.checked) {
-            // Selected state - only update radio button
-            radioButton.classList.add("border-black");
-            radioButton.classList.remove("border-gray-300");
-            radioInner.classList.add("scale-100");
-            radioInner.classList.remove("scale-0");
-          } else {
-            // Unselected state - only update radio button
-            radioButton.classList.remove("border-black");
-            radioButton.classList.add("border-gray-300");
-            radioInner.classList.remove("scale-100");
-            radioInner.classList.add("scale-0");
-          }
-        }
+        if (!label || !radioButton || !radioInner) return;
+
+        const isSelected = input === changedInput && input.checked;
+
+        radioButton.classList.toggle(CSS_CLASSES.borderBlack, isSelected);
+        radioButton.classList.toggle(CSS_CLASSES.borderGray, !isSelected);
+        radioInner.classList.toggle(CSS_CLASSES.scale100, isSelected);
+        radioInner.classList.toggle(CSS_CLASSES.scale0, !isSelected);
       });
     },
 
