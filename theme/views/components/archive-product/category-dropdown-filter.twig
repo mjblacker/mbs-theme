@@ -1,6 +1,6 @@
 {#
     Category Dropdown Filter Component
-    
+
     Parameters:
     - title: Filter section title (e.g. "Categories")
     - items: Array of category items with structure:
@@ -11,10 +11,13 @@
         count: product count (optional)
         children: array of child items (for subcategories)
       }
+    - is_link_category: (optional) When true, clicking categories navigates to their URL.
+                        When false, uses AJAX filtering. Defaults to true.
+    - all_expanded_default: (optional) When true, all parent categories start expanded. Defaults to true.
 #}
 
-{% set is_link_category = true %}
-{% set all_expanded_default = true %}
+{% set is_link_category = is_link_category is defined ? is_link_category : true %}
+{% set all_expanded_default = all_expanded_default is defined ? all_expanded_default : true %}
 
 <div class="filter-section mb-4" x-data="categoryDropdownFilter({{ items|json_encode|e('html_attr') }}, {{ is_link_category ? 'true' : 'false' }}, {{ all_expanded_default ? 'true' : 'false' }})">
     
