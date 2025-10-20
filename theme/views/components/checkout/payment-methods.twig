@@ -26,7 +26,7 @@
                             <div class="radio-button flex-shrink-0 w-5 h-5 border-2 border-gray-300 rounded-full mr-3 relative transition-all duration-200">
                                 <div class="radio-inner absolute inset-1 bg-black rounded-full scale-0 transition-transform duration-200"></div>
                             </div>
-                            
+
                             <div class="payment-details flex-1">
                                 <div class="payment-title font-medium text-gray-900">
                                     {{ gateway.get_title()|raw }}
@@ -37,6 +37,15 @@
                                     </div>
                                 {% endif %}
                             </div>
+
+                            {# Show payment card icons for NAB Transact #}
+                            {% if gateway_id == 'nab_dp' %}
+                                <div class="payment-icons flex gap-2 ml-3">
+                                    <img src="{{ function('plugins_url', 'woocommerce-gateway-nab-dp/images/nab_small.jpg') }}"
+                                         alt="NAB Transact"
+                                         class="h-8 object-contain" />
+                                </div>
+                            {% endif %}
                         </label>
                         
                         <!-- Payment Fields (for methods like credit card) -->
