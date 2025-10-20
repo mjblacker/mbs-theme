@@ -81,20 +81,28 @@
     {{ function('do_action', 'woocommerce_review_order_before_submit')|raw }}
 
     <!-- Terms and Conditions -->
-    {% if wc_checkout.is_registration_enabled() and not function('is_user_logged_in') %}
+    {% set terms_page_id = function('wc_terms_and_conditions_page_id') %}
+    {% if terms_page_id %}
         <div class="terms-section mb-4">
             <div class="flex items-start">
-                <input type="checkbox" 
-                       id="terms" 
-                       name="terms" 
+                <input type="checkbox"
+                       id="terms"
+                       name="terms"
+                       value="1"
                        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mt-1"
                        required />
-                <label for="terms" class="ml-2 text-sm text-gray-600">
-                    I have read and agree to the website terms and conditions *
+                <label for="terms" class="ml-2 text-sm text-gray-600 cursor-pointer">
+                    I have read and agree to the website <a href="{{ function('get_permalink', terms_page_id) }}" class="text-blue-600 hover:underline" target="_blank">terms and conditions</a> *
                 </label>
             </div>
-            <p class="text-xs text-gray-500 mt-2">
-                Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our privacy policy.
+        </div>
+    {% endif %}
+
+    <!-- Privacy Policy Notice -->
+    {% if wc_checkout.is_registration_enabled() or function('wc_privacy_policy_page_id') %}
+        <div class="privacy-notice mb-4">
+            <p class="text-xs text-gray-500">
+                Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our <a href="{{ function('get_privacy_policy_url') }}" class="text-blue-600 hover:underline" target="_blank">privacy policy</a>.
             </p>
         </div>
     {% endif %}

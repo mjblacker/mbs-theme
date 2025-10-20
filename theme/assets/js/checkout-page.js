@@ -109,6 +109,31 @@ document.addEventListener("alpine:init", () => {
       // Note: Let WooCommerce handle form submission natively for proper order processing
       // Custom AJAX submission was causing order processing errors
 
+      // Prevent form submission if terms checkbox is not checked
+      // Use capture phase to catch the event before WooCommerce handlers
+      const checkoutForm = document.querySelector(SELECTORS.form);
+      if (checkoutForm) {
+        checkoutForm.addEventListener("submit", (e) => {
+          if (!this.validateTermsAndConditions()) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            return false;
+          }
+        }, true); // Use capture phase
+
+        // Also handle place order button click
+        const placeOrderBtn = document.querySelector(SELECTORS.placeOrderBtn);
+        if (placeOrderBtn) {
+          placeOrderBtn.addEventListener("click", (e) => {
+            if (!this.validateTermsAndConditions()) {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+              return false;
+            }
+          }, true); // Use capture phase
+        }
+      }
+
       // Country/state changes for field updates
       document.addEventListener("change", (e) => {
         if (
@@ -1101,6 +1126,52 @@ document.addEventListener("alpine:init", () => {
       } catch (error) {
         // Silent fail - coupon display will still work on page refresh
       }
+    },
+
+    validateTermsAndConditions() {
+      const termsCheckbox = document.querySelector('input[name="terms"]');
+
+      // If no terms checkbox exists, validation passes
+      if (!termsCheckbox) {
+        return true;
+      }
+
+      // Check if terms checkbox is checked
+      if (!termsCheckbox.checked) {
+        // Prevent processing
+        this.processing = false;
+
+        // Disable and reset the place order button
+        const placeOrderBtn = document.querySelector(SELECTORS.placeOrderBtn);
+        if (placeOrderBtn) {
+          placeOrderBtn.disabled = false;
+          placeOrderBtn.classList.remove(...CSS_CLASSES.loading);
+        }
+
+        // Scroll to the terms checkbox
+        termsCheckbox.scrollIntoView({ behavior: "smooth", block: "center" });
+
+        // Show error message
+        this.showError("You must agree to the terms and conditions before placing your order.");
+
+        // Add visual feedback to the checkbox area
+        const termsSection = termsCheckbox.closest(".terms-section");
+        if (termsSection) {
+          termsSection.classList.add("border", "border-red-500", "p-3", "rounded");
+
+          // Remove the highlight after 3 seconds
+          setTimeout(() => {
+            termsSection.classList.remove("border", "border-red-500", "p-3", "rounded");
+          }, 3000);
+        }
+
+        // Also focus the checkbox for accessibility
+        termsCheckbox.focus();
+
+        return false;
+      }
+
+      return true;
     },
   }));
 });

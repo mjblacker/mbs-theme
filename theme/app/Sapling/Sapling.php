@@ -8,6 +8,7 @@ use Sapling\Integrations\WooCommercePricing;
 use Sapling\Integrations\WooCommerceCoupon;
 use Sapling\Integrations\Breadcrumbs;
 use Sapling\Integrations\CheckoutAddressHandler;
+use Sapling\Integrations\CheckoutTermsValidation;
 
 class Sapling extends \Timber\Site
 {
@@ -209,6 +210,7 @@ class Sapling extends \Timber\Site
             new WooCommerceCoupon(),
             new Breadcrumbs(),
             new CheckoutAddressHandler(),
+            new CheckoutTermsValidation(),
         ];
 
         $plugins = array_filter($plugins, function ($plugin) {
