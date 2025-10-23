@@ -1,6 +1,11 @@
 {% extends "base.twig" %}
 
 {% block content %}
+    <style>
+        .woocommerce-notices-wrapper {
+            display: none !important;
+        }
+    </style>
     {# Check for WooCommerce endpoints #}
     {% set is_order_received = function('is_wc_endpoint_url', 'order-received') %}
     {% set is_order_pay = function('is_wc_endpoint_url', 'order-pay') %}
