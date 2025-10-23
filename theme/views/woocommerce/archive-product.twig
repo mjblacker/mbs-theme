@@ -57,7 +57,8 @@
                                 'title': 'Categories',
                                 'items': shop_filters.categories,
                                 'is_link_category': true,
-                                'all_expanded_default': true
+                                'all_expanded_default': true,
+                                'current_category_id': term ? term.term_id : null
                             } %}
                         {% endif %}
 
