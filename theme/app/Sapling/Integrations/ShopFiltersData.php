@@ -62,7 +62,7 @@ class ShopFiltersData implements SaplingPlugin
                 foreach ($children as $child) {
                     $child_items[] = array(
                         'id' => $child->term_id,
-                        'name' => $child->name,
+                        'name' => html_entity_decode($child->name, ENT_QUOTES | ENT_HTML5, 'UTF-8'),
                         'slug' => $child->slug,
                         'count' => $child->count,
                         'url' => get_term_link($child->term_id, 'product_cat')
@@ -72,7 +72,7 @@ class ShopFiltersData implements SaplingPlugin
 
             $category_items[] = array(
                 'id' => $category->term_id,
-                'name' => $category->name,
+                'name' => html_entity_decode($category->name, ENT_QUOTES | ENT_HTML5, 'UTF-8'),
                 'slug' => $category->slug,
                 'count' => $category->count,
                 'url' => get_term_link($category->term_id, 'product_cat'),
@@ -115,7 +115,7 @@ class ShopFiltersData implements SaplingPlugin
             if ($product_count > 0) {
                 $brand_items[] = array(
                     'id' => $brand->term_id,
-                    'name' => $brand->name,
+                    'name' => html_entity_decode($brand->name, ENT_QUOTES | ENT_HTML5, 'UTF-8'),
                     'slug' => $brand->slug,
                     'count' => $product_count,
                     'children' => array() // Brands don't have children
