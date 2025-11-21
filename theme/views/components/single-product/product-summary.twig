@@ -16,7 +16,9 @@
         {% include "components/single-product/product-price.twig" %}
 
         <!-- Quantity and Add to Cart -->
-        {% include "components/single-product/add-to-cart-section.twig" %}
+        {% if product.get_price() %}
+            {% include "components/single-product/add-to-cart-section.twig" %}
+        {% endif %}
 
         <!-- Coverage Calculator -->
         {% if function('get_field', 'show_coverage_calculator', post.ID) %}
