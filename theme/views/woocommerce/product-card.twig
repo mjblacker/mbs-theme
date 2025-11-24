@@ -90,7 +90,7 @@
                             {% endif %}
                         {% else %}
                             {# Regular or variable product price - use filtered HTML #}
-                            <span class="text-gray-900 text-product-title font-normal leading-tight">
+                            <span class="text-product-title font-normal leading-tight {{ has_price ? 'text-gray-900' : 'text-[#FFF200]' }}">
                                 {{ price_html|raw }}
                             </span>
                         {% endif %}
