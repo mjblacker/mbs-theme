@@ -45,7 +45,8 @@ class Sapling extends \Timber\Site
                 'footer_action_buttons' => get_field('footer_action_buttons', 'option') ?: array(),
                 // New field structure for backward compatibility
                 'footer_action_buttons_enabled' => get_field('footer_action_buttons_enabled', 'option'),
-                'footer_action_buttons_list' => get_field('footer_action_buttons', 'option') ?: array()
+                'footer_action_buttons_list' => get_field('footer_action_buttons', 'option') ?: array(),
+                'header_script' => get_field('header_script', 'option') ?: ''
             );
         }
 

@@ -318,6 +318,26 @@
                     "preview_size": "thumbnail"
                 }
             ]
+        },
+        {
+            "key": "field_theme_header_script",
+            "label": "Header Script",
+            "name": "header_script",
+            "aria-label": "",
+            "type": "textarea",
+            "instructions": "Add scripts to be inserted in the <head> section (e.g., Google Tag Manager, analytics). Include the <script> tags.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "rows": 8,
+            "placeholder": "<!-- Google Tag Manager -->\n<script>\n(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':\nnew Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],\nj=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=\n'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);\n})(window,document,'script','dataLayer','GTM-XXXXXXX');\n</script>\n<!-- End Google Tag Manager -->",
+            "new_lines": ""
         }
     ],
     "location": [
