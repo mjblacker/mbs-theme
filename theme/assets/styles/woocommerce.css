@@ -989,3 +989,38 @@
     }
   }
 }
+
+/* Order Pay Page - NAB Transact Styling */
+.woocommerce-order-pay {
+  /* Style the NAB Confirm and Pay button */
+  input[type="submit"],
+  button[type="submit"] {
+    display: inline-block !important;
+    padding: 1rem 1.5rem !important;
+    background-color: #FFF200 !important;
+    color: #000 !important;
+    text-transform: uppercase;
+    border-radius: 0.5rem !important;
+    font-weight: 500 !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: background-color 0.2s !important;
+    font-family: Lexend;
+
+    &:hover {
+      background-color: #FFF200 !important;
+    }
+  }
+
+  /* Fix NAB error message icon spacing */
+  .woocommerce-error {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+
+    &::before {
+      left: 96%;
+      display: inline-block;
+    }
+  }
+}

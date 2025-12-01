@@ -9,29 +9,6 @@
 
 {% set totals = order.get_order_item_totals() %}
 
-<style>
-    /* Style the NAB Confirm and Pay button */
-    .woocommerce-order-pay input[type="submit"],
-    .woocommerce-order-pay button[type="submit"] {
-        display: inline-block !important;
-        padding: 1rem 1.5rem !important;
-        background-color: #FFF200 !important;
-        color: #000 !important;
-        text-transform: uppercase;
-        border-radius: 0.5rem !important;
-        font-weight: 500 !important;
-        border: none !important;
-        cursor: pointer !important;
-        transition: background-color 0.2s !important;
-        font-family: Lexend;
-    }
-
-    .woocommerce-order-pay input[type="submit"]:hover,
-    .woocommerce-order-pay button[type="submit"]:hover {
-        background-color: #FFF200 !important;
-    }
-</style>
-
 <div class="woocommerce-order-pay">
     <form id="order_review" method="post" class="woocommerce-checkout">
 
@@ -92,48 +69,50 @@
 
         {% do function('do_action', 'woocommerce_pay_order_before_payment') %}
 
-        {# Payment Section #}
-        <div id="payment" class="woocommerce-checkout-payment">
-            {% if order.needs_payment() %}
-                {% if available_gateways is not empty %}
-                    <div class="payment-methods-section bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-6">Payment Method</h3>
-
-                        <ul class="wc_payment_methods payment_methods methods">
-                            {% for gateway_id, gateway in available_gateways %}
-                                <li class="wc_payment_method payment_method_{{ gateway_id }} mb-6">
-                                    <input type="radio"
-                                           id="payment_method_{{ gateway_id }}"
-                                           class="payment_method"
-                                           name="payment_method"
-                                           value="{{ gateway_id }}"
-                                           {{ loop.first ? 'checked="checked"' : '' }}
-                                           data-order_button_text="{{ gateway.order_button_text|e('html_attr') }}" />
-
-                                    <label for="payment_method_{{ gateway_id }}" class="inline-block ml-2 font-medium text-gray-900 mb-3">
-                                        {{ gateway.get_title()|raw }}
-                                    </label>
-
-                                    {# Payment description and fields #}
-                                    <div class="payment_box payment_method_{{ gateway_id }} mt-4" style="{{ loop.first ? '' : 'display:none;' }}">
-                                        {# Try payment_fields() first (for gateways with has_fields = true) #}
-                                        {{ gateway.payment_fields()|raw }}
-
-                                        {# If gateway uses receipt page (like NAB Direct Post), trigger that action #}
-                                        {# Note: payment_fields() already outputs the description, so no need to duplicate it #}
-                                        {{ function('do_action', 'woocommerce_receipt_' ~ gateway_id, order.get_id())|raw }}
-                                    </div>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                {% else %}
-                    <div class="woocommerce-notice woocommerce-notice--info woocommerce-info bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded mb-6">
-                        {{ function('apply_filters', 'woocommerce_no_available_payment_methods_message', 'Sorry, it seems that there are no available payment methods for your location. Please contact us if you require assistance or wish to make alternate arrangements.')|e }}
-                    </div>
-                {% endif %}
-            {% endif %}
-
-        </div>
     </form>
+
+    {# Payment Section - Outside the order_review form to prevent nested forms with NAB #}
+    <div id="payment" class="woocommerce-checkout-payment">
+        {% if order.needs_payment() %}
+            {% if available_gateways is not empty %}
+                <div class="payment-methods-section bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-6">Payment Method</h3>
+
+                    <ul class="wc_payment_methods payment_methods methods">
+                        {% for gateway_id, gateway in available_gateways %}
+                            <li class="wc_payment_method payment_method_{{ gateway_id }} mb-6">
+                                <input type="radio"
+                                       id="payment_method_{{ gateway_id }}"
+                                       class="payment_method"
+                                       name="payment_method"
+                                       value="{{ gateway_id }}"
+                                       {{ loop.first ? 'checked="checked"' : '' }}
+                                       data-order_button_text="{{ gateway.order_button_text|e('html_attr') }}" />
+
+                                <label for="payment_method_{{ gateway_id }}" class="inline-block ml-2 font-medium text-gray-900 mb-3">
+                                    {{ gateway.get_title()|raw }}
+                                </label>
+
+                                {# Payment description and fields #}
+                                <div class="payment_box payment_method_{{ gateway_id }} mt-4" style="{{ loop.first ? '' : 'display:none;' }}">
+                                    {# For NAB Direct Post, only use receipt page action (payment_fields would duplicate the description) #}
+                                    {% if gateway_id == 'nab_dp' %}
+                                        {{ function('do_action', 'woocommerce_receipt_' ~ gateway_id, order.get_id())|raw }}
+                                    {% else %}
+                                        {# For other gateways, use payment_fields() which includes description #}
+                                        {{ gateway.payment_fields()|raw }}
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% else %}
+                <div class="woocommerce-notice woocommerce-notice--info woocommerce-info bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded mb-6">
+                    {{ function('apply_filters', 'woocommerce_no_available_payment_methods_message', 'Sorry, it seems that there are no available payment methods for your location. Please contact us if you require assistance or wish to make alternate arrangements.')|e }}
+                </div>
+            {% endif %}
+        {% endif %}
+
+    </div>
 </div>
