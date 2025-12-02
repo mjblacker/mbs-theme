@@ -18,7 +18,7 @@
 
 {% set is_link_category = is_link_category is defined ? is_link_category : true %}
 {% set all_expanded_default = all_expanded_default is defined ? all_expanded_default : true %}
-{% set current_category_id = current_category_id is defined ? current_category_id : null %}
+{% set current_category_id = current_category_id is defined and current_category_id is not null ? current_category_id : 0 %}
 
 <div class="filter-section mb-4" x-data="categoryDropdownFilter({{ items|json_encode|e('html_attr') }}, {{ is_link_category ? 'true' : 'false' }}, {{ all_expanded_default ? 'true' : 'false' }})">
     
