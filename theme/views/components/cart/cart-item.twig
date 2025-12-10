@@ -1,0 +1,79 @@
+{# Cart Item Component
+   Props: cart_item_key, cart_item, product, product_post, image_id, brand_id
+#}
+
+<div class="cart-item grid grid-cols-1 lg:grid-cols-12 gap-2 lg:gap-4 py-6 border-b border-gray-100 last:border-b-0" x-data="cartItem()">
+    <!-- Remove Button -->
+    <div class="lg:col-span-1 flex items-center justify-center">
+        <button @click="removeItem('{{ cart_item_key }}')"
+                :disabled="removing"
+                class="cart-remove-item text-gray-400 hover:text-red-500 focus:outline-none transition-colors"
+                :class="{ 'opacity-50 cursor-not-allowed': removing }">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Product Info -->
+    <div class="lg:col-span-5 flex items-start space-x-2 lg:space-x-4">
+        <!-- Product Image -->
+        <div class="flex-shrink-0 w-20 h-20 bg-gray-100 rounded">
+            {% set product_image = function('wp_get_attachment_image_url', function('get_post_thumbnail_id', image_id), 'thumbnail') %}
+            {% if product_image %}
+                <img src="{{ product_image }}" 
+                     alt="{{ product.get_name() }}" 
+                     class="w-full h-full object-cover rounded">
+            {% endif %}
+        </div>
+        
+        <!-- Product Details -->
+        <div class="flex-1 min-w-0">
+            <div class="text-sm text-gray-500 uppercase tracking-wide mb-0">
+                {% set brands = function('get_the_terms', brand_id, 'product_brand') %}
+                {% if brands and brands is not same as(false) %}
+                    {{ brands[0].name }}
+                {% else %}
+                    BRAND NAME
+                {% endif %}
+            </div>
+            <h3 class="text-base font-medium text-gray-900 mb-0">
+                {% if product.is_type('variation') %}
+                    {% set parent_product = function('wc_get_product', product.get_parent_id()) %}
+                    {{ parent_product.get_name() }}
+                {% else %}
+                    {{ product.get_name() }}
+                {% endif %}
+            </h3>
+            <div class="text-sm text-gray-600">
+                {% if cart_item.variation %}
+                    {% for attribute, value in cart_item.variation %}
+                        {% set attr_name = attribute|replace({'attribute_': ''}) %}
+                        {{ attr_name|title }}: {{ value }}<br>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quantity -->
+    <div class="lg:col-span-2 flex items-center justify-center lg:justify-center">
+        <input type="number" 
+               class="cart-qty-input w-16 max-w-full text-center border border-gray-300 rounded px-2 lg:px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-opacity" 
+               value="{{ cart_item.quantity }}"
+               :disabled="updating || removing"
+               :class="{ 'opacity-50': updating || removing }"
+               min="1"
+               step="1"
+               name="cart[{{ cart_item_key }}][qty]"
+               autocomplete="off">
+    </div>
+
+    <!-- Subtotal -->
+    <div class="lg:col-span-4 flex items-center justify-end">
+        {% include 'components/cart/cart-item-subtotal.twig' with {
+            product: product,
+            cart_item: cart_item
+        } %}
+    </div>
+</div>

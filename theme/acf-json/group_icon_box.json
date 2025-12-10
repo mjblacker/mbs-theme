@@ -1,0 +1,89 @@
+{
+  "key": "group_icon_box",
+  "title": "Icon Box Settings",
+  "fields": [
+    {
+      "key": "field_icon_box_icon",
+      "label": "Icon",
+      "name": "icon",
+      "aria-label": "",
+      "type": "image",
+      "instructions": "Upload an icon image (PNG recommended). Icons should be square and ideally 80x80px or larger.",
+      "required": 1,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "return_format": "array",
+      "library": "all",
+      "min_width": "",
+      "min_height": "",
+      "min_size": "",
+      "max_width": "",
+      "max_height": "",
+      "max_size": "",
+      "mime_types": "png,svg",
+      "preview_size": "medium"
+    },
+    {
+      "key": "field_icon_box_heading",
+      "label": "Heading",
+      "name": "heading",
+      "aria-label": "",
+      "type": "text",
+      "instructions": "Enter the main heading text",
+      "required": 1,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "default_value": "",
+      "maxlength": 100,
+      "placeholder": "e.g., Superior Service",
+      "prepend": "",
+      "append": ""
+    },
+    {
+      "key": "field_icon_box_sub_heading",
+      "label": "Sub Heading",
+      "name": "sub_heading",
+      "aria-label": "",
+      "type": "text",
+      "instructions": "Enter the sub heading or description text",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "default_value": "",
+      "maxlength": 200,
+      "placeholder": "e.g., Trusted customer support",
+      "prepend": "",
+      "append": ""
+    }
+  ],
+  "location": [
+    [
+      {
+        "param": "block",
+        "operator": "==",
+        "value": "acf/icon-box"
+      }
+    ]
+  ],
+  "menu_order": 0,
+  "position": "normal",
+  "style": "default",
+  "label_placement": "top",
+  "instruction_placement": "label",
+  "hide_on_screen": "",
+  "active": true,
+  "description": "",
+  "show_in_rest": 0
+}

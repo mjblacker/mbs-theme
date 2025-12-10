@@ -1,0 +1,63 @@
+<div x-cloak x-show="locationsDialogOpen" x-transition.opacity.duration.200ms x-trap.inert.noscroll="locationsDialogOpen" @keydown.esc.window="locationsDialogOpen = false"
+    class="fixed inset-0 z-70 flex items-center justify-center bg-black/40 p-4 pb-8 backdrop-blur-sm sm:items-center lg:p-8" role="dialog" aria-modal="true"
+     aria-labelledby="defaultModalTitle">
+    <!-- Modal Dialog -->
+    <div x-show="locationsDialogOpen" x-transition:enter="transition ease-out duration-200 delay-100 motion-reduce:transition-opacity" x-transition:enter-start="opacity-0 scale-50"
+         x-transition:enter-end="opacity-100 scale-100" class="relative flex max-w-xl flex-col">
+        <button @click.prevent="locationsDialogOpen = false" aria-label="close modal" class="absolute top-3 right-5 rounded-full p-3 text-mbs-gray-medium z-30 hover:rotate-90 transition-all duration-300">
+            <svg class="size-7" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg" class="px-auto stroke-[#566B6B] hover:stroke-white">
+                <path d="M1.55664 1.78516L8.55664 8.78516M15.5566 15.7852L8.55664 8.78516M8.55664 8.78516L15.5566 1.78516M8.55664 8.78516L1.55664 15.7852" stroke="currentColor" stroke-width="1"
+                      stroke-linecap="round"/>
+            </svg>
+        </button>
+        <div class="flex lg:min-w-xl max-w-2xl flex-col gap-1 overflow-hidden rounded-md bg-white text-secondary-tertiary drop-shadow-2xl px-6 py-10">
+            <h2 class="text-secondary-tertiary text-4xl py-5 font-medium w-full text-center">Our Locations</h2>
+            <div class="py-2 text-center font-semibold text-lg flex flex-col gap-3">
+          {% for location in theme_options.locations %}
+            <div class=" bg-white text-center overflow-hidden w-full ">
+
+              {# Location Details #}
+              <div class="p-4">
+
+                {# Location Name with Head Office indicator #}
+                <h3 class="text-xl font-semibold mb-2">
+                  {{ location.name|trim }}
+                  {% if location.is_head_office %}
+                    <span class=""> - Head Office</span>
+                  {% endif %}
+                </h3>
+
+                {# Address #}
+                {% if location.address_lines %}
+                  {% set address = location.address_lines|split('\n')|filter(line => line|trim)|join(', ') %}
+                  {% set address = address ~ ', ' ~ location.city_state %}
+                  <p class="text-base font-medium mb-1">
+                    {{ address }}
+                  </p>
+                {% endif %}
+
+                {# Phone Number #}
+                {% if location.phone %}
+                  <p class="text-base font-medium mb-6 mt-0">
+                    Phone: <a href="tel:{{location.phone}}" class="underline">{{ location.phone }}</a>
+                  </p>
+                {% endif %}
+
+                {# Get Directions Button #}
+                {% if location.get_direction_link and location.get_direction_link != '#' %}
+                  <a href="{{ location.get_direction_link }}"
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     class="inline-flex items-center px-4 py-2 bg-transparent border border-gray-300 font-semibold text-[14px] rounded-md hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 underline"
+                     >
+                                        Get Directions
+                  </a>
+                {% endif %}
+
+              </div>
+            </div>
+          {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>

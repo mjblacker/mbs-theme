@@ -1,0 +1,27 @@
+{#
+  Footer Logo Section
+  - Company logo from Theme Options or fallback
+  - Supports responsive layout
+#}
+
+<div class="flex flex-col space-y-4">
+    <a href="{{ site.url }}"
+       class="inline-block focus:outline-none focus:ring-2 focus:ring-[#FFF200] focus:ring-opacity-50 rounded">
+        {% if theme_options.company_info.logo_dark and theme_options.company_info.logo_dark.url %}
+            <img src="{{ theme_options.company_info.logo_dark.url }}"
+                 alt="{{ theme_options.company_info.logo_dark.alt ?: theme_options.company_info.name ?: site.name }}"
+                 class="h-12 lg:h-16 w-auto">
+        {% elseif theme_options.company_info.name %}
+            {# Text fallback with company name from Theme Options #}
+            <div class="text-lg lg:text-xl font-bold text-white">
+                {{ theme_options.company_info.name }}
+            </div>
+        {% else %}
+            {# Default fallback to static logo #}
+            <img src="{{ site.theme.uri }}/assets/images/mbs_logo_invert.png"
+                 alt="{{ site.name }}"
+                 class="h-12 lg:h-16 w-auto">
+        {% endif %}
+    </a>
+
+</div>

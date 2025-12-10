@@ -1,0 +1,19 @@
+{#
+  Logo Component
+  - Site logo with link to homepage
+  - Responsive sizing
+  - Uses mobile-logo.png on mobile, MBS_Logo.png on desktop
+#}
+
+<div class="flex-shrink-0">
+    <a href="{{ site.url }}" class="flex items-center">
+        {# Mobile Logo #}
+        <img src="{{ site.theme.uri }}/assets/images/mobile-logo.png"
+             alt="{{ site.name }}"
+             class="h-10 w-auto lg:hidden">
+        {# Desktop Logo #}
+        <img src="{{ site.theme.uri }}/assets/images/MBS_Logo.png"
+             alt="{{ site.name }}"
+             class="hidden lg:block h-16 w-auto">
+    </a>
+</div>

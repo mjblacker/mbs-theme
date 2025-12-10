@@ -1,0 +1,46 @@
+{# Product Summary Component #}
+<div class="lg:col-span-2 product-summary space-y-6">
+    {% if product %}
+        <!-- Brand Name -->
+        {% set product_brands = function('get_the_terms', post.ID, 'product_brand') %}
+        {% if product_brands and product_brands is not same as(false) %}
+            <div class="text-gray-500 uppercase tracking-wide text-sm font-medium">
+                {{ product_brands[0].name }}
+            </div>
+        {% endif %}
+
+        <!-- Product Name -->
+        <h1 class="text-3xl mb-2 font-bold text-gray-900 leading-tight">{{ post.title }}</h1>
+        
+        <!-- Price -->
+        {% include "components/single-product/product-price.twig" %}
+
+        <!-- Quantity and Add to Cart -->
+        {% if product.get_price() %}
+            {% include "components/single-product/add-to-cart-section.twig" %}
+        {% endif %}
+
+        <!-- Coverage Calculator -->
+        {% if function('get_field', 'show_coverage_calculator', post.ID) %}
+            {% include "components/coverage-calculator.twig" %}
+        {% endif %}
+
+        <!-- Product Variations -->
+        {% include "components/single-product/product-variations.twig" %}
+
+        <!-- Product Description -->
+        {% if product.get_description() %}
+            <div class="product-description sm:mt-5 md:mt-10">
+                <div class="prose prose-sm max-w-none text-base font-normal text-gray-600">
+                    {{ function('wpautop', product.get_description())|raw }}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Download Files -->
+        {% include "components/single-product/download-files.twig" %}
+
+        <!-- Product Meta -->
+        {% include "components/single-product/product-meta.twig" %}
+    {% endif %}
+</div>

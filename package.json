@@ -1,12 +1,15 @@
 {
-  "name": "timberweb",
+  "name": "mbstheme",
   "version": "2.2.0",
   "type": "module",
   "private": true,
   "scripts": {
     "dev": "cross-env NODE_ENV=development vite",
     "build": "vite build",
-    "zip": "node scripts/bundler.cjs timberweb",
+    "zip": "node scripts/bundler.cjs mbs",
+    "version:patch": "node scripts/version.cjs patch",
+    "version:minor": "node scripts/version.cjs minor",
+    "version:major": "node scripts/version.cjs major",
     "bundle": "run-s build zip",
     "cleanup:vendor": "rm -r theme/vendor",
     "cleanup:wp": "rm -r wp",
@@ -16,12 +19,17 @@
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.1.8",
-    "alpinejs": "^3.14.9",
     "adm-zip": "^0.5.16",
+    "alpinejs": "^3.14.9",
     "archiver": "^7.0.1",
     "cross-env": "^7.0.3",
     "npm-run-all": "^4.1.5",
     "tailwindcss": "^4.1.8",
     "vite": "^6.3.5"
+  },
+  "dependencies": {
+    "@alpinejs/focus": "^3.15.0",
+    "@alpinejs/persist": "^3.15.0",
+    "swiper": "^11.2.10"
   }
 }

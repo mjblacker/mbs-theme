@@ -1,0 +1,223 @@
+{
+    "key": "group_footer_action_buttons_options",
+    "title": "Footer Action Buttons Options",
+    "fields": [
+        {
+            "key": "field_footer_action_buttons_enabled",
+            "label": "Enable Footer Action Buttons",
+            "name": "footer_action_buttons_enabled",
+            "aria-label": "",
+            "type": "true_false",
+            "instructions": "Check to enable footer action buttons",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "message": "Enable Footer Action Buttons",
+            "default_value": 1,
+            "ui_on_text": "Enabled",
+            "ui_off_text": "Disabled",
+            "ui": 1
+        },
+        {
+            "key": "field_footer_action_buttons_list",
+            "label": "Action Buttons",
+            "name": "footer_action_buttons",
+            "aria-label": "",
+            "type": "repeater",
+            "instructions": "Add action buttons for the footer. Maximum of 4 buttons recommended.",
+            "required": 0,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_footer_action_buttons_enabled",
+                        "operator": "==",
+                        "value": "1"
+                    }
+                ]
+            ],
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "collapsed": "field_footer_action_button_text",
+            "min": 0,
+            "max": 4,
+            "layout": "table",
+            "button_label": "Add Action Button",
+            "rows_per_page": 20,
+            "sub_fields": [
+                {
+                    "key": "field_footer_action_button_enabled",
+                    "label": "Button Enabled",
+                    "name": "enabled",
+                    "aria-label": "",
+                    "type": "true_false",
+                    "instructions": "Check to enable this button",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "message": "Enable Button",
+                    "default_value": 1,
+                    "ui_on_text": "Enabled",
+                    "ui_off_text": "Disabled",
+                    "ui": 1,
+                    "parent_repeater": "field_footer_action_buttons_list"
+                },
+                {
+                    "key": "field_footer_action_button_text",
+                    "label": "Button Text",
+                    "name": "text",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Enter the text for this button",
+                    "required": 1,
+                    "conditional_logic": [
+                        [
+                            {
+                                "field": "field_footer_action_button_enabled",
+                                "operator": "==",
+                                "value": "1"
+                            }
+                        ]
+                    ],
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "e.g., Contact Us",
+                    "prepend": "",
+                    "append": "",
+                    "parent_repeater": "field_footer_action_buttons_list"
+                },
+                {
+                    "key": "field_footer_action_button_url",
+                    "label": "Button URL",
+                    "name": "url",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Enter the URL for this button (e.g., \/contact, \/directions, or full URL)",
+                    "required": 1,
+                    "conditional_logic": [
+                        [
+                            {
+                                "field": "field_footer_action_button_enabled",
+                                "operator": "==",
+                                "value": "1"
+                            }
+                        ]
+                    ],
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "e.g., \/contact or https:\/\/example.com",
+                    "prepend": "",
+                    "append": "",
+                    "parent_repeater": "field_footer_action_buttons_list"
+                },
+                {
+                    "key": "field_footer_action_button_style",
+                    "label": "Button Style",
+                    "name": "style",
+                    "aria-label": "",
+                    "type": "select",
+                    "instructions": "Choose the button style",
+                    "required": 0,
+                    "conditional_logic": [
+                        [
+                            {
+                                "field": "field_footer_action_button_enabled",
+                                "operator": "==",
+                                "value": "1"
+                            }
+                        ]
+                    ],
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "choices": {
+                        "primary": "Primary (Yellow Background)",
+                        "secondary": "Secondary (Transparent with Border)",
+                        "locations": "Locations Popover (Transparent with Border)"
+                    },
+                    "default_value": "primary",
+                    "return_format": "value",
+                    "multiple": 0,
+                    "allow_null": 0,
+                    "allow_in_bindings": 1,
+                    "ui": 0,
+                    "ajax": 0,
+                    "placeholder": "",
+                    "create_options": 0,
+                    "save_options": 0,
+                    "parent_repeater": "field_footer_action_buttons_list"
+                },
+                {
+                    "key": "field_footer_action_button_target",
+                    "label": "Open in New Tab",
+                    "name": "target_blank",
+                    "aria-label": "",
+                    "type": "true_false",
+                    "instructions": "Check to open the link in a new tab",
+                    "required": 0,
+                    "conditional_logic": [
+                        [
+                            {
+                                "field": "field_footer_action_button_enabled",
+                                "operator": "==",
+                                "value": "1"
+                            }
+                        ]
+                    ],
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "message": "Open in New Tab",
+                    "default_value": 0,
+                    "ui_on_text": "Yes",
+                    "ui_off_text": "No",
+                    "ui": 1,
+                    "parent_repeater": "field_footer_action_buttons_list"
+                }
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": "footer-action-buttons"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "Configuration options for the Footer Action Buttons",
+    "show_in_rest": 0,
+    "modified": 1757990519
+}

@@ -1,0 +1,24 @@
+<div class="icon-box text-center p-3 flex flex-col items-center justify-center">
+  {% if fields.icon %}
+    <div class="icon-container mb-4">
+          <img 
+            src="{{ fields.icon.url }}" 
+            alt="{{ fields.icon.alt ?: 'Icon' }}" 
+            class="w-20 h-20 object-contain mt-0 mb-0"
+            loading="lazy"
+          />
+    </div>
+  {% endif %}
+  
+  {% if fields.heading %}
+    <h3 class="heading text-[26px] sm:text-xl md:text-2xl font-medium text-[#363738]  mb-0 mt-2 sm:mb-3 leading-tight">
+      {{ fields.heading }}
+    </h3>
+  {% endif %}
+  
+  {% if fields.sub_heading %}
+    <p class="sub-heading text-lg text-[#363738] font-light leading-relaxed max-w-xs">
+      {{ fields.sub_heading }}
+    </p>
+  {% endif %}
+</div>

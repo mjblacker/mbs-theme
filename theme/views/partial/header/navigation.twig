@@ -1,0 +1,23 @@
+{#
+  Navigation Component
+  - Primary menu navigation (Desktop only)
+  - Mobile navigation is handled in mobile-menu-overlay.twig
+
+  Parameters:
+  - context: 'desktop' for desktop navigation (mobile context no longer used)
+#}
+
+{% set context = context is defined ? context : 'desktop' %}
+
+{% if context == 'desktop' %}
+    {# Desktop Navigation #}
+    {% if menu.primary %}
+        <nav class="flex items-center">
+            {% include "menu.twig" with {
+                'items': menu.primary.items,
+                'context': 'desktop',
+                'extra_classes': 'flex space-x-8 items-center'
+            } %}
+        </nav>
+    {% endif %}
+{% endif %}

@@ -1,0 +1,179 @@
+{
+    "key": "group_category_mega_menu_options",
+    "title": "Category Mega Menu Options",
+    "fields": [
+        {
+            "key": "field_mega_menu_categories",
+            "label": "Featured Categories",
+            "name": "featured_categories",
+            "aria-label": "",
+            "type": "taxonomy",
+            "instructions": "Select up to 15 product categories to display in the flyout menu grid",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "taxonomy": "product_cat",
+            "field_type": "multi_select",
+            "allow_null": 0,
+            "add_term": 0,
+            "save_terms": 0,
+            "load_terms": 0,
+            "return_format": "object",
+            "multiple": 1,
+            "min": 0,
+            "max": 15
+        },
+        {
+            "key": "field_mega_menu_featured_section",
+            "label": "Featured Section",
+            "name": "featured_section",
+            "aria-label": "",
+            "type": "group",
+            "instructions": "Configure the right side featured section of the flyout menu",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "layout": "block",
+            "sub_fields": [
+                {
+                    "key": "field_featured_section_logo",
+                    "label": "Featured Logo/Image",
+                    "name": "logo",
+                    "aria-label": "",
+                    "type": "image",
+                    "instructions": "Upload a logo or image for the featured section",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "return_format": "array",
+                    "preview_size": "medium",
+                    "library": "all",
+                    "min_width": "",
+                    "min_height": "",
+                    "min_size": "",
+                    "max_width": "",
+                    "max_height": "",
+                    "max_size": "",
+                    "mime_types": "jpg,jpeg,png,gif,svg,webp"
+                },
+                {
+                    "key": "field_featured_section_description",
+                    "label": "Description",
+                    "name": "description",
+                    "aria-label": "",
+                    "type": "textarea",
+                    "instructions": "Enter a description for the featured section",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "new_lines": "br",
+                    "maxlength": "",
+                    "placeholder": "Enter featured section description...",
+                    "rows": 4
+                },
+                {
+                    "key": "field_featured_section_button_text",
+                    "label": "Button Text",
+                    "name": "button_text",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Enter the text for the call-to-action button",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "Shop Now",
+                    "maxlength": "",
+                    "placeholder": "e.g., Shop Now",
+                    "prepend": "",
+                    "append": ""
+                },
+                {
+                    "key": "field_featured_section_button_link",
+                    "label": "Button Link",
+                    "name": "button_link",
+                    "aria-label": "",
+                    "type": "link",
+                    "instructions": "Select or enter the URL for the call-to-action button",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "return_format": "array"
+                },
+                {
+                    "key": "field_featured_section_products",
+                    "label": "Featured Products",
+                    "name": "featured_products",
+                    "aria-label": "",
+                    "type": "relationship",
+                    "instructions": "Select up to 2 products to display in the featured section",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "post_type": [
+                        "product"
+                    ],
+                    "post_status": [
+                        "publish"
+                    ],
+                    "taxonomy": [],
+                    "filters": [
+                        "search",
+                        "taxonomy"
+                    ],
+                    "return_format": "object",
+                    "min": 0,
+                    "max": 2,
+                    "elements": ""
+                }
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": "category-mega-menu"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "Configuration options for the category mega menu flyout",
+    "show_in_rest": 0,
+    "modified": 1757990000
+}

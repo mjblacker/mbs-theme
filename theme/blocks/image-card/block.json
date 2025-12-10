@@ -1,0 +1,23 @@
+{
+  "apiVersion": 2,
+  "name": "acf/image-card",
+  "title": "AW Image Card",
+  "description": "A custom card with background image, content image, text and button",
+  "category": "aspireweb",
+  "acf": {
+    "mode": "preview",
+    "renderCallback": "acf_block_json_render_callback"
+  },
+  "supports": {
+    "align": false,
+    "jsx": false
+  },
+  "example": {
+    "attributes": {
+      "mode": "preview",
+      "data": {
+        "is_preview": true
+      }
+    }
+  }
+}

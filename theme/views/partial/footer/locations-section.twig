@@ -1,0 +1,33 @@
+{#
+  Footer Locations Section
+  - Business locations with addresses and phone numbers
+  - Uses reusable contact-info component
+  - Structured data for better SEO
+  - Data sourced from ACF theme options
+#}
+
+<div>
+    <h3 class="text-lg font-semibold mb-6 text-white">Locations</h3>
+
+    {% if theme_options.locations %}
+        {# Loop through locations from theme options #}
+        {% for location in theme_options.locations %}
+            {% set address_lines = [] %}
+            {% if location.address_lines %}
+                {# Split textarea content by line breaks and filter out empty lines #}
+                {% set lines = location.address_lines|split('\n')|filter(line => line|trim) %}
+                {% for line in lines %}
+                    {% set address_lines = address_lines|merge([line|trim]) %}
+                {% endfor %}
+            {% endif %}
+
+            {% include "partial/contact-info.twig" with {
+                name: location.name,
+                address_lines: address_lines,
+                city_state: location.city_state,
+                phone: location.phone,
+                is_head_office: location.is_head_office
+            } %}
+        {% endfor %}
+    {% endif %}
+</div>

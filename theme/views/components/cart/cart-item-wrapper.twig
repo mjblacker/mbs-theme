@@ -1,0 +1,27 @@
+{# Cart Item Wrapper Component 
+   Handles data preparation for cart items including variation logic
+   Props: cart_item_key, cart_item
+#}
+
+{% set product = cart_item.data %}
+{% set product_post = function('get_post', product.get_id()) %}
+
+{# For variations, get parent product for image and brand #}
+{% if product.is_type('variation') %}
+    {% set parent_id = product.get_parent_id() %}
+    {% set image_id = parent_id %}
+    {% set brand_id = parent_id %}
+{% else %}
+    {% set image_id = product.get_id() %}
+    {% set brand_id = product.get_id() %}
+{% endif %}
+
+{# Include the actual cart item component with prepared data #}
+{% include 'components/cart/cart-item.twig' with {
+    cart_item_key: cart_item_key,
+    cart_item: cart_item,
+    product: product,
+    product_post: product_post,
+    image_id: image_id,
+    brand_id: brand_id
+} %}

@@ -1,0 +1,37 @@
+{# Delivery Information Component #}
+{% set delivery_title = function('get_field', 'delivery_title', 'option') ?: 'Fast Metro Delivery Available' %}
+{% set delivery_icon = function('get_field', 'delivery_icon', 'option') %}
+{% set delivery_phone = function('get_field', 'delivery_phone', 'option') ?: '1300 xxx xxx' %}
+{% set delivery_message = function('get_field', 'delivery_message', 'option') ?: 'Need it asap? Please call' %}
+
+<!-- Fast Metro Delivery Info -->
+<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-6 text-center">
+    <div class="flex items-center justify-center mb-2">
+        {% if delivery_icon and delivery_icon.url %}
+            <img src="{{ delivery_icon.url }}"
+                 alt="{{ delivery_icon.alt ?: 'Delivery Icon' }}"
+                 class="w-7 h-7 mr-2">
+        {% else %}
+            <img src="{{ function('get_template_directory_uri') }}/assets/images/icon-delivery.svg"
+                 alt="Delivery Icon"
+                 class="w-7 h-7 mr-2">
+        {% endif %}
+        <span class="text-base font-medium text-yellow-800">{{ delivery_title }}</span>
+    </div>
+    <p class="text-sm font-light text-yellow-700">
+        {{ delivery_message }} <a href="tel:{{ delivery_phone|replace({' ': '', '(': '', ')': ''}) }}" class="underline hover:text-yellow-900 transition-colors">{{ delivery_phone }}</a>.
+    </p>
+</div>
+
+<!-- Local Pick Up Info -->
+<div class="p-4 mt-4 text-center">
+    <div class="flex items-center justify-center">
+        <img src="{{ function('get_template_directory_uri') }}/assets/images/Icon-Shop.svg"
+             alt="Shop Icon"
+             class="w-7 h-7 mr-2">
+        <span class="text-base font-medium text-gray-800">
+            Local pick up available.
+            <a href="/locations" @click.prevent="locationsDialogOpen=true" class="underline hover:text-gray-900 transition-colors font-light">View Locations</a>
+        </span>
+    </div>
+</div>

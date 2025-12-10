@@ -1,0 +1,362 @@
+{
+    "key": "group_theme_options",
+    "title": "Theme Options",
+    "fields": [
+        {
+            "key": "field_theme_locations",
+            "label": "Business Locations",
+            "name": "locations",
+            "aria-label": "",
+            "type": "repeater",
+            "instructions": "Add business locations with their contact information",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "collapsed": "field_location_name",
+            "min": 0,
+            "max": 10,
+            "layout": "table",
+            "button_label": "Add Location",
+            "rows_per_page": 20,
+            "sub_fields": [
+                {
+                    "key": "field_location_name",
+                    "label": "Location Name",
+                    "name": "name",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Enter the name of this location",
+                    "required": 1,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "e.g., Pakenham",
+                    "prepend": "",
+                    "append": "",
+                    "parent_repeater": "field_theme_locations"
+                },
+                {
+                    "key": "field_location_address_lines",
+                    "label": "Address Lines",
+                    "name": "address_lines",
+                    "aria-label": "",
+                    "type": "textarea",
+                    "instructions": "Enter address lines (street address, suite number, etc.) - one per line",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "new_lines": "br",
+                    "maxlength": "",
+                    "placeholder": "e.g., 102 Racecourse Road\nSuite 5B",
+                    "rows": 3,
+                    "parent_repeater": "field_theme_locations"
+                },
+                {
+                    "key": "field_location_city_state",
+                    "label": "City & State",
+                    "name": "city_state",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Enter the city and state",
+                    "required": 1,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "e.g., Pakenham VIC 3810",
+                    "prepend": "",
+                    "append": "",
+                    "parent_repeater": "field_theme_locations"
+                },
+                {
+                    "key": "field_location_phone",
+                    "label": "Phone Number",
+                    "name": "phone",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Enter the phone number for this location",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "e.g., (03) 9707 0264",
+                    "prepend": "",
+                    "append": "",
+                    "parent_repeater": "field_theme_locations"
+                },
+                {
+                    "key": "field_location_is_head_office",
+                    "label": "Head Office",
+                    "name": "is_head_office",
+                    "aria-label": "",
+                    "type": "true_false",
+                    "instructions": "Check if this is the head office location",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "message": "This is the head office",
+                    "default_value": 0,
+                    "ui_on_text": "",
+                    "ui_off_text": "",
+                    "ui": 1,
+                    "parent_repeater": "field_theme_locations"
+                },
+                {
+                    "key": "field_location_image",
+                    "label": "Location Image",
+                    "name": "location_image",
+                    "aria-label": "",
+                    "type": "image",
+                    "instructions": "Upload an image representing this location",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "return_format": "array",
+                    "preview_size": "thumbnail",
+                    "library": "all",
+                    "min_width": "",
+                    "min_height": "",
+                    "min_size": "",
+                    "max_width": "",
+                    "max_height": "",
+                    "max_size": "",
+                    "mime_types": "",
+                    "parent_repeater": "field_theme_locations"
+                },
+                {
+                    "key": "field_location_get_direction_link",
+                    "label": "Get Direction Link",
+                    "name": "get_direction_link",
+                    "aria-label": "",
+                    "type": "url",
+                    "instructions": "Enter the URL for getting directions to this location (e.g., Google Maps link)",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "placeholder": "https:\/\/maps.google.com\/...",
+                    "parent_repeater": "field_theme_locations"
+                }
+            ]
+        },
+        {
+            "key": "field_theme_company_info",
+            "label": "Company Information",
+            "name": "company_info",
+            "aria-label": "",
+            "type": "group",
+            "instructions": "General company information",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "layout": "block",
+            "sub_fields": [
+                {
+                    "key": "field_company_name",
+                    "label": "Company Name",
+                    "name": "name",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Enter the full company name",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "Metro Building Supplies",
+                    "maxlength": "",
+                    "placeholder": "",
+                    "prepend": "",
+                    "append": ""
+                },
+                {
+                    "key": "field_company_phone",
+                    "label": "Phone Number",
+                    "name": "phone",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Enter the main company phone number",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "(03) 9707 0269",
+                    "prepend": "",
+                    "append": ""
+                },
+                {
+                    "key": "field_company_email",
+                    "label": "General Email",
+                    "name": "email",
+                    "aria-label": "",
+                    "type": "email",
+                    "instructions": "Enter the general contact email address",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "placeholder": "info@company.com",
+                    "prepend": "",
+                    "append": ""
+                },
+                {
+                    "key": "field_company_website",
+                    "label": "Website URL",
+                    "name": "website",
+                    "aria-label": "",
+                    "type": "url",
+                    "instructions": "Enter the company website URL",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "placeholder": "https:\/\/www.example.com"
+                },
+                {
+                    "key": "field_company_logo",
+                    "label": "Company Logo",
+                    "name": "logo",
+                    "aria-label": "",
+                    "type": "image",
+                    "instructions": "Upload the company logo that will be displayed in the footer and other locations throughout the site",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "return_format": "array",
+                    "preview_size": "thumbnail",
+                    "library": "all",
+                    "min_width": "",
+                    "min_height": "",
+                    "min_size": "",
+                    "max_width": "",
+                    "max_height": "",
+                    "max_size": "",
+                    "mime_types": "jpg,jpeg,png,gif,svg,webp"
+                },
+                {
+                    "key": "field_68c8cae5086cd",
+                    "label": "Company Logo Footer",
+                    "name": "logo_dark",
+                    "aria-label": "",
+                    "type": "image",
+                    "instructions": "Logo for use on a dark background",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "return_format": "array",
+                    "library": "all",
+                    "min_width": "",
+                    "min_height": "",
+                    "min_size": "",
+                    "max_width": "",
+                    "max_height": "",
+                    "max_size": "",
+                    "mime_types": "jpg,jpeg,png,gif,svg,webp",
+                    "allow_in_bindings": 1,
+                    "preview_size": "thumbnail"
+                }
+            ]
+        },
+        {
+            "key": "field_theme_header_script",
+            "label": "Header Script",
+            "name": "header_script",
+            "aria-label": "",
+            "type": "textarea",
+            "instructions": "Add scripts to be inserted in the <head> section (e.g., Google Tag Manager, analytics). Include the <script> tags.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "rows": 8,
+            "placeholder": "<!-- Google Tag Manager -->\n<script>\n(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':\nnew Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],\nj=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=\n'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);\n})(window,document,'script','dataLayer','GTM-XXXXXXX');\n</script>\n<!-- End Google Tag Manager -->",
+            "new_lines": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": "theme-options"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "Configuration options for theme contact information and company details",
+    "show_in_rest": 0,
+    "modified": 1738483200
+}

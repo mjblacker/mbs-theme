@@ -1,0 +1,36 @@
+{#
+  Footer Quick Links Section
+  - Navigation links only (Privacy Policy, Terms of Use, FAQ)
+  - Action buttons and payment methods moved to separate action-buttons-section.twig
+#}
+
+<div>
+    <h3 class="text-lg font-semibold mb-6 text-white">Quick Links</h3>
+
+    {# Navigation Links #}
+    <nav class="space-y-3 mb-6">
+        {% if menu.footer and menu.footer.items %}
+            {# Use WordPress Footer Menu if configured #}
+            {% for item in menu.footer.items %}
+                <a href="{{ item.url }}"
+                   class="block text-gray-300 hover:text-[#FFF200] focus:text-[#FFF200] focus:outline-none focus:ring-2 focus:ring-[#FFF200] focus:ring-opacity-50 rounded transition-colors duration-200 text-sm">
+                    {{ item.title }}
+                </a>
+            {% endfor %}
+        {% else %}
+            {# Fallback to default quick links #}
+            {% set quick_links = [
+                { url: '/privacy-policy', title: 'Privacy Policy' },
+                { url: '/terms-of-use', title: 'Terms Of Use' },
+                { url: '/shipping-terms', title: 'Shipping Terms' }
+            ] %}
+
+            {% for link in quick_links %}
+                <a href="{{ link.url }}"
+                   class="block text-gray-300 hover:text-[#FFF200] focus:text-[#FFF200] focus:outline-none focus:ring-2 focus:ring-[#FFF200] focus:ring-opacity-50 rounded transition-colors duration-200 text-sm">
+                    {{ link.title }}
+                </a>
+            {% endfor %}
+        {% endif %}
+    </nav>
+</div>

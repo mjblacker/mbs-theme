@@ -1,0 +1,48 @@
+{#
+  Contact Information Component
+  - Displays location details with contact information
+  - Supports structured data for better SEO
+
+  Parameters:
+  - name: Location name
+  - address_lines: Array of address line strings
+  - city_state: City and state
+  - phone: Phone number
+  - is_head_office: Boolean to indicate if this is the head office
+#}
+
+{% set name = name|default('Location') %}
+{% set address_lines = address_lines|default([]) %}
+{% set city_state = city_state|default('') %}
+{% set phone = phone|default('') %}
+{% set is_head_office = is_head_office|default(false) %}
+
+<div class="mb-6" itemscope itemtype="https://schema.org/LocalBusiness">
+    <h4 class="font-medium text-white mb-2" itemprop="name">
+        {% if is_head_office %} Head Office {% endif %}
+        {{ name }}
+    </h4>
+    <div class="text-zinc-500 text-sm space-y-1" itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
+        {% for line in address_lines %}
+            {% if loop.first %}
+                <p itemprop="streetAddress">{{ line }}</p>
+            {% else %}
+                <p>{{ line }}</p>
+            {% endif %}
+        {% endfor %}
+        {% if city_state %}
+            <p>
+                <span itemprop="addressLocality">{{ city_state|split(' ')|first }}</span>
+                <span itemprop="addressRegion">{{ city_state|split(' ')|slice(1)|join(' ') }}</span>
+            </p>
+        {% endif %}
+        {% if phone %}
+            <a href="tel:{{ phone|replace({' ': '', '(': '', ')': ''}) }}"
+               class="hover:text-[#FFF200] transition-colors duration-200"
+               itemprop="telephone"
+               aria-label="Call {{ name }}">
+                Phone: {{ phone }}
+            </a>
+        {% endif %}
+    </div>
+</div>

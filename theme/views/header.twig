@@ -1,0 +1,46 @@
+{#
+  Header Component
+  - Uses modular partials for better organization
+  - Logo, navigation, contact button, and cart are separate components
+  - Responsive design with mobile menu
+  - Includes top alert banner
+  - Sticky header functionality with Alpine.js scroll detection
+  - Smooth transitions and backdrop blur on scroll
+  - Admin bar compatibility: Desktop only (32px/top-8), mobile ignores admin bar
+#}
+
+
+{# Sticky Header Implementation with Alpine.js - Admin Bar Desktop Only Positioning #}
+<header class="sticky {{ admin_bar.is_showing ? 'top-0 lg:top-8' : 'top-0' }} bg-white shadow-sm border-b border-gray-100 z-40 transition-all duration-300 relative"
+    x-data="{mobileMenuOpen: false}"
+        >
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16 lg:h-20">
+
+            {# Logo Section #}
+            {% include "partial/header/logo.twig" %}
+
+            {# Right Side - Navigation and Actions #}
+            <div class="hidden lg:flex lg:items-center lg:space-x-8">
+                {# Desktop Navigation #}
+                {% include "partial/header/navigation.twig" with {'context': 'desktop'} %}
+
+                {# Actions - Contact Button and Cart #}
+                <div class="flex items-center space-x-4">
+                    {% include "partial/header/contact-button.twig" with {'context': 'desktop'} %}
+                    {% include "partial/header/cart.twig" with {'context': 'desktop'} %}
+                </div>
+            </div>
+
+            {# Mobile Actions - Call Us, Cart, and Menu Button #}
+            <div class="flex lg:hidden items-center space-x-2">
+                {% include "partial/header/contact-button.twig" with {'context': 'mobile'} %}
+                {% include "partial/header/cart.twig" with {'context': 'mobile'} %}
+                {% include "partial/header/mobile-menu-button.twig" %}
+            </div>
+        </div>
+    </div>
+
+    {# Mobile Menu Overlay #}
+    {% include "partial/header/mobile-menu-overlay.twig" %}
+</header>

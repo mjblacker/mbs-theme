@@ -1,0 +1,157 @@
+{#
+    Product Gallery Component with Swiper
+    
+    Custom gallery implementation using Swiper library
+    - Main image display with full size
+    - Thumbnail navigation below
+    - Click thumbnails to change main image
+#}
+
+{% set product_id = post.ID %}
+{% set attachment_ids = function('wc_get_product', product_id).get_gallery_image_ids() %}
+{% set featured_image_id = function('get_post_thumbnail_id', product_id) %}
+
+{# Combine featured image with gallery images #}
+{% set all_image_ids = featured_image_id ? [featured_image_id] : [] %}
+{% if attachment_ids %}
+    {% set all_image_ids = all_image_ids|merge(attachment_ids) %}
+{% endif %}
+
+<div class="product-gallery" x-data="productGallery()" x-init="init()">
+    {% if all_image_ids|length > 0 %}
+        <!-- Main Image Display -->
+        <div class="main-image-container mb-4 rounded-lg overflow-hidden">
+            <div class="swiper main-image-swiper aspect-square">
+                <div class="swiper-wrapper">
+                    {% for image_id in all_image_ids %}
+                        {# Smart image sizing logic #}
+                        {% set image_meta = function('wp_get_attachment_metadata', image_id) %}
+                        {% set original_width = image_meta and image_meta.width ? image_meta.width : 0 %}
+                        {% set is_small_image = original_width > 0 and original_width < 250 %}
+
+                        {% set image_url = function('wp_get_attachment_image_src', image_id, is_small_image ? 'full' : 'large') %}
+                        {% set image_alt = function('get_post_meta', image_id, '_wp_attachment_image_alt', true) %}
+                        {% if image_url %}
+                            <div class="swiper-slide">
+                                {% if is_small_image %}
+                                    <div class="h-full w-full flex items-start justify-center">
+                                        <img
+                                            src="{{ image_url[0] }}"
+                                            alt="{{ image_alt ?: post.title }}"
+                                            class="max-w-full max-h-full object-contain cursor-zoom-in"
+                                            @click="openLightbox({{ loop.index0 }})"
+                                            loading="{{ loop.first ? 'eager' : 'lazy' }}"
+                                        >
+                                    </div>
+                                {% else %}
+                                    <img
+                                        src="{{ image_url[0] }}"
+                                        alt="{{ image_alt ?: post.title }}"
+                                        class="w-full h-full object-cover cursor-zoom-in"
+                                        @click="openLightbox({{ loop.index0 }})"
+                                        loading="{{ loop.first ? 'eager' : 'lazy' }}"
+                                    >
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Thumbnail Navigation -->
+        {% if all_image_ids|length > 1 %}
+            <div class="thumbnail-container">
+                <div class="swiper thumbnail-swiper">
+                    <div class="swiper-wrapper">
+                        {% for image_id in all_image_ids %}
+                            {% set thumb_url = function('wp_get_attachment_image_src', image_id, 'thumbnail') %}
+                            {% set image_alt = function('get_post_meta', image_id, '_wp_attachment_image_alt', true) %}
+                            {% if thumb_url %}
+                                <div class="swiper-slide">
+                                    <button 
+                                        type="button"
+                                        class="thumbnail-btn w-full aspect-square bg-gray-100 rounded border-2 border-transparent hover:border-gray-400 transition-colors overflow-hidden"
+                                        :class="{ 'border-black': currentSlide === {{ loop.index0 }} }"
+                                        @click="setSlide({{ loop.index0 }})"
+                                    >
+                                        <img 
+                                            src="{{ thumb_url[0] }}" 
+                                            alt="{{ image_alt ?: post.title }}"
+                                            class="w-full h-full object-cover"
+                                            loading="lazy"
+                                        >
+                                    </button>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Lightbox Modal -->
+        <div 
+            x-show="lightboxOpen" 
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75"
+            @click.self="closeLightbox()"
+            @keydown.escape.window="closeLightbox()"
+            style="display: none;"
+        >
+            <div class="relative max-w-4xl max-h-full p-4">
+                <!-- Close button -->
+                <button 
+                    @click="closeLightbox()"
+                    class="absolute top-4 right-4 z-10 text-white hover:text-gray-300 transition-colors"
+                >
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+                
+                <!-- Lightbox image -->
+                <div class="swiper lightbox-swiper">
+                    <div class="swiper-wrapper">
+                        {% for image_id in all_image_ids %}
+                            {% set full_url = function('wp_get_attachment_image_src', image_id, 'full') %}
+                            {% set image_alt = function('get_post_meta', image_id, '_wp_attachment_image_alt', true) %}
+                            {% if full_url %}
+                                <div class="swiper-slide flex items-center justify-center">
+                                    <img 
+                                        src="{{ full_url[0] }}" 
+                                        alt="{{ image_alt ?: post.title }}"
+                                        class="max-w-full max-h-full object-contain"
+                                        loading="lazy"
+                                    >
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    {% if all_image_ids|length > 1 %}
+                        <div class="swiper-button-next text-white"></div>
+                        <div class="swiper-button-prev text-white"></div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- Fallback when no images -->
+        <div class="no-image-placeholder aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+            <div class="text-center text-gray-400">
+                <svg class="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <p class="text-sm">No Image Available</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+

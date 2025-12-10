@@ -1,0 +1,23 @@
+{
+  "apiVersion": 2,
+  "name": "acf/image-brand",
+  "title": "Image Brand",
+  "description": "A brand showcase section with heading, description and 4-column brand image grid",
+  "category": "aspireweb",
+  "acf": {
+    "mode": "preview",
+    "renderCallback": "acf_block_json_render_callback"
+  },
+  "supports": {
+    "align": ["wide", "full"],
+    "jsx": false
+  },
+  "example": {
+    "attributes": {
+      "mode": "preview",
+      "data": {
+        "is_preview": true
+      }
+    }
+  }
+}

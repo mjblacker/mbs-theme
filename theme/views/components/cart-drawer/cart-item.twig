@@ -1,0 +1,68 @@
+{#
+  Cart Item Component
+  - Individual cart item display
+  - Quantity controls
+  - Remove item functionality
+  - Used within cart drawer
+#}
+
+<div class="flex items-center space-x-4 p-4 bg-white rounded-lg border border-gray-100">
+  <!-- Product Image -->
+  <div class="flex-shrink-0">
+    <img :src="item.image || '{{ site.theme.uri }}/assets/images/placeholder-product.png'" 
+         :alt="item.name"
+         class="h-30 w-28 object-cover rounded-md bg-gray-100">
+  </div>
+  
+  <!-- Product Info -->
+  <div class="flex-1 min-w-0">
+    <!-- Brand Name -->
+    <template x-if="item.brand">
+      <p class="text-xs text-gray-500 uppercase font-medium mb-1" x-text="item.brand"></p>
+    </template>
+    
+    <!-- Product Name -->
+    <h3 class="text-sm font-medium text-gray-900 mb-2" x-text="item.name"></h3>
+    
+    <!-- Variation Info -->
+    <template x-if="item.variations && Object.keys(item.variations).length > 0">
+      <div class="text-xs text-gray-500 mb-2">
+        <template x-for="(value, key) in item.variations" :key="key">
+          <span class="inline-block mr-2">
+            <span x-text="key.replace('attribute_', '').replace('_', ' ')"></span>: 
+            <span x-text="value"></span>
+          </span>
+        </template>
+      </div>
+    </template>
+    
+    <!-- Quantity and Price Row -->
+    <div class="flex items-center justify-baseline">
+      <!-- Quantity Input -->
+      <div class="flex items-center mr-4">
+        <input type="number" 
+               :value="item.quantity"
+               @change="updateQuantity(item.key, $event.target.value)"
+               min="1"
+               class="w-16 px-3 py-2 text-center text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      
+      <!-- Price -->
+      <div class="text-right">
+        <span class="text-lg font-bold text-gray-900" x-text="formatPrice(item.line_total)"></span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Remove Item Button -->
+  <div class="flex-shrink-0">
+    <button @click="removeItem(item.key)"
+            class="p-1 text-gray-400 hover:text-red-600 transition-colors"
+            :disabled="removing"
+            title="Remove item">
+      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+</div>

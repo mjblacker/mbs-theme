@@ -1,0 +1,99 @@
+{% set bg_color = fields.background_color ?: '#374151' %}
+{% set bg_opacity = fields.background_opacity ?: 90 %}
+{% set pattern_image = fields.pattern_image %}
+{% set overlay_image = fields.overlay_image %}
+{% set heading = fields.heading ?: 'Smart Buys, with Metro Building Supplies.' %}
+{% set description = fields.description ?: 'High quality products, delivered fast. Nobody beats Metro Building Supplies for service.' %}
+{% set button_text = fields.button_text ?: 'View All Products' %}
+{% set button_link = fields.button_link %}
+
+{# Set default images if none selected #}
+{% if not pattern_image %}
+  {% set pattern_default_url = theme.link ~ '/assets/images/Pattern-Hero.png' %}
+{% endif %}
+
+{% if not overlay_image %}
+  {% set overlay_default_url = theme.link ~ '/assets/images/Hero-Bg.png' %}
+{% endif %}
+
+<section class="hero-masthead hero-masthead-bg relative overflow-hidden min-h-[400px] lg:min-h-[500px] bg-cover bg-center bg-no-repeat {{ is_full_width ? 'hero-masthead--full-width' : '' }} {{ is_wide ? 'hero-masthead--wide' : '' }}" 
+         style="background-color: {{ bg_color }};{% if pattern_image %} background-image: url('{{ pattern_image.url }}');{% elseif pattern_default_url %} background-image: url('{{ pattern_default_url }}');{% endif %}">
+  
+  {# Background overlay for opacity control #}
+  <div class="absolute inset-0 bg-gray-700" 
+       style="background-color: {{ bg_color }}; opacity: {{ bg_opacity / 100 }};"></div>
+  
+  {# Main content container - conditional layout based on alignment #}
+  <div class="relative z-10 px-4 sm:px-6 lg:px-8 {% if is_full_width %}w-full{% elseif is_wide %}max-w-[1280px] mx-auto{% else %}container mx-auto{% endif %}">
+    <div class="{% if is_full_width %}max-w-7xl mx-auto{% else %}{% endif %} m-0 p-0">
+      <div class="min-h-[400px] lg:min-h-[500px] flex items-center">
+      
+      {# Left content area - takes up left portion #}
+      <div class="lg:w-1/2 w-full m-0 p-0">
+        {% if heading %}
+          <h1 class="font-bold leading-tight m-0 p-0 text-white text-5xl" style="color:#fff">
+            {{ heading }}
+          </h1>
+        {% endif %}
+        
+        {% if description %}
+          <p class="leading-relaxed opacity-90 text-xl m-0 p-0 text-[#7D8184]" style="color: #7D8184">
+            {{ description }}
+          </p>
+        {% endif %}
+        
+        {% if button_text %}
+          <div class="flex mt-5">
+            {% if button_link and button_link.url %}
+              <a href="{{ button_link.url }}" 
+                 class="inline-flex items-center px-5 py-3 bg-[#FFF200] text-[#333333] rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5 text-base font-semibold m-0" style="color: #333"
+                 {% if button_link.target %}target="{{ button_link.target }}"{% endif %}
+                 {% if button_link.title %}aria-label="{{ button_link.title }}"{% endif %}>
+                {{ button_text }}
+                
+              </a>
+            {% else %}
+              <button class="inline-flex items-center px-5 py-3 bg-[#FFF200] text-[#333333] rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5 text-base font-semibold m-0" style="color: #333">
+                {{ button_text }}
+                <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </button>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+      
+      </div>
+    </div>
+  </div>
+  
+  {# Right overlay image area - positioned relative to full viewport width #}
+  <div class="absolute inset-y-0 right-0 hidden lg:block lg:w-1/2 xl:w-3/5">
+    <div class="absolute inset-0 flex items-end justify-end">
+      {% if overlay_image %}
+        <img src="{{ overlay_image.url }}" 
+             alt="{{ overlay_image.alt ?: 'Hero overlay image' }}"
+             class="max-w-full h-auto object-contain drop-shadow-2xl lg:m-0">
+      {% elseif overlay_default_url %}
+        <img src="{{ overlay_default_url }}" 
+             alt="Hero overlay image"
+             class="max-w-full h-auto object-contain drop-shadow-2xl lg:m-0">
+      {% endif %}
+    </div>
+  </div>
+  
+  {# Mobile overlay image #}
+  <div class="lg:hidden flex justify-center relative z-10 m-0 p-0">
+    {% if overlay_image %}
+      <img src="{{ overlay_image.url }}" 
+           alt="{{ overlay_image.alt ?: 'Hero overlay image' }}"
+           class="max-w-sm h-auto object-contain drop-shadow-2xl">
+    {% elseif overlay_default_url %}
+      <img src="{{ overlay_default_url }}" 
+           alt="Hero overlay image"
+           class="max-w-sm h-auto object-contain drop-shadow-2xl">
+    {% endif %}
+  </div>
+  
+</section>

@@ -1,0 +1,22 @@
+{# Download Files Component #}
+<div class="download-files flex flex-wrap gap-3">
+    {% set data_sheet = function('get_field', 'download_data_sheet', post.ID) %}
+    {% if data_sheet %}
+        <a href="{{ data_sheet.url }}" 
+           class="inline-block px-4 py-2 border border-black text-black text-sm hover:bg-black hover:text-white transition-colors"
+           data-download-data-sheet
+           download>
+            Download Data Sheet
+        </a>
+    {% endif %}
+    
+    {% set installation_guide = function('get_field', 'installation_guide', post.ID) %}
+    {% if installation_guide %}
+        <a href="{{ installation_guide.url }}" 
+           class="inline-block px-4 py-2 border border-black text-black text-sm hover:bg-black hover:text-white transition-colors"
+           data-download-installation-guide
+           download>
+            Installation Guide
+        </a>
+    {% endif %}
+</div>

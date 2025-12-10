@@ -1,0 +1,150 @@
+{
+  "key": "group_image_card",
+  "title": "Image Card Settings",
+  "fields": [
+    {
+      "key": "field_image_card_background_image",
+      "label": "Background Image",
+      "name": "background_image",
+      "aria-label": "",
+      "type": "image",
+      "instructions": "Upload a background image for the card (SVG or PNG recommended)",
+      "required": 1,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "return_format": "array",
+      "library": "all",
+      "min_width": "",
+      "min_height": "",
+      "min_size": "",
+      "max_width": "",
+      "max_height": "",
+      "max_size": "",
+      "mime_types": "jpg,jpeg,png,svg,webp",
+      "preview_size": "medium"
+    },
+    {
+      "key": "field_image_card_content_image",
+      "label": "Content Image/Logo",
+      "name": "content_image",
+      "aria-label": "",
+      "type": "image",
+      "instructions": "Upload an image or logo to display inside the card",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "return_format": "array",
+      "library": "all",
+      "min_width": "",
+      "min_height": "",
+      "min_size": "",
+      "max_width": "",
+      "max_height": "",
+      "max_size": "",
+      "mime_types": "jpg,jpeg,png,svg,webp",
+      "preview_size": "medium"
+    },
+    {
+      "key": "field_image_card_content",
+      "label": "Content",
+      "name": "content",
+      "aria-label": "",
+      "type": "textarea",
+      "instructions": "Enter the main content text",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "default_value": "",
+      "maxlength": "",
+      "rows": 4,
+      "placeholder": "Enter content text",
+      "new_lines": ""
+    },
+    {
+      "key": "field_image_card_description",
+      "label": "Description",
+      "name": "description",
+      "aria-label": "",
+      "type": "textarea",
+      "instructions": "Enter additional description text",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "default_value": "",
+      "maxlength": "",
+      "rows": 3,
+      "placeholder": "Enter description text",
+      "new_lines": ""
+    },
+    {
+      "key": "field_image_card_button_text",
+      "label": "Button Text",
+      "name": "button_text",
+      "aria-label": "",
+      "type": "text",
+      "instructions": "Enter the button text",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "50",
+        "class": "",
+        "id": ""
+      },
+      "default_value": "Learn More",
+      "maxlength": "",
+      "placeholder": "e.g., View All Products",
+      "prepend": "",
+      "append": ""
+    },
+    {
+      "key": "field_image_card_button_link",
+      "label": "Button Link",
+      "name": "button_link",
+      "aria-label": "",
+      "type": "link",
+      "instructions": "Select or enter the button link",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "50",
+        "class": "",
+        "id": ""
+      },
+      "return_format": "array"
+    }
+  ],
+  "location": [
+    [
+      {
+        "param": "block",
+        "operator": "==",
+        "value": "acf/image-card"
+      }
+    ]
+  ],
+  "menu_order": 0,
+  "position": "normal",
+  "style": "default",
+  "label_placement": "top",
+  "instruction_placement": "label",
+  "hide_on_screen": "",
+  "active": true,
+  "description": "",
+  "show_in_rest": 0
+}

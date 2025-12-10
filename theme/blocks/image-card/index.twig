@@ -1,0 +1,38 @@
+<div class="relative w-full mt-15 sm:mt-2 h-[600px] overflow-hidden {% if fields.background_image %}" style="background-image: url('{{ fields.background_image.url }}'); background-size: cover; background-position: center; background-repeat: no-repeat;{% endif %}">
+  {% if fields.background_image %}
+    <div class="absolute inset-0 bg-opacity-60"></div>
+  {% endif %}
+  
+  <div class="relative z-10 h-full flex flex-col justify-center items-center text-center text-white p-8 lg:p-20">
+    {% if fields.content_image %}
+      <div class="mb-6 w-[200px]">
+        <img src="{{ fields.content_image.url }}" 
+             alt="{{ fields.content_image.alt }}" 
+             class="w-auto mx-auto">
+      </div>
+    {% endif %}
+    
+    
+    {% if fields.content %}
+      <div class="text-base lg:text-lg font-normal mb-6 max-w-md leading-relaxed text-gray-200">
+        {{ fields.content|nl2br }}
+      </div>
+    {% endif %}
+    
+    {% if fields.description %}
+      <div class="text-sm lg:text-base font-normal mb-8 max-w-md leading-relaxed text-gray-300">
+        {{ fields.description|nl2br }}
+      </div>
+    {% endif %}
+    
+    {% if fields.button_text and fields.button_link %}
+      <div class="mt-4">
+        <a href="{{ fields.button_link.url }}" 
+           {% if fields.button_link.target %}target="{{ fields.button_link.target }}"{% endif %}
+           class="inline-block px-8 py-3 bg-transparent border-2 border-[#FFF600] !text-[#FFF600] text-sm font-medium uppercase tracking-wider rounded-sm transition-all duration-300 focus:outline-none">
+          {{ fields.button_text }}
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>

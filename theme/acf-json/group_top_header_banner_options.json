@@ -1,0 +1,158 @@
+{
+    "key": "group_top_header_banner_options",
+    "title": "Top Header Banner Options",
+    "fields": [
+        {
+            "key": "field_top_header_banner_enabled",
+            "label": "Enable Alert Banner",
+            "name": "alert_banner_enabled",
+            "aria-label": "",
+            "type": "true_false",
+            "instructions": "Check to enable the top header alert banner",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "message": "Enable Alert Banner",
+            "default_value": 0,
+            "ui_on_text": "Enabled",
+            "ui_off_text": "Disabled",
+            "ui": 1
+        },
+        {
+            "key": "field_68c8d51844c67",
+            "label": "Alert Banner Unique Tag",
+            "name": "alert_banner_tag",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Unique tag for this promotion, resets the dismiss timeout",
+            "required": 0,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_top_header_banner_enabled",
+                        "operator": "==",
+                        "value": "1"
+                    }
+                ]
+            ],
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 1,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_top_header_banner_text",
+            "label": "Alert Banner Text",
+            "name": "alert_banner_text",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Enter the alert or promotional message text",
+            "required": 0,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_top_header_banner_enabled",
+                        "operator": "==",
+                        "value": "1"
+                    }
+                ]
+            ],
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "e.g., Special Sale - 20% off all products this week!",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_top_header_banner_button_text",
+            "label": "Button Text",
+            "name": "alert_banner_button_text",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Enter the text for the button or link",
+            "required": 0,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_top_header_banner_enabled",
+                        "operator": "==",
+                        "value": "1"
+                    }
+                ]
+            ],
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "e.g., Shop Now",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_top_header_banner_button_link",
+            "label": "Button Link",
+            "name": "alert_banner_button_link",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Enter the URL for the button or link destination (e.g., \/shop, \/contact, or full URL)",
+            "required": 0,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_top_header_banner_enabled",
+                        "operator": "==",
+                        "value": "1"
+                    }
+                ]
+            ],
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "e.g., \/shop or https:\/\/example.com",
+            "prepend": "",
+            "append": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": "top-header-banner"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "Configuration options for the Top Header Alert Banner",
+    "show_in_rest": 0,
+    "modified": 1757992501
+}

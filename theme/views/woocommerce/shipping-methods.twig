@@ -1,0 +1,52 @@
+{# Unified Shipping Methods Component
+   Props:
+   - context: 'cart' or 'checkout' (determines styling and layout)
+   - wc_cart: WooCommerce cart object
+   - wc_checkout: WooCommerce checkout object (optional, only for checkout context)
+   - show_calculator: boolean to show shipping calculator (default: true for cart, false for checkout)
+#}
+
+{# Initialize variables #}
+{% set context = context ?: 'cart' %}
+{% set show_calculator = show_calculator is defined ? show_calculator : (context == 'cart') %}
+{% set is_cart = (context == 'cart') %}
+{% set is_checkout = (context == 'checkout') %}
+
+{% if wc_cart.needs_shipping() and wc_cart.show_shipping() %}
+    {# WooCommerce hooks #}
+    {{ function('do_action', is_cart ? 'woocommerce_cart_totals_before_shipping' : 'woocommerce_review_order_before_shipping')|raw }}
+
+    <div class="shipping-methods-container">
+        {# Header #}
+        {% include 'woocommerce/shipping/shipping-header.twig' with {
+            context: context,
+            is_checkout: is_checkout
+        } %}
+
+        {# Shipping packages and methods #}
+        {% set shipping_packages = wc_cart.get_shipping_packages() %}
+        {% for package_key, package in shipping_packages %}
+            {% include 'woocommerce/shipping/shipping-package.twig' with {
+                package_key: package_key,
+                package: package,
+                context: context,
+                is_cart: is_cart
+            } %}
+        {% endfor %}
+    </div>
+
+    {# WooCommerce hooks #}
+    {{ function('do_action', is_cart ? 'woocommerce_cart_totals_after_shipping' : 'woocommerce_review_order_after_shipping')|raw }}
+
+{% else %}
+    {# No shipping methods available #}
+    {% include 'woocommerce/shipping/shipping-placeholder.twig' with {
+        context: context,
+        wc_cart: wc_cart
+    } %}
+{% endif %}
+
+{# Custom shipping calculator (only for cart context when enabled) #}
+{% if context == 'cart' and show_calculator and function('get_option', 'woocommerce_enable_shipping_calc') == 'yes' %}
+    {% include 'woocommerce/shipping-calculator.twig' %}
+{% endif %}

@@ -1,0 +1,11 @@
+{# Cart Totals Shipping Component
+   Props: wc_cart
+#}
+
+<div class="shipping-section mb-6">
+    {% include 'woocommerce/shipping-methods.twig' with {
+        context: 'cart',
+        wc_cart: wc_cart,
+        show_calculator: true
+    } %}
+</div>

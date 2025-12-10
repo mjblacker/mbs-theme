@@ -1,0 +1,63 @@
+{# Product Variations Component #}
+{% if product.is_type('variable') %}
+    <!-- Hidden variation data for Alpine.js -->
+    {% set variations = function('wc_get_product_variation_attributes', product.get_id()) %}
+    {% set available_variations = [] %}
+    {% for variation_id in product.get_children() %}
+        {% set variation = function('wc_get_product', variation_id) %}
+        {% if variation and variation.is_purchasable() %}
+            {% set variation_data = {
+                variation_id: variation.get_id(),
+                attributes: variation.get_variation_attributes(),
+                display_price: variation.get_price(),
+                display_regular_price: variation.get_regular_price(),
+                price_html: function('wc_price', variation.get_price()),
+                is_purchasable: variation.is_purchasable(),
+                is_in_stock: variation.is_in_stock(),
+                variation_is_visible: variation.variation_is_visible()
+            } %}
+            {% set available_variations = available_variations|merge([variation_data]) %}
+        {% endif %}
+    {% endfor %}
+    <script data-variations="{{ available_variations|json_encode|e('html_attr') }}" type="application/json"></script>
+
+    <!-- Size Dropdown -->
+    {% set sizes = product.get_attribute('size') ? product.get_attribute('size')|split(' | ') : [] %}
+    {% if sizes|length > 0 %}
+        <div class="size-selection mb-6">
+            {% include "components/attr-dropdown.twig" with {sizes: sizes} %}
+        </div>
+    {% endif %}
+
+    <!-- Color Selection -->
+    {% set colors = product.get_attribute('colour') ? product.get_attribute('colour')|split(' | ') : [] %}
+    {% if colors|length > 0 %}
+        <div class="color-selection mb-6">
+            {% include "components/color-selection.twig" with {colors: colors} %}
+        </div>
+    {% endif %}
+
+    <!-- Other Variations (Generic Dropdowns) -->
+    {% set all_attributes = product.get_attributes() %}
+    {% for attribute_name, attribute_data in all_attributes %}
+        {% if attribute_data.get_variation() %}
+            {% set attribute_slug = attribute_name %}
+            {% set is_size = attribute_slug|lower == 'size' or attribute_slug|lower == 'pa_size' %}
+            {% set is_color = attribute_slug|lower == 'colour' or attribute_slug|lower == 'color' or attribute_slug|lower == 'pa_colour' or attribute_slug|lower == 'pa_color' %}
+            
+            {% if not is_size and not is_color %}
+                {% set attribute_values = attribute_data.get_options() %}
+                {% if attribute_values|length > 0 %}
+                    <div class="generic-variation-selection mb-6" data-attribute="{{ attribute_slug }}">
+                        {% set attribute_label = attribute_data.get_name() %}
+                        {% include "components/attr-dropdown.twig" with {
+                            sizes: attribute_values, 
+                            attribute_name: attribute_slug,
+                            attribute_label: attribute_label
+                        } %}
+                    </div>
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+{% endif %}

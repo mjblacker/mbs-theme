@@ -1,0 +1,25 @@
+{# Product Price Component #}
+<div class="product-price">
+    {% set price_html = product.get_price_html() %}
+    {% set has_price = product.get_price() %}
+    {% if price_html %}
+        {% if product.is_on_sale() and product.get_sale_price() and product.get_regular_price() %}
+            {% set sale_price = product.get_sale_price() %}
+            {% set regular_price = product.get_regular_price() %}
+            {% set savings_percent = ((regular_price - sale_price) / regular_price * 100)|round %}
+            <div class="flex items-center gap-3 flex-wrap">
+                <div class="text-2xl font-bold text-gray-900">{{ function('wc_price', sale_price)|raw }}</div>
+                <div class="text-lg text-gray-500 line-through">{{ function('wc_price', regular_price)|raw }}</div>
+                <span class="text-sm text-gray-500 font-normal">INC GST</span>
+                <div class="bg-green-600 text-white px-2 py-1 rounded text-sm font-medium">-{{ savings_percent }}%</div>
+            </div>
+        {% else %}
+            <div class="flex items-center gap-3">
+                <div class="text-2xl font-bold woocommerce-Price-amount {{ has_price ? 'text-gray-900' : 'text-[#ffdf20]' }}">{{ price_html|raw }}</div>
+                {% if has_price %}
+                    <span class="text-sm text-gray-500 font-normal">INC GST</span>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endif %}
+</div>

@@ -11,9 +11,10 @@ services:
       - apt-get update
       - apt-get install zip dos2unix
       - dos2unix /app/scripts/setup-wordpress.sh
+      - chmod +x /app/scripts/setup-wordpress.sh
 
     run:
-      - cd $LANDO_MOUNT && composer install
+      - cd ${LANDO_MOUNT}/theme && composer install
       #- cd $LANDO_MOUNT && scripts/setup-wordpress.sh
       - echo "To set up WordPress, run 'lando install' if you have not already done so."
 
@@ -25,6 +26,11 @@ services:
 
   database:
     type: mysql
+
+  phpmyadmin:
+    type: phpmyadmin
+    hosts:
+      - database
 
   node:
     type: node:20
@@ -49,6 +55,7 @@ tooling:
 
   composer:
     service: appserver
+    dir: /app/theme
 
   npm:
     service: node
@@ -66,6 +73,18 @@ tooling:
     cmd: 'npm run build'
     description: 'Build the theme assets for production'
 
+  version:patch:
+    service: node
+    cmd: 'npm run version:patch'
+
+  version:minor:
+    service: node
+    cmd: 'npm run version:minor'
+
+  version:major:
+    service: node
+    cmd: 'npm run version:major'
+
   bundle:
     service: node
     cmd: 'npm run bundle'
@@ -76,4 +95,33 @@ tooling:
     cmd: 'tail -f /app/wp/wp-content/debug.log'
     description: 'Get real-time WP debug log output'
 
+  # Update this to the URL's needed for your install when loading existing data
+  update-urls:
+    service: appserver
+    cmd:
+      - echo "Not implemented yet"
+      #- wp search-replace '%old_url%' '%lando_url%'
+
+  create-admin:
+    service: appserver
+    cmd:
+      - |
+        # This script checks for an 'sapling' user and creates it if it doesn't exist.
+
+        # 1. Use 'wp user get' to check if the 'sapling' user exists.
+        # We redirect stdout and stderr to /dev/null to keep the output clean.
+        wp user get sapling >/dev/null 2>&1
+
+        # 2. Check the exit code ($?). A non-zero code means the command failed,
+        # which in this case means the user was not found.
+        if [ $? -ne 0 ]; then
+          echo "Admin user 'sapling' not found. Creating..."
+          # 3. Create the user with the specified email, role, and password.
+          # The password and email are hardcoded as requested.
+          wp user create sapling admin@sapling.lndo.site --role=administrator --user_pass=admin
+          echo "Successfully created sapling administrator user."
+        else
+          # 4. If the exit code was 0, the user already exists.
+          echo "Admin user 'sapling' already exists. No action needed."
+        fi
 

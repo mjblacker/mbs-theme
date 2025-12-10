@@ -1,0 +1,90 @@
+{#
+  Featured Section Component
+  - Right column of flyout menu
+  - Contains logo, description, buttons (40%) and featured products (60%)
+  - Uses ACF Theme Options for content configuration
+  - Uses existing product-card.twig for product display
+#}
+
+{# Get featured section data from ACF Category Mega Menu Options #}
+{% set featured_section = function('function_exists', 'get_field') ? function('get_field', 'featured_section', 'options') : {} %}
+
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-10">
+
+    {# Left Part - Logo, Description & Buttons (40%) #}
+    <div class="lg:col-span-2 space-y-4">
+        {# Logo - Use ACF field or fallback to default #}
+        <div class="mb-4">
+            {% if featured_section.logo %}
+                <img src="{{ featured_section.logo.url }}"
+                     alt="{{ featured_section.logo.alt ?: site.name }}"
+                     class="h-full w-auto">
+            {% else %}
+                {# Fallback to default logo #}
+                <img src="{{ function('get_template_directory_uri') }}/assets/images/hebel-logo-white 1.png"
+                     alt="{{ site.name }}"
+                     class="h-full w-auto">
+            {% endif %}
+        </div>
+
+        {# Description - Use ACF field or fallback to default #}
+        <div class="text-mbs-text-light text-sm leading-relaxed mb-6">
+            {% if featured_section.description %}
+                <p>{{ featured_section.description }}</p>
+            {% else %}
+                {# Fallback description #}
+                <p>Your trusted partner for quality building materials, tools, and hardware supplies. Serving builders and contractors across the region.</p>
+            {% endif %}
+        </div>
+
+        {# Action Button - Use ACF fields or fallback to default #}
+        <div class="space-y-3">
+            {% if featured_section.button_text %}
+                {% set button_url = featured_section.button_link.url ?: function('get_permalink', function('wc_get_page_id', 'shop')) %}
+                {% set button_text = featured_section.button_text %}
+                {% set button_target = featured_section.button_link.target ?: '_self' %}
+
+                <a href="{{ button_url }}"
+                   target="{{ button_target }}"
+                   class="block w-full bg-transparent text-[#333333] border border-[#333333] px-2 py-2 transition-colors rounded font-medium text-sm no-underline text-center">
+                    {{ button_text }}
+                </a>
+            {% else %}
+                {# Fallback button #}
+                <a href="{{ function('get_permalink', function('wc_get_page_id', 'shop')) }}"
+                   class="block w-full bg-transparent text-[#333333] border border-[#333333] px-2 py-2 transition-colors rounded font-medium text-sm no-underline text-center">
+                    All Hebel Products
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Right Part - Featured Products (60%) #}
+    <div class="lg:col-span-3">
+        {# Use ACF selected products #}
+        {% if featured_section.featured_products %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {% for product_post in featured_section.featured_products|slice(0, 2) %}
+                    <div class="overflow-hidden">
+                        {% include "woocommerce/product-card.twig" with {
+                            'post': product_post,
+                            'show_brand': false,
+                            'show_sale_badge': true
+                        } %}
+                    </div>
+                {% endfor %}
+            </div>
+
+        {% else %}
+            {# Fallback content when no products found #}
+            <div class="text-center py-8 text-gray-500">
+                <p class="mb-4">No featured products configured. Please select products in Theme Options > Category Mega Menu.</p>
+                <a href="{{ function('get_permalink', function('wc_get_page_id', 'shop')) }}"
+                   class="inline-block bg-[#FFF200] text-black py-2 px-6 font-semibold text-sm uppercase transition-colors hover:bg-yellow-300 border-0 rounded-none">
+                    Browse Shop
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+</div>

@@ -1,0 +1,24 @@
+{# Checkout Fields Component
+   Props: wc_checkout, wc_cart
+#}
+
+<!-- Billing Details Section -->
+<div class="billing-section mb-8">
+    {% include 'components/checkout/billing-details.twig' with { wc_checkout: wc_checkout } %}
+</div>
+
+<!-- Shipping Address Section -->
+{% if wc_cart.needs_shipping() %}
+    <div class="shipping-section mb-8">
+        {% include 'components/checkout/shipping-details.twig' with { wc_checkout: wc_checkout } %}
+    </div>
+{% endif %}
+
+<!-- Additional Information Section -->
+<div class="additional-info-section mb-8">
+    {% include 'components/checkout/additional-info.twig' with { wc_checkout: wc_checkout } %}
+</div>
+
+{{ function('do_action', 'woocommerce_checkout_after_customer_details')|raw }}
+{{ function('do_action', 'woocommerce_checkout_before_order_review')|raw }}
+{{ function('do_action', 'woocommerce_checkout_after_order_review')|raw }}

@@ -1,0 +1,30 @@
+{# Cart Item Subtotal Component
+   Props: product, cart_item
+#}
+
+{% if product.is_on_sale() %}
+    {% set regular_price = product.get_regular_price() %}
+    {% set sale_price = product.get_sale_price() %}
+    {% if regular_price > 0 %}
+        {% set sale_percentage = ((regular_price - sale_price) / regular_price * 100)|round %}
+        <div class="flex items-center space-x-2">
+            <!-- Sale percentage badge -->
+            <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">
+                -{{ sale_percentage }}%
+            </span>
+            <!-- Regular price (crossed out) -->
+            <span class="text-sm text-gray-500 line-through">
+                {{ function('wc_price', regular_price * cart_item.quantity)|raw }}
+            </span>
+            <!-- Sale price (actual total) -->
+            <span class="text-lg font-medium text-gray-900">
+                {{ function('wc_price', sale_price * cart_item.quantity)|raw }}
+            </span>
+        </div>
+    {% endif %}
+{% else %}
+    <!-- Regular price for non-sale items -->
+    <span class="text-lg font-medium text-gray-900">
+        {{ function('wc_price', cart_item.line_total)|raw }}
+    </span>
+{% endif %}

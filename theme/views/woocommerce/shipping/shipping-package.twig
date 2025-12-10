@@ -1,0 +1,63 @@
+{# Shipping Package Component
+   Props:
+   - package_key: string
+   - package: WooCommerce package object
+   - context: 'cart' or 'checkout'
+   - is_cart: boolean
+#}
+
+{# Get chosen shipping method for this package #}
+{% set chosen_method = function('WC').session.get('chosen_shipping_methods')[package_key] ?? '' %}
+
+{# Calculate shipping for this package if not already done #}
+{% do function('WC').shipping.calculate_shipping([package]) %}
+{% set rates = function('WC').shipping.get_packages()[package_key]['rates'] ?? [] %}
+
+{% if rates %}
+    {# Check if all methods are Local Pickup or all costs are 0 #}
+    {% set all_local_pickup = true %}
+    {% set all_free = true %}
+    {% for method in rates %}
+        {% if 'local_pickup' not in method.method_id %}
+            {% set all_local_pickup = false %}
+        {% endif %}
+        {% if method.cost > 0 %}
+            {% set all_free = false %}
+        {% endif %}
+    {% endfor %}
+
+    {# Show message if all methods are Local Pickup or all are free #}
+    {% if all_local_pickup or all_free %}
+        {# Check if user has entered an address #}
+        {% set customer = function('WC').customer %}
+        {% set has_address = customer.get_shipping_postcode() or customer.get_shipping_state() %}
+
+        <div class="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
+            <p class="text-sm text-blue-800">
+                <svg class="inline-block w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                </svg>
+                {{ has_address ? 'No shipping available for the current address' : 'Enter Address For Delivery Price' }}
+            </p>
+        </div>
+    {% endif %}
+
+    <div class="shipping-methods {{ is_cart ? 'space-y-3' : 'space-y-2' }} mb-4">
+        {% for method in rates %}
+            {% include 'woocommerce/shipping/shipping-method-option.twig' with {
+                method: method,
+                package_key: package_key,
+                chosen_method: chosen_method,
+                rates: rates,
+                context: context
+            } %}
+        {% endfor %}
+    </div>
+
+    {# Shipping destination text (cart only) #}
+    {% if is_cart %}
+        {% include 'woocommerce/shipping/shipping-destination.twig' with {
+            package: package
+        } %}
+    {% endif %}
+{% endif %}

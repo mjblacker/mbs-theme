@@ -1,6 +1,14 @@
 <?php
 
 use Timber\Timber;
+use Sapling\Integrations\ThemeOptions;
+use Sapling\Integrations\ProductFilters;
+use Sapling\Integrations\ShopFiltersData;
+use Sapling\Integrations\WooCommercePricing;
+use Sapling\Integrations\WooCommerceCoupon;
+use Sapling\Integrations\Breadcrumbs;
+use Sapling\Integrations\CheckoutAddressHandler;
+use Sapling\Integrations\CheckoutTermsValidation;
 
 class Sapling extends \Timber\Site
 {
@@ -22,7 +30,50 @@ class Sapling extends \Timber\Site
     public function add_to_context($context)
     {
         $context['site'] = $this;
-        $context['menu'] = Timber::get_menu();
+        $context['menu'] = array(
+            'primary' => Timber::get_menu('primary'),
+            'footer'  => Timber::get_menu('footer'),
+            'footer_categories' => Timber::get_menu('footer-categories')
+        );
+
+        // Add theme options if ACF is available
+        if (function_exists('get_field')) {
+            $context['theme_options'] = array(
+                'locations' => \mbs_locations(),
+                'company_info' => get_field('company_info', 'option') ?: array(),
+                'alert_banner' => get_field('alert_banner', 'option') ?: array(),
+                'footer_action_buttons' => get_field('footer_action_buttons', 'option') ?: array(),
+                // New field structure for backward compatibility
+                'footer_action_buttons_enabled' => get_field('footer_action_buttons_enabled', 'option'),
+                'footer_action_buttons_list' => get_field('footer_action_buttons', 'option') ?: array(),
+                'header_script' => get_field('header_script', 'option') ?: ''
+            );
+        }
+
+        // Add WordPress admin bar context (desktop only)
+        $context['admin_bar'] = array(
+            'is_showing' => is_admin_bar_showing(),
+            'desktop_class' => is_admin_bar_showing() ? 'top-8' : 'top-0'  // 32px admin bar height on desktop
+        );
+
+        // Add WooCommerce categories if available
+        if (function_exists('wc_get_product_category_list')) {
+            $raw_categories = get_terms(array(
+                'taxonomy' => 'product_cat'
+                // 'hide_empty' => false,
+                // 'number' => 10
+            ));
+
+            $context['wc_categories'] = array();
+            if (!is_wp_error($raw_categories) && !empty($raw_categories)) {
+                foreach ($raw_categories as $category) {
+                    $context['wc_categories'][] = array(
+                        'name' => $category->name,
+                        'url' => get_term_link($category->term_id, 'product_cat')
+                    );
+                }
+            }
+        }
 
         return $context;
     }
@@ -45,17 +96,33 @@ class Sapling extends \Timber\Site
             )
         );
         add_theme_support('menus');
+        register_nav_menus( array(
+			'primary' => __( 'Primary Menu', 'sapling' ),
+			'footer'  => __( 'Footer Menu', 'sapling' ),
+			'footer-categories' => __( 'Footer Categories', 'sapling' )
+		) );
         add_theme_support('post-thumbnails');
         add_theme_support('title-tag');
         add_theme_support('editor-styles');
+
+        // WooCommerce support
+		add_theme_support( 'woocommerce' );
+		add_theme_support( 'wc-product-gallery-zoom' );
+		add_theme_support( 'wc-product-gallery-lightbox' );
+		add_theme_support( 'wc-product-gallery-slider' );
     }
 
     public function enqueue_assets()
     {
-        wp_dequeue_style('wp-block-library');
+        // wp_dequeue_style('wp-block-library');
         wp_dequeue_style('wp-block-library-theme');
         wp_dequeue_style('wc-block-style');
-        wp_dequeue_script('jquery');
+
+        // Don't dequeue jQuery on checkout/cart pages as WooCommerce needs it for AJAX
+        if (!is_checkout() && !is_cart()) {
+            wp_dequeue_script('jquery');
+        }
+
         wp_dequeue_style('global-styles');
 
         $vite_env = 'production';
@@ -99,11 +166,19 @@ class Sapling extends \Timber\Site
         if ($vite_env === 'development') {
             function vite_head_module_hook()
             {
-                echo '<script type="module" crossorigin src="http://localhost:3012/@vite/client"></script>';
-                echo '<script type="module" crossorigin src="http://localhost:3012/theme/assets/main.js"></script>';
+                // Don't output during AJAX requests to prevent interfering with JSON responses
+                if (!wp_doing_ajax()) {
+                    echo '<script type="module" crossorigin src="http://localhost:3012/@vite/client"></script>';
+                    echo '<script type="module" crossorigin src="http://localhost:3012/theme/assets/main.js"></script>';
+                }
             }
 
             add_action('wp_head', 'vite_head_module_hook');
+        }
+
+        // Ensure WooCommerce checkout script is available on checkout page
+        if (function_exists('is_checkout') && is_checkout() && function_exists('WC')) {
+            wp_enqueue_script('wc-checkout');
         }
     }
 
@@ -115,6 +190,10 @@ class Sapling extends \Timber\Site
                     'slug'  => 'custom',
                     'title' => __('Custom'),
                 ),
+                array(
+					'slug'  => 'aspireweb',
+					'title' => __( 'Sapling' ),
+				),
             ),
             $categories
         );
@@ -125,6 +204,14 @@ class Sapling extends \Timber\Site
         // activate all "global" plugins, composer will check for plugins in the integrations directory
         $plugins = [
             new AcfBlocks(),
+            new ThemeOptions(),
+            new ProductFilters(),
+            new ShopFiltersData(),
+            new WooCommercePricing(),
+            new WooCommerceCoupon(),
+            new Breadcrumbs(),
+            new CheckoutAddressHandler(),
+            new CheckoutTermsValidation(),
         ];
 
         $plugins = array_filter($plugins, function ($plugin) {
@@ -133,5 +220,6 @@ class Sapling extends \Timber\Site
 
         array_walk($plugins, function ($plugin) {$plugin->init();});
     }
+
 
 }

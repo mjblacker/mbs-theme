@@ -1,0 +1,73 @@
+{% set heading = fields.heading ?: 'Trusted by Leading Brands' %}
+{% set description = fields.description ?: 'We\'re proud to work with industry-leading brands and partners who share our commitment to quality and excellence.' %}
+{% set brands = fields.brands ?: [] %}
+
+{# Set background image path #}
+{% set brand_bg_url = theme.link ~ '/assets/images/Brands-Bg.png' %}
+
+<section class="image-brand relative overflow-hidden py-16 lg:py-20 {{ is_full_width ? 'image-brand--full-width' : '' }} {{ is_wide ? 'image-brand--wide' : '' }}" 
+         style="background-image: url('{{ brand_bg_url }}'); background-size: contain; background-position: center bottom; background-repeat: no-repeat;">
+  
+  {# Background overlay for better text readability #}
+  <div class="absolute inset-0 bg-opacity-95"></div>
+  
+  {# Main content container #}
+  <div class="relative z-10 {% if is_full_width %}w-full px-4 sm:px-6 lg:px-8{% elseif is_wide %}max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8{% else %}container mx-auto px-4 sm:px-6 lg:px-8{% endif %}">
+    
+    {# Content wrapper with center alignment #}
+    <div class="text-center max-w-4xl mx-auto">
+      
+      {# Heading #}
+      {% if heading %}
+        <h2 class="image-brand__heading font-medium text-gray-900 mb-6" 
+            style="font-size: 48px; line-height: 1.2;">
+          {{ heading }}
+        </h2>
+      {% endif %}
+      
+      {# Description #}
+      {% if description %}
+        <p class="image-brand__description text-gray-600 mb-12 mx-auto max-w-2xl" 
+           style="font-size: 20px; line-height: 1.6;">
+          {{ description }}
+        </p>
+      {% endif %}
+      
+      {# Brand Images Grid #}
+      {% if brands %}
+        <div class="image-brand__grid grid grid-cols-2 md:grid-cols-4 gap-2 lg:gap-4 items-center justify-items-center">
+          {% for brand in brands %}
+            {% if brand.image %}
+              <div class="image-brand__item flex items-center justify-center p-4 transition-all duration-300 hover:scale-105">
+                {% if brand.link and brand.link.url %}
+                  <a href="{{ brand.link.url }}" 
+                     class="w-full h-full flex items-center justify-center"
+                     {% if brand.link.target %}target="{{ brand.link.target }}"{% endif %}
+                     {% if brand.link.title %}aria-label="{{ brand.link.title }}"{% endif %}>
+                    <img src="{{ brand.image.url }}" 
+                         alt="{{ brand.alt_text ?: brand.image.alt ?: 'Brand logo' }}"
+                         class="max-w-full max-h-16 lg:max-h-20 w-auto h-auto object-contain transition-all duration-300">
+                  </a>
+                {% else %}
+                  <img src="{{ brand.image.url }}" 
+                       alt="{{ brand.alt_text ?: brand.image.alt ?: 'Brand logo' }}"
+                       class="max-w-full max-h-16 lg:max-h-20 w-auto h-auto object-contain transition-all duration-300">
+                {% endif %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% else %}
+        {# Default placeholder content for preview #}
+        <div class="image-brand__grid grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-8 items-center justify-items-center">
+          {% for i in 1..4 %}
+            <div class="image-brand__item flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg min-h-[80px] min-w-[120px]">
+              <span class="text-gray-400 text-sm">Brand {{ i }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      
+    </div>
+  </div>
+</section>

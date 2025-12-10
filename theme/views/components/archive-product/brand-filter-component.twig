@@ -1,0 +1,104 @@
+{#
+    Filter Component
+
+    Parameters:
+    - title: Filter section title (e.g. "Categories", "Brands")
+    - items: Array of filter items with structure:
+      {
+        id: unique identifier
+        name: display name
+        slug: url slug
+        count: product count (optional)
+        children: array of child items (for subcategories)
+      }
+    - filter_type: Type of filter ('category', 'brand', etc.)
+    - show_clear: Show clear all button (default: true)
+    - show_collapse: Show collapse all button (default: true)
+#}
+
+{% set show_clear = show_clear is defined ? show_clear : true %}
+{% set show_collapse = show_collapse is defined ? show_collapse : true %}
+
+<div class="filter-section mb-4" 
+     x-data="filterComponent('{{ filter_type }}', {{ items|json_encode|e('html_attr') }})">
+    
+    <!-- Filter Header -->
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900 mt-0 mb-0">{{ title }}</h3>
+        <div class="flex items-center space-x-2 text-xs">
+            {% if show_collapse %}
+                <button @click="toggleCollapseAll()" 
+                        class="text-[#7D8184]"
+                        x-text="allCollapsed ? 'Expand All' : 'Collapse All'">
+                </button>
+            {% endif %}
+            {% if show_clear %}
+                {# <span class="text-gray-400">|</span> #}
+                <button @click="if(clearAll()) $dispatch('filter-changed')" 
+                        class="text-[#7D8184]">
+                    Clear
+                </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filter Items -->
+    <div class="space-y-2">
+        <template x-for="(item, index) in items" :key="item.id">
+            <div class="filter-item">
+                <!-- Parent Item -->
+                <div class="flex items-center justify-between py-1">
+                    <label class="flex items-center cursor-pointer flex-1">
+                        <input type="checkbox" 
+                               :value="item.id"
+                               x-model="selectedItems"
+                               @change="updateCountsOnly()"
+                               class="w-4 h-4 text-white bg-gray-100 border-gray-300 rounded focus:ring-[#363738] focus:ring-2 mr-3 accent-[#363738]"
+                               style="accent-color: #363738;">
+                        <span class="text-sm text-gray-700" x-text="item.name"></span>
+                        <span class="text-xs text-gray-400 ml-2" x-text="'(' + (item.count || 0) + ')'" x-show="item.count && item.count > 0"></span>
+                    </label>
+                    <!-- Collapse Toggle for items with children -->
+                    <button x-show="item.children && item.children.length > 0" 
+                            @click="toggleItemCollapse(item.id)"
+                            class="ml-2 p-1 text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg class="w-4 h-4 transform transition-transform" 
+                             :class="{'rotate-180': !collapsedItems.includes(item.id)}"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Children Items -->
+                <div x-show="item.children && item.children.length > 0 && !collapsedItems.includes(item.id)" 
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 max-h-0"
+                     x-transition:enter-end="opacity-100 max-h-40"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 max-h-40"
+                     x-transition:leave-end="opacity-0 max-h-0"
+                     class="ml-6 mt-2 space-y-1 overflow-hidden">
+                    <template x-for="child in item.children" :key="child.id">
+                        <label class="flex items-center cursor-pointer py-1">
+                            <input type="checkbox" 
+                                   :value="child.id"
+                                   x-model="selectedItems"
+                                   @change="updateCountsOnly()"
+                                   class="w-4 h-4 text-white bg-gray-100 border-gray-300 rounded focus:ring-[#363738] focus:ring-2 mr-3 accent-[#363738]"
+                                   style="accent-color: #363738;">
+                            <span class="text-sm text-gray-600" x-text="child.name"></span>
+                            <span class="text-xs text-gray-400 ml-2" x-text="'(' + (child.count || 0) + ')'" x-show="child.count && child.count > 0"></span>
+                        </label>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <!-- No items message -->
+    <div x-show="items.length === 0" class="text-sm text-gray-500 py-4">
+        No {{ title.toLowerCase() }} available
+    </div>
+</div>
+

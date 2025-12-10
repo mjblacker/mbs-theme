@@ -1,9 +1,22 @@
-@import 'tailwindcss';
-@import './safelist.css';
-@import './theme.css';
+@import "tailwindcss";
 
-@plugin '@tailwindcss/typography';
+@plugin "@tailwindcss/typography";
+
+@import "./safelist.css";
+@import "./theme.css";
+@import "./woocommerce.css";
 
 body.admin-bar {
   max-height: calc(100vh - 32px);
+}
+
+/* Force admin bar below mobile menu overlay on mobile only */
+@media (max-width: 1023px) {
+  body.admin-bar #wpadminbar {
+    z-index: 10 !important;
+  }
+
+  #wpadminbar {
+    z-index: 10 !important;
+  }
 }

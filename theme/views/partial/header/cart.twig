@@ -1,0 +1,132 @@
+{#
+  Cart Component
+  - Shopping cart icon with badge
+  - WooCommerce integration
+  - Supports desktop and mobile contexts
+  - Gracefully handles WooCommerce deactivation
+  
+  Parameters:
+  - context: 'desktop' or 'mobile' for different styling
+  - mobile_menu: set to true for mobile menu context (adds click handler)
+#}
+
+{% set context = context is defined ? context : 'desktop' %}
+{% set mobile_menu = mobile_menu is defined ? mobile_menu : false %}
+
+{# Check if WooCommerce is active by verifying core functions exist #}
+{% set wc_active = function('function_exists', 'wc_get_cart_url') and function('function_exists', 'WC') %}
+
+{# Check if we're on cart or checkout pages to link to cart instead of opening drawer #}
+{% set is_cart_page = function('is_cart') %}
+{% set is_checkout_page = function('is_checkout') %}
+{% set link_to_cart = is_cart_page or is_checkout_page %}
+
+{# Only show cart if WooCommerce is active #}
+{% if wc_active %}
+    {% if context == 'desktop' %}
+        {# Desktop Cart Icon #}
+        <div class="relative" x-data="cartBadge()" data-initial-count="{{ function('WC') ? function('WC').cart.get_cart_contents_count() : 0 }}">
+            {% if link_to_cart %}
+                <a href="{{ function('wc_get_cart_url') }}" class="text-gray-700 hover:text-gray-900 transition-colors p-2 cursor-pointer">
+            {% else %}
+                <button @click="$dispatch('cart-drawer-open')"
+                        class="text-gray-700 hover:text-gray-900 transition-colors p-2 cursor-pointer">
+            {% endif %}
+                <img src="{{ site.theme.uri }}/assets/images/Cart.svg" 
+                     alt="Cart" 
+                     class="h-6 w-6">
+                {# Cart Badge - Reactive #}
+                {% if link_to_cart %}
+                    {# Cart/Checkout pages - different positioning #}
+                    <span x-show="showBadge"
+                          x-text="cartCount"
+                          x-transition:enter="transition ease-out duration-200"
+                          x-transition:enter-start="opacity-0 scale-50"
+                          x-transition:enter-end="opacity-100 scale-100"
+                          x-transition:leave="transition ease-in duration-150"
+                          x-transition:leave-start="opacity-100 scale-100"
+                          x-transition:leave-end="opacity-0 scale-50"
+                          class="cart-badge absolute top-3.5 -right-2 bg-red-500 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-medium"
+                          style="display: none;">
+                    </span>
+                {% else %}
+                    {# Other pages - original positioning #}
+                    <span x-show="showBadge"
+                          x-text="cartCount"
+                          x-transition:enter="transition ease-out duration-200"
+                          x-transition:enter-start="opacity-0 scale-50"
+                          x-transition:enter-end="opacity-100 scale-100"
+                          x-transition:leave="transition ease-in duration-150"
+                          x-transition:leave-start="opacity-100 scale-100"
+                          x-transition:leave-end="opacity-0 scale-50"
+                          class="cart-badge absolute top-0 right-0 bg-red-500 text-white text-[10px] rounded-full h-3.5 w-3.5 flex items-center justify-center font-medium"
+                          style="display: none;">
+                    </span>
+                {% endif %}
+            {% if link_to_cart %}
+                </a>
+            {% else %}
+            </button>
+            {% endif %}
+        </div>
+    {% elseif mobile_menu %}
+        {# Mobile Menu Cart Link #}
+        <div x-data="cartBadge()" data-initial-count="{{ function('WC') ? function('WC').cart.get_cart_contents_count() : 0 }}">
+            {% if link_to_cart %}
+                <a href="{{ function('wc_get_cart_url') }}" class="flex items-center justify-between px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors w-full text-left">
+            {% else %}
+                <button @click="$dispatch('cart-drawer-open'); mobileMenuOpen = false"
+                        class="flex items-center justify-between px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors w-full text-left">
+            {% endif %}
+                <span class="flex items-center">
+                    <img src="{{ site.theme.uri }}/assets/images/Cart.svg"
+                         alt="Cart"
+                         class="h-5 w-5 mr-3">
+                    Cart
+                </span>
+                <span x-show="showBadge"
+                      x-text="cartCount"
+                      x-transition:enter="transition ease-out duration-200"
+                      x-transition:enter-start="opacity-0 scale-50"
+                      x-transition:enter-end="opacity-100 scale-100"
+                      class="cart-badge bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium"
+                      style="display: none;">
+                </span>
+            {% if link_to_cart %}
+                </a>
+            {% else %}
+            </button>
+            {% endif %}
+        </div>
+    {% else %}
+        {# Mobile Header Cart Icon #}
+        <div class="relative" x-data="cartBadge()" data-initial-count="{{ function('WC') ? function('WC').cart.get_cart_contents_count() : 0 }}">
+            {% if link_to_cart %}
+                <a href="{{ function('wc_get_cart_url') }}" class="text-gray-700 hover:text-gray-900 transition-colors p-1.5 cursor-pointer flex items-center">
+            {% else %}
+                <button @click="$dispatch('cart-drawer-open')"
+                        class="text-gray-700 hover:text-gray-900 transition-colors p-1.5 cursor-pointer flex items-center">
+            {% endif %}
+                <img src="{{ site.theme.uri }}/assets/images/Cart.svg"
+                     alt="Cart"
+                     class="h-6 w-6">
+                {# Cart Badge - Reactive #}
+                <span x-show="showBadge"
+                      x-text="cartCount"
+                      x-transition:enter="transition ease-out duration-200"
+                      x-transition:enter-start="opacity-0 scale-50"
+                      x-transition:enter-end="opacity-100 scale-100"
+                      x-transition:leave="transition ease-in duration-150"
+                      x-transition:leave-start="opacity-100 scale-100"
+                      x-transition:leave-end="opacity-0 scale-50"
+                      class="cart-badge absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-medium"
+                      style="display: none;">
+                </span>
+            {% if link_to_cart %}
+                </a>
+            {% else %}
+            </button>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endif %}

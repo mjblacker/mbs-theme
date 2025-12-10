@@ -1,0 +1,15 @@
+{# Cart Totals Coupons Component
+   Props: wc_cart
+#}
+
+{% set coupons = wc_cart.get_coupons() %}
+{% if coupons %}
+    {% for code, coupon in coupons %}
+        <div class="flex justify-between items-center py-3 border-b border-gray-200 cart-discount coupon-{{ function('sanitize_title', code) }}">
+            <span class="text-gray-600">{{ function('wc_cart_totals_coupon_label', coupon, false) }}</span>
+            <span class="font-medium text-gray-900">
+                {{ function('wc_cart_totals_coupon_html', coupon)|raw }}
+            </span>
+        </div>
+    {% endfor %}
+{% endif %}

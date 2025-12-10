@@ -1,19 +1,24 @@
 {% extends "base.twig" %}
 
-
-
 {% block content %}
-    <button class="btn">click me </button>
-    <h2>{{ foo }}</h2>
-    <p>{{ qux }}</p>
-    {% for post in posts %}
-        {% include ['tease-'~post.post_type~'.twig', 'tease.twig'] %}
-    {% endfor %}
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {% if posts %}
+            <div class="space-y-8">
+                {% for post in posts %}
+                    {% include ['tease-'~post.post_type~'.twig', 'tease.twig'] %}
+                {% endfor %}
+            </div>
 
-    {% include 'partial/pagination.twig' with { pagination: posts.pagination({show_all: false, mid_size: 3, end_size: 2}) } %}
-{% endblock %}
-
-
-{% block footer %}
-<div class="pt-40">this is my own footer</div>
+            {% if posts.pagination %}
+                <div class="mt-12">
+                    {% include 'partial/pagination.twig' with { pagination: posts.pagination({show_all: false, mid_size: 3, end_size: 2}) } %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-12">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">No posts found</h2>
+                <p class="text-gray-600">There are no posts to display at this time.</p>
+            </div>
+        {% endif %}
+    </div>
 {% endblock %}

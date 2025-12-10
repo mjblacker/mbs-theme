@@ -1,0 +1,71 @@
+{% set title = fields.title %}
+{% set button_text = fields.button_text %}
+{% set button_link = fields.button_link %}
+{% set columns = fields.columns ?: '4' %}
+{% set show_brand = fields.show_brand %}
+{% set show_sale_badge = fields.show_sale_badge %}
+
+{% if block.data.is_preview %}
+    <div class="bg-gray-100 p-8 text-center rounded">
+        <h3 class="text-lg font-semibold mb-2">AW Product Loop Block</h3>
+        <p class="text-gray-600">
+            Manual selection • {{ columns }} columns
+        </p>
+    </div>
+{% else %}
+    {# Manual product selection only #}
+    {% if fields.selected_products %}
+        {% set products = [] %}
+        {% for product_id in fields.selected_products %}
+            {% set product_post = function('get_post', product_id) %}
+            {% if product_post %}
+                {% set products = products|merge([product_post]) %}
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        {% set products = [] %}
+    {% endif %}
+
+    {% if products %}
+        <div class="product-loop-block sm:mb-8 lg:mb-15">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <!-- Block Title -->
+                {% if title %}
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-4xl font-medium text-gray-900 text-block-title">{{ title }}</h2>
+                        {% if button_text and button_link %}
+                            <a href="{{ button_link.url ?: '#' }}" 
+                               class="inline-flex items-center bg-transparent hover:bg-gray-50 text-[#333333] border border-gray-300 px-6 py-3 transition-colors rounded text-button-sm font-medium no-underline" style="color:#333333"
+                               {% if button_link.target %}target="{{ button_link.target }}"{% endif %}>
+                                {{ button_text }}
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                {% set col_classes = {
+                    '2': 'grid-cols-2 sm:grid-cols-2',
+                    '3': 'grid-cols-2 sm:grid-cols-2 md:grid-cols-3', 
+                    '4': 'grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4',
+                    '5': 'grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5',
+                    '6': 'grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6'
+                } %}
+                
+                <div class="grid {{ col_classes[columns] }} gap-x-6 gap-y-8 lg:gap-x-8 lg:gap-y-12">
+                    {% for product_post in products %}
+                        {% include 'woocommerce/product-card.twig' with {
+                            'post': product_post,
+                            'show_brand': show_brand,
+                            'show_sale_badge': show_sale_badge
+                        } %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center py-8 text-gray-500">
+                <p>No products selected. Please select products in the block settings.</p>
+            </div>
+        </div>
+    {% endif %} 
+{% endif %} 

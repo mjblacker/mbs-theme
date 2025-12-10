@@ -1,0 +1,16 @@
+{# Related Products Component #}
+{% set related_products = function('wc_get_related_products', post.ID, 4) %}
+{% if related_products %}
+    <div class="related-products-section mb-12">
+        <h2 class="text-4xl font-medium text-gray-900 mb-6">Related Products</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for related_id in related_products %}
+                {% set related_post = function('get_post', related_id) %}
+                {% set related_product = function('wc_get_product', related_id) %}
+                {% if related_post and related_product %}
+                    {% include "woocommerce/product-card.twig" with {post: related_post, product: related_product} %}
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}

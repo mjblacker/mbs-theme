@@ -1,0 +1,187 @@
+{
+    "key": "group_hero_masthead",
+    "title": "Hero Masthead Settings",
+    "fields": [
+        {
+            "key": "field_hero_masthead_heading",
+            "label": "Heading",
+            "name": "heading",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Enter the main heading for the hero section",
+            "required": 1,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "Smart Buys, with Metro Building Supplies.",
+            "maxlength": "",
+            "placeholder": "Enter hero heading",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_hero_masthead_description",
+            "label": "Description",
+            "name": "description",
+            "aria-label": "",
+            "type": "textarea",
+            "instructions": "Enter the description text below the heading",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "High quality products, delivered fast. Nobody beats Metro Building Supplies for service.",
+            "placeholder": "Enter description text",
+            "maxlength": "",
+            "rows": 3,
+            "new_lines": ""
+        },
+        {
+            "key": "field_hero_masthead_button_text",
+            "label": "Button Text",
+            "name": "button_text",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Enter the text for the call-to-action button",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "View All Products",
+            "maxlength": "",
+            "placeholder": "Enter button text",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_hero_masthead_button_link",
+            "label": "Button Link",
+            "name": "button_link",
+            "aria-label": "",
+            "type": "link",
+            "instructions": "Select the page or URL for the button link",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "return_format": "array"
+        },
+        {
+            "key": "field_hero_masthead_background_color",
+            "label": "Background Color",
+            "name": "background_color",
+            "aria-label": "",
+            "type": "color_picker",
+            "instructions": "Choose the background color for the hero section",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "#374151",
+            "enable_opacity": 1,
+            "return_format": "string"
+        },
+        {
+            "key": "field_hero_masthead_background_opacity",
+            "label": "Background Opacity",
+            "name": "background_opacity",
+            "aria-label": "",
+            "type": "range",
+            "instructions": "Set the opacity of the background color overlay",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": 90,
+            "min": 0,
+            "max": 100,
+            "step": 5,
+            "prepend": "",
+            "append": "%"
+        },
+        {
+            "key": "field_hero_masthead_pattern_image",
+            "label": "Background Pattern Image",
+            "name": "pattern_image",
+            "aria-label": "",
+            "type": "image",
+            "instructions": "Upload or select a background pattern image",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "return_format": "array",
+            "library": "all",
+            "min_width": "",
+            "min_height": "",
+            "min_size": "",
+            "max_width": "",
+            "max_height": "",
+            "max_size": "",
+            "mime_types": ""
+        },
+        {
+            "key": "field_hero_masthead_overlay_image",
+            "label": "Right Side Overlay Image",
+            "name": "overlay_image",
+            "aria-label": "",
+            "type": "image",
+            "instructions": "Upload or select the overlay image for the right side",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "return_format": "array",
+            "library": "all",
+            "min_width": "",
+            "min_height": "",
+            "min_size": "",
+            "max_width": "",
+            "max_height": "",
+            "max_size": "",
+            "mime_types": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf\/hero-masthead"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "Settings for the Hero Masthead block",
+    "show_in_rest": 0
+}

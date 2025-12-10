@@ -1,0 +1,58 @@
+{#
+  Category Column Component
+  - Reusable component for footer category sections
+  - Displays a list of categories with optional heading
+  - Supports both static and dynamic category lists
+  
+  Parameters:
+  - show_heading: Boolean to show "Categories" heading (default false)
+  - categories: Array of categories to display
+  - start_index: Starting index for slicing categories (default 0)
+  - limit: Number of categories to show (default 3)
+#}
+
+{% set show_heading = show_heading is defined ? show_heading : false %}
+{% set start_index = start_index is defined ? start_index : 0 %}
+{% set limit = limit is defined ? limit : 3 %}
+
+<div class="flex flex-col space-y-4">
+    {% if show_heading %}
+        <h3 class="text-lg font-semibold text-white mb-6">Categories</h3>
+    {% else %}
+        {# Invisible spacer to align with other columns that have headings #}
+        <div class="text-lg font-semibold mb-6 opacity-0" aria-hidden="true">&nbsp;</div>
+    {% endif %}
+    
+    <nav class="flex flex-col space-y-2" aria-label="{{ show_heading ? 'Product Categories' : 'Additional Categories' }}">
+        {% if categories %}
+            {# Dynamic categories from WooCommerce or custom array #}
+            {% for category in categories|slice(start_index, limit) %}
+                <a href="{{ category.url ? category.url : '#' }}" 
+                   class="text-gray-300 hover:text-[#FFF200] transition-colors duration-200 focus:outline-none focus:text-[#FFF200] text-sm">
+                    {{ category.name ? category.name : category }}
+                </a>
+            {% endfor %}
+        {% else %}
+            {# Fallback static categories #}
+            {% set static_categories = [
+                'Building Materials',
+                'Hardware & Tools', 
+                'Plumbing Supplies',
+                'Electrical Supplies',
+                'Safety Equipment',
+                'Garden & Outdoor',
+                'Paint & Finishes',
+                'Insulation & Drywall',
+                'Roofing Materials',
+                'Flooring & Tiles'
+            ] %}
+            
+            {% for category in static_categories|slice(start_index, limit) %}
+                <a href="#" 
+                   class="text-gray-300 hover:text-[#FFF200] transition-colors duration-200 focus:outline-none focus:text-[#FFF200] text-sm">
+                    {{ category }}
+                </a>
+            {% endfor %}
+        {% endif %}
+    </nav>
+</div>

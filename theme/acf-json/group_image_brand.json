@@ -1,0 +1,149 @@
+{
+    "key": "group_image_brand",
+    "title": "Image Brand Settings",
+    "fields": [
+        {
+            "key": "field_image_brand_heading",
+            "label": "Heading",
+            "name": "heading",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Enter the main heading for the brand section",
+            "required": 1,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "Trusted by Leading Brands",
+            "maxlength": "",
+            "placeholder": "Enter brand section heading",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_image_brand_description",
+            "label": "Description",
+            "name": "description",
+            "aria-label": "",
+            "type": "textarea",
+            "instructions": "Enter the description text below the heading",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "We're proud to work with industry-leading brands and partners who share our commitment to quality and excellence.",
+            "placeholder": "Enter description text",
+            "maxlength": "",
+            "rows": 3,
+            "new_lines": ""
+        },
+        {
+            "key": "field_image_brand_brands",
+            "label": "Brand Images",
+            "name": "brands",
+            "aria-label": "",
+            "type": "repeater",
+            "instructions": "Add brand logos or images (recommended: 4 items for optimal layout)",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "collapsed": "",
+            "min": 0,
+            "max": 0,
+            "layout": "table",
+            "button_label": "Add Brand",
+            "sub_fields": [
+                {
+                    "key": "field_image_brand_image",
+                    "label": "Brand Image",
+                    "name": "image",
+                    "aria-label": "",
+                    "type": "image",
+                    "instructions": "Upload the brand logo or image",
+                    "required": 1,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "return_format": "array",
+                    "library": "all",
+                    "min_width": "",
+                    "min_height": "",
+                    "min_size": "",
+                    "max_width": "",
+                    "max_height": "",
+                    "max_size": "",
+                    "mime_types": "",
+                    "parent_repeater": "field_image_brand_brands"
+                },
+                {
+                    "key": "field_image_brand_alt_text",
+                    "label": "Alt Text",
+                    "name": "alt_text",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Enter alternative text for accessibility (will use image alt if empty)",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "Brand name or description",
+                    "prepend": "",
+                    "append": "",
+                    "parent_repeater": "field_image_brand_brands"
+                },
+                {
+                    "key": "field_image_brand_link",
+                    "label": "Link (Optional)",
+                    "name": "link",
+                    "aria-label": "",
+                    "type": "link",
+                    "instructions": "Optional link for the brand image",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "return_format": "array",
+                    "parent_repeater": "field_image_brand_brands"
+                }
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf\/image-brand"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "Settings for the Image Brand block",
+    "show_in_rest": 0
+}

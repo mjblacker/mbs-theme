@@ -49,6 +49,10 @@ if (slug) {
       // Update the contents of `./functions.php`.
       zip.updateFile(entry, Buffer.from(updatedContent));
 
+      // Remove uneeded composer files from the bundle
+      zip.deleteFile(slug + '/composer.json');
+      zip.deleteFile(slug + '/composer.lock');
+
       // Write the changes back to the zip file.
       zip.writeZip(zipFilePath);
 

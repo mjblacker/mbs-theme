@@ -1,0 +1,148 @@
+{#
+  Product Card Component
+
+  Parameters:
+  - post: WP_Post object for the product
+  - product: WC_Product object (optional, will be fetched if not provided)
+  - show_brand: boolean - whether to show brand/category (default: true)
+  - show_sale_badge: boolean - whether to show sale badge (default: true)
+#}
+
+{# Initialize variables #}
+{% set product = product ?: function('wc_get_product', post.ID) %}
+{% set show_brand = show_brand is defined ? show_brand : true %}
+{% set show_sale_badge = show_sale_badge is defined ? show_sale_badge : true %}
+
+{# Product image configuration #}
+{% set attachment_id = function('get_post_thumbnail_id', post.ID) %}
+{% set image_meta = attachment_id ? function('wp_get_attachment_metadata', attachment_id) : false %}
+{% set original_width = image_meta and image_meta.width ? image_meta.width : 0 %}
+{% set is_small_image = original_width > 0 and original_width < 250 %}
+
+{# Image sources #}
+{% set image_full = post.thumbnail ? post.thumbnail.src('full') : function('get_the_post_thumbnail_url', post.ID, 'full') %}
+{% set image_thumb = post.thumbnail ? post.thumbnail.src('woocommerce_thumbnail') : function('get_the_post_thumbnail_url', post.ID, 'woocommerce_thumbnail') %}
+{% set image_alt = post.thumbnail ? post.thumbnail.alt : (post.post_title ?: post.title) %}
+
+{# Sale badge configuration #}
+{% set regular_price = product ? product.get_regular_price() : null %}
+{% set sale_price = product ? product.get_sale_price() : null %}
+{% set discount_percent = (regular_price and sale_price) ? (((regular_price - sale_price) / regular_price) * 100)|round : 0 %}
+
+{# Brand configuration #}
+{% set product_brands = function('get_the_terms', post.ID, 'product_brand') %}
+{% set brand_name = (product_brands and product_brands is not same as(false)) ? product_brands[0].name : 'BRAND NAME' %}
+
+{% if product %}
+    <div class="product-item relative group h-full flex flex-col transition-transform duration-200 ease-in-out hover:-translate-y-1">
+
+        {# Sale Badge #}
+        {% if show_sale_badge and product.is_on_sale() and discount_percent > 0 %}
+            <div class="absolute top-3 left-3 bg-green-500 text-white px-2 py-1 rounded z-10 text-xs font-semibold">
+                -{{ discount_percent }}%
+            </div>
+        {% endif %}
+
+        <a href="{{ post.link ?: function('get_permalink', post.ID) }}" class="flex-1 flex flex-col">
+
+            {# Product Image #}
+            {% if image_thumb %}
+                <div class="aspect-square rounded-md bg-gray-100 mb-4 overflow-hidden {{ is_small_image ? 'flex items-center justify-center' : '' }}">
+                    <img src="{{ is_small_image ? image_full : image_thumb }}"
+                         alt="{{ image_alt }}"
+                         class="{{ is_small_image ? 'max-w-full max-h-full object-contain mt-0 mb-0' : 'w-full h-full object-cover mt-0 mb-0' }}">
+                </div>
+            {% else %}
+                <div class="aspect-square rounded-md bg-gray-100 mb-4 flex items-center justify-center">
+                    <span class="text-gray-400 text-sm">No Image</span>
+                </div>
+            {% endif %}
+
+            {# Product Info #}
+            <div class="flex flex-col flex-1">
+
+                {# Brand Name #}
+                {% if show_brand %}
+                    <div class="text-gray-500 uppercase tracking-wide mb-1 text-xs font-normal leading-tight">
+                        {{ brand_name }}
+                    </div>
+                {% endif %}
+
+                {# Product Name #}
+                <h3 class="text-gray-900 leading-tight mb-2 flex-1 text-product-title font-semibold mt-2.5 line-clamp-2">
+                    {{ post.title ?: post.post_title }}
+                </h3>
+
+                {# Price #}
+                <div class="flex items-center flex-wrap mb-2">
+                    {% set price_html = product.get_price_html() %}
+                    {% set has_price = product.get_price() %}
+                    {% if price_html %}
+                        {% if product.is_on_sale() and sale_price %}
+                            {# Simple product on sale #}
+                            <span class="text-gray-900 text-product-title font-normal leading-tight">
+                                {{ function('wc_price', sale_price)|raw }}
+                            </span>
+                            {% if regular_price %}
+                                <span class="text-gray-500 line-through ml-2 text-base font-normal">
+                                    {{ function('wc_price', regular_price)|raw }}
+                                </span>
+                            {% endif %}
+                        {% else %}
+                            {# Regular or variable product price - use filtered HTML #}
+                            <span class="text-product-title font-normal leading-tight {{ has_price ? 'text-gray-900' : 'text-[#FFDF20]' }}">
+                                {{ price_html|raw }}
+                            </span>
+                        {% endif %}
+                        {% if has_price %}
+                            <span class="text-gray-500 ml-1 text-base font-normal">INC GST</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+
+        {# Add to Cart / View Options Button #}
+        {% if has_price %}
+            {% if product.is_type('simple') %}
+                <div x-data="productCardCart()" class="flex items-center gap-3 mt-2">
+                    <button @click="addToCart('{{ product.get_id() }}')"
+                            :class="addToCartButtonClasses"
+                            :disabled="loading"
+                            class="bg-[#FFF200] text-black transition-colors py-2 px-4 text-xs font-semibold uppercase border-0 rounded-none flex-shrink-0 cursor-pointer">
+                        <span x-show="!loading">Add To Cart</span>
+                        <span x-show="loading" class="inline-flex items-center">
+                            <svg class="animate-spin -ml-1 mr-2 h-3 w-3 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Adding...
+                        </span>
+                    </button>
+
+                    {# Success Message #}
+                    <div x-show="showSuccess"
+                         @click="goToCart()"
+                         x-text="successMessage"
+                         :class="{ 'cursor-pointer hover:underline': isViewCartLink, 'cursor-default': !isViewCartLink }"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="text-green-600 text-xs font-medium flex items-center"
+                         style="display: none;">
+                    </div>
+                </div>
+            {% else %}
+                <div class="flex items-center gap-3 mt-2">
+                    <a href="{{ post.link ?: function('get_permalink', post.ID) }}"
+                       class="bg-[#FFF200] !text-black transition-colors py-2 px-4 mt-2 inline-block text-xs font-semibold uppercase no-underline border-0 rounded-none">
+                        View Options
+                    </a>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endif %}

@@ -1,0 +1,38 @@
+{#
+  Flyout Menu Component
+  - Main container for the categories flyout menu
+  - Shows on hover/click of categories menu item
+  - Two column layout: categories grid and featured products
+  - Uses pattern background image
+#}
+
+<div class="absolute top-full left-0 bg-white shadow-xl border border-gray-200 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 ease-out transform translate-y-2 group-hover:translate-y-0 hidden lg:block"
+     style="background-image: url('{{ function('get_template_directory_uri') }}/assets/images/Pattern-menu.png'); background-repeat: no-repeat; background-size: cover; background-position: bottom left; width: 100vw; margin-left: calc(-50vw + -32%);">
+
+    {# Pattern overlay for better readability #}
+    <div class="absolute inset-0" style="background: linear-gradient(to right, rgba(255,255,255,0.2) 50%, rgba(217, 217, 217, 0.2) 50%)"></div>
+
+    {# Content container #}
+    <div class="relative container mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-2">
+
+            {# Left Column - Categories Grid #}
+            <div class="w-full py-8">
+                <div class="px-4 sm:px-6 lg:pt-12 lg:pb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6 underline">
+                        <a href="{{ function('wc_get_page_permalink', 'shop') }}" class="hover:text-gray-700 transition-colors">All Categories</a>
+                    </h2>
+                    {% include "partial/flyout-menu/categories-grid.twig" %}
+                </div>
+            </div>
+
+            {# Right Column - Featured Products and Logo #}
+            <div class="w-full py-8">
+                <div class="px-4 sm:px-8 lg:pt-12 lg:pb-8 lg:pl-12">
+                    {% include "partial/flyout-menu/featured-section.twig" %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

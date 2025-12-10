@@ -1,0 +1,28 @@
+{% extends "base.twig" %}
+
+{% block content %}
+    <div class="woocommerce-single-product" x-data="singleProduct()">
+        <!-- Breadcrumbs -->
+        {% include "woocommerce/breadcrumbs.twig" with {title: post.title} %}
+        
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 !pb-0">
+            <!-- Main Product Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-12">
+                <!-- Product Images - 60% -->
+                <div class="lg:col-span-3 product-images">
+                    {% include "components/product-gallery.twig" %}
+                </div>
+
+                <!-- Product Summary - 40% -->
+                {% include "components/single-product/product-summary.twig" %}
+            </div>
+
+            <!-- Related Products Section -->
+            {% include "components/single-product/related-products.twig" %}
+
+        </div>
+    </div>
+    
+    <!-- CTA Block -->
+    {% include "components/single-product/product-cta.twig" %}
+{% endblock %}

@@ -1,0 +1,149 @@
+{
+  "key": "group_product_custom_fields",
+  "title": "Product Custom Fields",
+  "fields": [
+    {
+      "key": "field_download_data_sheet",
+      "label": "Download Data Sheet",
+      "name": "download_data_sheet",
+      "aria-label": "",
+      "type": "file",
+      "instructions": "Upload a data sheet file (PDF, DOC, etc.) that customers can download. This field supports both single and variation products.",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "50",
+        "class": "",
+        "id": ""
+      },
+      "return_format": "array",
+      "library": "all",
+      "min_size": "",
+      "max_size": "",
+      "mime_types": "pdf,doc,docx,txt,xls,xlsx"
+    },
+    {
+      "key": "field_installation_guide",
+      "label": "Installation Guide",
+      "name": "installation_guide",
+      "aria-label": "",
+      "type": "file",
+      "instructions": "Upload an installation guide file (PDF, DOC, etc.) that customers can download. This field supports both single and variation products.",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "50",
+        "class": "",
+        "id": ""
+      },
+      "return_format": "array",
+      "library": "all",
+      "min_size": "",
+      "max_size": "",
+      "mime_types": "pdf,doc,docx,txt,xls,xlsx"
+    },
+    {
+      "key": "field_coverage_m2",
+      "label": "Coverage (M²)",
+      "name": "coverage_m2",
+      "aria-label": "",
+      "type": "number",
+      "instructions": "Enter the coverage area in square meters that this product covers. This field supports both single and variation products.",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "50",
+        "class": "",
+        "id": ""
+      },
+      "default_value": "",
+      "placeholder": "e.g. 1.5 or 1.05",
+      "prepend": "",
+      "append": "M²",
+      "min": 0,
+      "max": "",
+      "step": 0.01
+    },
+    {
+      "key": "field_panel_weight_kg",
+      "label": "Panel Weight (kg)",
+      "name": "panel_weight_kg",
+      "aria-label": "",
+      "type": "number",
+      "instructions": "Enter the weight of the panel in kilograms. This field supports both single and variation products.",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "50",
+        "class": "",
+        "id": ""
+      },
+      "default_value": "",
+      "placeholder": "e.g. 2.5",
+      "prepend": "",
+      "append": "kg",
+      "min": 0,
+      "max": "",
+      "step": 0.1
+    },
+    {
+      "key": "field_dimensions",
+      "label": "Dimensions",
+      "name": "dimensions",
+      "aria-label": "",
+      "type": "text",
+      "instructions": "Enter custom dimensions for this product (e.g. '120mm x 80mm x 15mm'). This field will override the WooCommerce dimensions if set.",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "50",
+        "class": "",
+        "id": ""
+      },
+      "default_value": "",
+      "placeholder": "e.g. 120mm x 80mm x 15mm",
+      "prepend": "",
+      "append": "",
+      "maxlength": ""
+    },
+    {
+      "key": "field_show_coverage_calculator",
+      "label": "Show Coverage Calculator",
+      "name": "show_coverage_calculator",
+      "aria-label": "",
+      "type": "true_false",
+      "instructions": "Enable or disable the coverage calculator for this product. When enabled, customers can calculate the quantity needed based on area measurements.",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "message": "",
+      "default_value": 0,
+      "ui_on_text": "Show",
+      "ui_off_text": "Hide",
+      "ui": 1
+    }
+  ],
+  "location": [
+    [
+      {
+        "param": "post_type",
+        "operator": "==",
+        "value": "product"
+      }
+    ]
+  ],
+  "menu_order": 0,
+  "position": "normal",
+  "style": "default",
+  "label_placement": "top",
+  "instruction_placement": "label",
+  "hide_on_screen": "",
+  "active": true,
+  "description": "Custom fields for WooCommerce products including download files, coverage area, and panel weight specifications.",
+  "show_in_rest": 0,
+  "modified": 1735715989
+}

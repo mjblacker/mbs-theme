@@ -1,0 +1,123 @@
+{# Order Summary Component
+   Props: wc_cart, wc_checkout
+#}
+
+<div class="order-summary bg-gray-50 rounded-lg p-6 sticky-none">
+    <h3 class="text-xl font-semibold text-gray-900 mb-6">Your Order</h3>
+    
+    {{ function('do_action', 'woocommerce_checkout_before_order_review_heading')|raw }}
+    
+    <!-- Order Items -->
+    <div class="order-items mb-6">
+        {% if not wc_cart.is_empty() %}
+            {% set cart_items = wc_cart.get_cart() %}
+            {% for cart_item_key, cart_item in cart_items %}
+                {% set product = cart_item.data %}
+                {% set quantity = cart_item.quantity %}
+                
+                <div class="order-item flex justify-between items-center py-3 border-b border-gray-200 last:border-b-0">
+                    <div class="item-details flex-1">
+                        <h4 class="font-medium text-gray-900">{{ product.get_name() }} <span class="text-sm text-gray-600 font-normal">x {{ quantity }}</span></h4>
+                    </div>
+                    <div class="item-price font-semibold text-gray-900">
+                        {{ function('wc_price', cart_item.line_total)|raw }}
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Order Totals -->
+    <div class="order-totals mb-6">
+        <!-- Subtotal -->
+        <div class="total-row flex justify-between items-center py-3 border-b border-gray-200">
+            <span class="text-gray-600">Subtotal (inc GST)</span>
+            <span class="font-medium text-gray-900">
+                {{ function('wc_price', wc_cart.get_subtotal())|raw }}
+            </span>
+        </div>
+
+        <!-- Shipping Section -->
+        {% include 'components/checkout/shipping-options.twig' with { 
+            wc_cart: wc_cart, 
+            wc_checkout: wc_checkout 
+        } %}
+
+        {% include 'components/checkout/applied-coupons.twig' with { 
+            wc_cart: wc_cart 
+        } %}
+
+        <!-- Coupon Section -->
+        <div class="coupon-section py-4 border-b border-gray-200">
+            <div class="flex gap-2">
+                <input type="text" 
+                       name="coupon_code" 
+                       id="coupon_code" 
+                       class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                       placeholder="Discount Code" 
+                       x-model="couponCode"
+                       @keydown.enter="applyCoupon()"
+                       value="" />
+                <button type="button" 
+                        class="bg-[#FFF200] hover:bg-yellow-500 text-black px-4 py-2 rounded font-medium transition-colors"
+                        @click="applyCoupon()">
+                    Apply
+                </button>
+            </div>
+        </div>
+
+        <!-- Total -->
+        <div class="total-row flex justify-between items-center py-4 text-lg font-semibold">
+            <span>Total (inc GST)</span>
+            <span>{{ function('wc_price', wc_cart.get_total('edit'))|raw }}</span>
+        </div>
+    </div>
+
+    <!-- Payment Methods -->
+    {% include 'components/checkout/payment-methods.twig' with { 
+        wc_checkout: wc_checkout 
+    } %}
+
+    {{ function('do_action', 'woocommerce_review_order_before_submit')|raw }}
+
+    <!-- Terms and Conditions -->
+    {% set terms_page_id = function('wc_terms_and_conditions_page_id') %}
+    {% if terms_page_id %}
+        <div class="terms-section mb-4">
+            <div class="flex items-start">
+                <input type="checkbox"
+                       id="terms"
+                       name="terms"
+                       value="1"
+                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mt-1"
+                       required />
+                <label for="terms" class="ml-2 text-sm text-gray-600 cursor-pointer">
+                    I have read and agree to the website <a href="{{ function('get_permalink', terms_page_id) }}" class="text-blue-600 hover:underline" target="_blank">terms and conditions</a> *
+                </label>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Privacy Policy Notice -->
+    {% if wc_checkout.is_registration_enabled() or function('wc_privacy_policy_page_id') %}
+        <div class="privacy-notice mb-4">
+            <p class="text-xs text-gray-500">
+                Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our <a href="{{ function('get_privacy_policy_url') }}" class="text-blue-600 hover:underline" target="_blank">privacy policy</a>.
+            </p>
+        </div>
+    {% endif %}
+
+    <!-- Place Order Button -->
+    <div class="place-order-section">
+        <button type="submit"
+                class="w-full bg-[#FFF200] hover:bg-yellow-500 text-black py-4 px-6 rounded-lg font-semibold text-lg transition-colors"
+                name="woocommerce_checkout_place_order"
+                id="place_order"
+                value="{{ function('esc_attr', wc_checkout.get_value('order_button_text') ?: 'Place Order') }}"
+                data-value="{{ function('esc_attr', wc_checkout.get_value('order_button_text') ?: 'Place Order') }}">
+            Place Order
+        </button>
+    </div>
+
+    {{ function('do_action', 'woocommerce_review_order_after_submit')|raw }}
+</div>

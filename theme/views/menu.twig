@@ -1,10 +1,74 @@
-{% if menu %}
-    <ul>
-    {% for item in items %}
-        <li class="{{ item.classes | join(' ') }}">
-            <a target="{{ item.target }}" href="{{ item.link }}">{{ item.title }}</a>
-            {% include "menu.twig" with {'items': item.children} %}
-        </li>
-    {% endfor %}
+{#
+  Recursive Menu Component
+
+  Parameters:
+  - items: array of menu items
+  - level: current nesting level (0 = top level, 1+ = submenu)
+  - context: 'desktop' or 'mobile' for different styling
+  - extra_classes: additional classes for the ul element
+#}
+
+{# Set default values #}
+{% set level = level is defined ? level : 0 %}
+{% set context = context is defined ? context : 'desktop' %}
+{% set extra_classes = extra_classes is defined ? extra_classes : '' %}
+
+{# Helper variables for readability #}
+{% set is_desktop = context == 'desktop' %}
+{% set is_mobile = context == 'mobile' %}
+{% set is_top_level = level == 0 %}
+{% set is_submenu = level > 0 %}
+
+{# Define CSS classes for different contexts #}
+{% set ul_classes %}
+    {{ extra_classes }}
+    {% if is_desktop %}
+        {% if is_top_level %}
+            flex space-x-8 items-center
+        {% else %}
+            absolute left-0 top-full bg-white shadow-lg rounded-md py-2 w-48 z-50 hidden group-hover:block
+        {% endif %}
+    {% else %}
+        {% if is_top_level %}
+            space-y-2
+        {% else %}
+            ml-4 mt-2 space-y-1
+        {% endif %}
+    {% endif %}
+{% endset %}
+
+{% if items %}
+    <ul class="{{ ul_classes|trim }}">
+        {% for item in items %}
+            {# Set item-specific variables #}
+            {% set is_categories = item.title|lower == 'categories' %}
+            {% set has_children = item.children %}
+            {% set has_dropdown = has_children or (is_categories and is_desktop and is_top_level) %}
+
+            <li class="{% if is_desktop and is_top_level %}relative group{% endif %}">
+
+                {# Menu Link #}
+                {% include 'partial/menu/menu-link.twig' with {
+                    'item': item,
+                    'context': context,
+                    'level': level,
+                    'has_dropdown': has_dropdown
+                } %}
+
+                {# Submenu or Flyout #}
+                {% if has_children %}
+                    {# Regular submenu #}
+                    {% include "menu.twig" with {
+                        'items': item.children,
+                        'level': level + 1,
+                        'context': context
+                    } %}
+                {% elseif is_categories and is_desktop and is_top_level %}
+                    {# Special flyout menu for Categories #}
+                    {% include "partial/flyout-menu/flyout-menu.twig" %}
+                {% endif %}
+
+            </li>
+        {% endfor %}
     </ul>
 {% endif %}

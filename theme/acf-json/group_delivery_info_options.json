@@ -1,0 +1,110 @@
+{
+    "key": "group_delivery_info_options",
+    "title": "Delivery Info Options",
+    "fields": [
+        {
+            "key": "field_delivery_info_title",
+            "label": "Delivery Title",
+            "name": "delivery_title",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Enter the main title for the delivery info section",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "Fast Metro Delivery Available",
+            "maxlength": "",
+            "placeholder": "Fast Metro Delivery Available",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_delivery_info_icon",
+            "label": "Delivery Icon",
+            "name": "delivery_icon",
+            "aria-label": "",
+            "type": "image",
+            "instructions": "Upload an icon for the delivery info section",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "return_format": "array",
+            "preview_size": "thumbnail",
+            "library": "all",
+            "min_width": "",
+            "min_height": "",
+            "min_size": "",
+            "max_width": "",
+            "max_height": "",
+            "max_size": "",
+            "mime_types": "jpg,jpeg,png,gif,svg,webp"
+        },
+        {
+            "key": "field_delivery_info_phone",
+            "label": "Phone Number",
+            "name": "delivery_phone",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Enter the phone number for urgent delivery requests",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "1300 xxx xxx",
+            "maxlength": "",
+            "placeholder": "1300 xxx xxx",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_delivery_info_message",
+            "label": "Delivery Message",
+            "name": "delivery_message",
+            "aria-label": "",
+            "type": "textarea",
+            "instructions": "Enter the message text that appears below the title",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "Need it asap? Please call",
+            "new_lines": "",
+            "maxlength": "",
+            "placeholder": "Need it asap? Please call",
+            "rows": 3
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": "delivery-info"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "Settings for the delivery info component displayed on product pages",
+    "show_in_rest": 0,
+    "modified": 1757989646
+}

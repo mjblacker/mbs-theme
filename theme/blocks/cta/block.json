@@ -1,0 +1,24 @@
+{
+  "apiVersion": 2,
+  "name": "acf/cta",
+  "title": "CTA (Call to Action)",
+  "description": "A full-width call to action block with heading, sub-heading, button, and customizable background (color or image)",
+  "category": "aspireweb",
+  "keywords": ["cta", "call to action", "button", "banner"],
+  "acf": {
+    "mode": "preview",
+    "renderCallback": "acf_block_json_render_callback"
+  },
+  "supports": {
+    "align": ["wide", "full"],
+    "jsx": false
+  },
+  "example": {
+    "attributes": {
+      "mode": "preview",
+      "data": {
+        "is_preview": true
+      }
+    }
+  }
+}

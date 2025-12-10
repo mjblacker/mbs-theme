@@ -1,8 +1,13 @@
-<article class="tease tease-{{post.post_type}}" id="tease-{{post.ID}}">
+<article class="tease tease-{{post.post_type}} border-b border-gray-200 pb-8 last:border-b-0" id="tease-{{post.ID}}">
     {% block content %}
-        <a href="{{post.link}}">
-            <h2 class="text-xl text-brand-blue-dark">{{post.title}}</h2>
-            <p>{{post.preview}}</p>
+        <a href="{{post.link}}" class="block group">
+            <h2 class="text-2xl font-bold text-gray-900 mb-3 group-hover:text-[#FFF200] transition-colors duration-200">{{post.title}}</h2>
+            {% if post.preview %}
+                <p class="text-gray-700 text-lg leading-relaxed">{{post.preview}}</p>
+            {% endif %}
+            <div class="mt-4 text-[#FFF200] font-medium group-hover:text-yellow-300 transition-colors duration-200">
+                Read more →
+            </div>
         </a>
     {% endblock %}
 </article>
