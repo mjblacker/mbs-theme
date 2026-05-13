@@ -6,6 +6,7 @@ document.addEventListener("alpine:init", () => {
     removing: false,
     cartItems: [],
     cartTotal: '$0.00',
+    quantityTimers: {},
 
     // Configuration
     cartUrl: window.wpEndpoints?.cartUrl || '/cart',
@@ -247,6 +248,16 @@ document.addEventListener("alpine:init", () => {
     },
 
     // Cart Actions
+    debouncedUpdateQuantity(itemKey, value) {
+      if (this.quantityTimers[itemKey]) {
+        clearTimeout(this.quantityTimers[itemKey]);
+      }
+      this.quantityTimers[itemKey] = setTimeout(() => {
+        delete this.quantityTimers[itemKey];
+        this.updateQuantity(itemKey, value);
+      }, 800);
+    },
+
     async updateQuantity(itemKey, newQuantity) {
       if (newQuantity < 1) {
         return this.removeItem(itemKey);
