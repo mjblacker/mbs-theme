@@ -480,9 +480,9 @@ class ProductFilters implements SaplingPlugin
      */
     public function enable_ajax_pagination($pagination_data, $posts) {
         // Only apply to shop/product archive pages
-        if ((function_exists('is_shop') && is_shop()) || 
-            (function_exists('is_product_category') && is_product_category()) || 
-            (function_exists('is_product_tag') && is_product_tag())) {
+        if (!is_search() && ((function_exists('is_shop') && is_shop()) ||
+            (function_exists('is_product_category') && is_product_category()) ||
+            (function_exists('is_product_tag') && is_product_tag()))) {
             
             $pagination_data['is_ajax'] = true;
         }

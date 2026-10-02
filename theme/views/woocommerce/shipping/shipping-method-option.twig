@@ -11,7 +11,22 @@
 {% set input_id = 'shipping_method_' ~ package_key ~ '_' ~ method_id %}
 {% set is_checked = (method.id == chosen_method) %}
 {% set method_title = method.label %}
-{% set method_cost = method.cost > 0 ? function('wc_price', method.cost) : 'FREE' %}
+{% set method_cost = 'FREE' %}
+{% set tax_label = '' %}
+{% if method.cost > 0 %}
+    {% set shipping_tax = method.get_shipping_tax() %}
+    {% if wc_cart.display_prices_including_tax() %}
+        {% set method_cost = function('wc_price', method.cost + shipping_tax) %}
+        {% if shipping_tax > 0 and not function('wc_prices_include_tax') %}
+            {% set tax_label = function('WC').countries.inc_tax_or_vat() %}
+        {% endif %}
+    {% else %}
+        {% set method_cost = function('wc_price', method.cost) %}
+        {% if shipping_tax > 0 and function('wc_prices_include_tax') %}
+            {% set tax_label = function('WC').countries.ex_tax_or_vat() %}
+        {% endif %}
+    {% endif %}
+{% endif %}
 
 {# Split method title by colon to separate method name and location #}
 {% set title_parts = method_title|split(' : ') %}
@@ -50,6 +65,9 @@
         <div class="col-span-2 text-right">
             <div class="method-price font-semibold text-gray-900">
                 {{ method_cost|raw }}
+                {% if tax_label %}
+                    <small class="tax_label text-xs font-normal">{{ tax_label|e }}</small>
+                {% endif %}
             </div>
         </div>
     </label>

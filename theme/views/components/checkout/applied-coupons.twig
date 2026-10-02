@@ -13,7 +13,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="text-green-800 font-semibold">
-                        -{{ function('wc_price', wc_cart.get_coupon_discount_amount(coupon_code))|raw }}
+                        -{{ function('wc_price', wc_cart.get_coupon_discount_amount(coupon_code, not wc_cart.display_prices_including_tax()))|raw }}
                     </span>
                     <button type="button" 
                             class="text-red-600 hover:text-red-800 p-1"

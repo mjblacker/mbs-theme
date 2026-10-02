@@ -12,7 +12,9 @@
 
 {# Sticky Header Implementation with Alpine.js - Admin Bar Desktop Only Positioning #}
 <header class="sticky {{ admin_bar.is_showing ? 'top-0 lg:top-8' : 'top-0' }} bg-white shadow-sm border-b border-gray-100 z-40 transition-all duration-300 relative"
-    x-data="{mobileMenuOpen: false}"
+    x-data="siteHeader"
+    @keydown.escape.window="closeProductSearch(true)"
+    @cart-drawer-open.window="closeProductSearch()"
         >
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16 lg:h-20">
@@ -28,6 +30,7 @@
                 {# Actions - Contact Button and Cart #}
                 <div class="flex items-center space-x-4">
                     {% include "partial/header/contact-button.twig" with {'context': 'desktop'} %}
+                    {% include "partial/header/search-button.twig" with {'context': 'desktop'} %}
                     {% include "partial/header/cart.twig" with {'context': 'desktop'} %}
                 </div>
             </div>
@@ -35,11 +38,38 @@
             {# Mobile Actions - Call Us, Cart, and Menu Button #}
             <div class="flex lg:hidden items-center space-x-2">
                 {% include "partial/header/contact-button.twig" with {'context': 'mobile'} %}
+                {% include "partial/header/search-button.twig" with {'context': 'mobile'} %}
                 {% include "partial/header/cart.twig" with {'context': 'mobile'} %}
                 {% include "partial/header/mobile-menu-button.twig" %}
             </div>
         </div>
     </div>
+
+    {% if function('function_exists', 'wc_get_product') %}
+        <div id="header-product-search"
+             x-cloak
+             x-show="productSearchOpen"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-2"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             @click.outside="closeProductSearch()"
+             class="absolute top-full inset-x-0 bg-white border-t border-gray-100 shadow-lg">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-5">
+                <div class="flex items-start gap-3 max-w-3xl ml-auto">
+                    <div class="flex-1 min-w-0">
+                        {% include 'components/product-search-form.twig' with {'search_id': 'header-product-search-input', 'header_search': true} %}
+                    </div>
+                    <button type="button" @click="closeProductSearch(true)"
+                            aria-label="Close product search"
+                            class="p-2 text-gray-700 hover:text-black cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M6 6l12 12M6 18L18 6" stroke-linecap="round" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 
     {# Mobile Menu Overlay #}
     {% include "partial/header/mobile-menu-overlay.twig" %}

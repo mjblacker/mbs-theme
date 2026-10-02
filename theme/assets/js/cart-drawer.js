@@ -5,7 +5,7 @@ document.addEventListener("alpine:init", () => {
     loading: false,
     removing: false,
     cartItems: [],
-    cartTotal: '$0.00',
+    cartSubtotalHtml: '',
     quantityTimers: {},
 
     // Configuration
@@ -79,7 +79,7 @@ document.addEventListener("alpine:init", () => {
 
     resetCartState() {
       this.cartItems = [];
-      this.cartTotal = '$0.00';
+      this.cartSubtotalHtml = '';
     },
 
     async processCartData(cartData) {
@@ -94,7 +94,7 @@ document.addEventListener("alpine:init", () => {
       );
 
       this.cartItems = processedItems;
-      this.cartTotal = this.formatPrice(cartData.totals.total_price);
+      this.cartSubtotalHtml = cartData.extensions?.mbs_cart_drawer?.subtotal_html || '';
     },
 
     async processCartItem(item) {
@@ -106,8 +106,7 @@ document.addEventListener("alpine:init", () => {
         variation_id: hasVariation ? item.id : null,
         name: this.decodeHtmlEntities(item.name),
         quantity: item.quantity,
-        line_total: item.totals.line_total,
-        line_subtotal: item.totals.line_subtotal,
+        subtotal_html: item.extensions?.mbs_cart_drawer?.subtotal_html || '',
         image: item.images?.[0]?.src || null,
         brand: this.extractBrand(item),
         variations: this.extractVariations(item),
@@ -354,16 +353,6 @@ document.addEventListener("alpine:init", () => {
           cartCount: this.cartItems?.length || 0
         }
       }));
-    },
-
-    // Utilities
-    formatPrice(price) {
-      const numPrice = typeof price === 'string' ? 
-        parseFloat(price.replace(/[^0-9.-]+/g, '')) : 
-        parseFloat(price);
-        
-      const currency = window.wooCommerce_currency || '$';
-      return `${currency}${(numPrice / 100).toFixed(2)}`;
     },
 
     // Getters

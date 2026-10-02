@@ -1,8 +1,8 @@
 {% set pagination_data = posts.pagination ?? pagination %}
 {% if pagination_data.pages is not empty %}
-    <nav class="flex items-center justify-center gap-3 mt-15 mb-12">
+    <nav aria-label="Pagination" class="flex flex-wrap items-center justify-center gap-3 mt-15 mb-12">
         {# Previous Button #}
-        {% if pagination_data.prev and pagination_data.prev.found %}
+        {% if pagination_data.prev and (pagination_data.prev.found or pagination_data.prev.link) %}
             {% if pagination_data.is_ajax %}
                 <button onclick="paginateProducts({{ pagination_data.prev.page }})" class="w-12 h-12 flex items-center justify-center border border-gray-300 rounded-full bg-[#f5f5f5] hover:bg-gray-200 transition-colors">
                     <img src="{{ function('get_template_directory_uri') }}/assets/images/arrow-left.png" alt="Previous" class="w-5 h-5">
@@ -20,8 +20,10 @@
 
         {# Page Numbers #}
         {% for page in pagination_data.pages %}
-            {% if page.current %}
-                <span class="w-12 h-12 flex items-center justify-center border-2 border-black rounded-lg font-medium text-gray-900 bg-white">
+            {% if page.class == 'dots' %}
+                <span class="text-gray-500 px-1">{{ page.title }}</span>
+            {% elseif page.current %}
+                <span aria-current="page" class="w-12 h-12 flex items-center justify-center border-2 border-black rounded-lg font-medium text-gray-900 bg-white">
                     {{ page.title }}
                 </span>
             {% else %}
@@ -38,7 +40,7 @@
         {% endfor %}
 
         {# Next Button #}
-        {% if pagination_data.next and pagination_data.next.found %}
+        {% if pagination_data.next and (pagination_data.next.found or pagination_data.next.link) %}
             {% if pagination_data.is_ajax %}
                 <button onclick="paginateProducts({{ pagination_data.next.page }})" class="w-12 h-12 flex items-center justify-center border border-gray-300 rounded-full bg-[#f5f5f5] hover:bg-gray-200 transition-colors">
                     <img src="{{ function('get_template_directory_uri') }}/assets/images/arrow-right.png" alt="Next" class="w-5 h-5">

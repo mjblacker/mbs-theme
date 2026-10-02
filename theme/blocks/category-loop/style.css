@@ -1,0 +1,9 @@
+/* Let the grid rows size to the category images and wrapping titles. */
+.category-carousel .swiper-slide {
+    height: auto !important;
+}
+
+/* Swiper's row-fill ordering must not carry over into the desktop row. */
+.category-carousel:not(.swiper-grid) .swiper-slide {
+    order: initial !important;
+}

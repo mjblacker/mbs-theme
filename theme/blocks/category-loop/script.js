@@ -11,35 +11,37 @@ function initializeCategoryCarousels() {
         
         const slidesPerView = parseInt(carousel.dataset.slidesPerView) || 4;
         
-        // Check if we have enough slides for loop to work properly
-        const totalSlides = carousel.querySelectorAll('.swiper-slide').length;
-        const shouldLoop = totalSlides > 2; // More conservative check
-
         new window.Swiper(carousel, {
-            modules: [window.SwiperNavigation],
+            modules: [window.SwiperGrid, window.SwiperNavigation],
             slidesPerView: 2,
+            slidesPerGroup: 2,
             spaceBetween: 16,
+            grid: {
+                rows: 2,
+                fill: 'row',
+            },
             navigation: {
                 nextEl: carousel.closest('.category-loop-block').querySelector('.category-carousel-next'),
                 prevEl: carousel.closest('.category-loop-block').querySelector('.category-carousel-prev'),
             },
             breakpoints: {
                 640: {
-                    slidesPerView: Math.min(2, slidesPerView),
                     spaceBetween: 20,
                 },
                 768: {
-                    slidesPerView: Math.min(3, slidesPerView),
                     spaceBetween: 24,
                 },
                 1024: {
                     slidesPerView: slidesPerView,
+                    slidesPerGroup: slidesPerView,
                     spaceBetween: 32,
+                    grid: {
+                        rows: 1,
+                    },
                 },
             },
-            loop: shouldLoop,
-            loopFillGroupWithBlank: false,
-            loopPreventsSlide: false,
+            rewind: true,
+            watchOverflow: true,
             grabCursor: true,
             watchSlidesProgress: true,
             simulateTouch: true,

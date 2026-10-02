@@ -1,0 +1,20 @@
+<form role="search" aria-label="Product search" method="get" action="{{ function('home_url', '/')|e('html_attr') }}">
+    <label for="{{ search_id }}" class="{{ header_search ? 'sr-only' : 'block text-sm font-medium text-gray-900 mb-2' }}">Search products</label>
+    <div class="flex gap-2">
+        <input type="search"
+               id="{{ search_id }}"
+               name="s"
+               value="{{ function('get_search_query', false)|e('html_attr') }}"
+               placeholder="Search products…"
+               required
+               {% if header_search %}x-ref="productSearchInput"{% endif %}
+               class="min-w-0 flex-1 w-full px-3 py-2 border border-gray-300 rounded-md text-base text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-black">
+        <input type="hidden" name="post_type" value="product">
+        {% if not header_search and search_sort %}
+            <input type="hidden" name="orderby" value="{{ search_sort|e('html_attr') }}">
+        {% endif %}
+        <button type="submit" class="bg-[#FFF200] text-black hover:bg-yellow-300 px-4 sm:px-6 py-2 text-sm font-semibold uppercase cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
+            Search
+        </button>
+    </div>
+</form>

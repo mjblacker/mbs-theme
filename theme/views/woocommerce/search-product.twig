@@ -1,0 +1,63 @@
+{% extends 'base.twig' %}
+
+{% block content %}
+    <div class="woocommerce-shop prose max-w-none">
+        <header class="bg-cover bg-center bg-no-repeat flex items-center min-h-[171px]" style="background-image: url('{{ site.theme.uri }}/assets/images/shop-banner.png');">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <h1 class="text-3xl sm:text-4xl text-white font-medium !m-0">Product Search Results</h1>
+            </div>
+        </header>
+
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-10">
+            <div class="not-prose max-w-2xl mb-8">
+                {% include 'components/product-search-form.twig' with {'search_id': 'results-product-search-input'} %}
+            </div>
+
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <p class="text-gray-700 !m-0">
+                    {{ result_count }} {{ result_count == 1 ? 'product' : 'products' }} found{% if search_query %} for <span class="font-semibold">“{{ search_query|e }}”</span>{% endif %}.
+                </p>
+
+                <form method="get" action="{{ function('home_url', '/')|e('html_attr') }}"
+                      x-data class="not-prose flex flex-wrap items-center gap-3 shrink-0">
+                    <input type="hidden" name="s" value="{{ search_query|e('html_attr') }}">
+                    <input type="hidden" name="post_type" value="product">
+                    <label for="product-search-sort" class="text-sm text-gray-700">Sort by:</label>
+                    <select id="product-search-sort" name="orderby"
+                            @change="$el.form.requestSubmit()"
+                            class="max-w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-sm text-gray-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-black focus:border-black">
+                        {% for value, label in search_sort_options %}
+                            <option value="{{ value|e('html_attr') }}" {{ search_sort == value ? 'selected' : '' }}>{{ label|e }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" x-show="false"
+                            class="bg-[#FFF200] text-black hover:bg-yellow-300 px-4 py-2 text-sm font-semibold uppercase cursor-pointer">
+                        Sort
+                    </button>
+                </form>
+            </div>
+
+            {% if posts|length %}
+                <div class="woocommerce-products sm:mb-6 lg:mb-10">
+                    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {% for post in posts %}
+                            {% include 'woocommerce/product-card.twig' with {'post': post, 'show_brand': true, 'show_sale_badge': true} %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {% include 'partial/pagination.twig' with {pagination: posts.pagination({show_all: false, mid_size: 1, end_size: 1})} only %}
+            {% else %}
+                <div class="text-center py-12">
+                    <h2 class="text-2xl font-medium text-gray-900 mb-4">No products found</h2>
+                    <p class="text-gray-600 mb-8">Try a different product name or a more general search term.</p>
+                    <a href="{{ shop_url|e('html_attr') }}" class="inline-flex items-center px-6 py-3 bg-[#FFF200] !text-black font-medium hover:bg-yellow-300 transition-colors no-underline">
+                        Browse All Products
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% include 'components/single-product/product-cta.twig' %}
+{% endblock %}

@@ -20,7 +20,7 @@
                         <h4 class="font-medium text-gray-900">{{ product.get_name() }} <span class="text-sm text-gray-600 font-normal">x {{ quantity }}</span></h4>
                     </div>
                     <div class="item-price font-semibold text-gray-900">
-                        {{ function('wc_price', cart_item.line_total)|raw }}
+                        {{ function('apply_filters', 'woocommerce_cart_item_subtotal', wc_cart.get_product_subtotal(product, quantity), cart_item, cart_item_key)|raw }}
                     </div>
                 </div>
             {% endfor %}
@@ -30,10 +30,10 @@
     <!-- Order Totals -->
     <div class="order-totals mb-6">
         <!-- Subtotal -->
-        <div class="total-row flex justify-between items-center py-3 border-b border-gray-200">
-            <span class="text-gray-600">Subtotal (inc GST)</span>
+        <div class="total-row cart-subtotal flex justify-between items-center py-3 border-b border-gray-200">
+            <span class="text-gray-600">Subtotal</span>
             <span class="font-medium text-gray-900">
-                {{ function('wc_price', wc_cart.get_subtotal())|raw }}
+                {{ function('wc_cart_totals_subtotal_html')|raw }}
             </span>
         </div>
 
@@ -66,11 +66,35 @@
             </div>
         </div>
 
+        <!-- Fees -->
+        {% include 'components/cart/cart-totals-fees.twig' with { wc_cart: wc_cart } %}
+
+        <!-- Separate tax rows when prices are displayed excluding tax -->
+        {% if function('wc_tax_enabled') and not wc_cart.display_prices_including_tax() %}
+            {% if function('get_option', 'woocommerce_tax_total_display') == 'itemized' %}
+                {% for code, tax in wc_cart.get_tax_totals() %}
+                    <div class="total-row tax-rate tax-rate-{{ function('sanitize_title', code) }} flex justify-between items-center py-3 border-b border-gray-200">
+                        <span class="text-gray-600">{{ tax.label|e }}</span>
+                        <span class="font-medium text-gray-900">{{ tax.formatted_amount|raw }}</span>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="total-row tax-total flex justify-between items-center py-3 border-b border-gray-200">
+                    <span class="text-gray-600">{{ function('WC').countries.tax_or_vat()|e }}</span>
+                    <span class="font-medium text-gray-900">{{ function('wc_cart_totals_taxes_total_html')|raw }}</span>
+                </div>
+            {% endif %}
+        {% endif %}
+
+        {{ function('do_action', 'woocommerce_review_order_before_order_total')|raw }}
+
         <!-- Total -->
-        <div class="total-row flex justify-between items-center py-4 text-lg font-semibold">
-            <span>Total (inc GST)</span>
-            <span>{{ function('wc_price', wc_cart.get_total('edit'))|raw }}</span>
+        <div class="total-row order-total flex justify-between items-center py-4 text-lg font-semibold">
+            <span>Total</span>
+            <span>{{ function('wc_cart_totals_order_total_html')|raw }}</span>
         </div>
+
+        {{ function('do_action', 'woocommerce_review_order_after_order_total')|raw }}
     </div>
 
     <!-- Payment Methods -->

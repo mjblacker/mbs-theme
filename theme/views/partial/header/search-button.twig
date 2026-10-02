@@ -1,0 +1,14 @@
+{% if function('function_exists', 'wc_get_product') %}
+    <button type="button"
+            @click="toggleProductSearch($event)"
+            aria-label="Search products"
+            aria-controls="header-product-search"
+            :aria-expanded="productSearchOpen.toString()"
+            aria-expanded="false"
+            class="text-gray-700 hover:text-gray-900 transition-colors cursor-pointer flex items-center {{ context == 'mobile' ? 'p-1.5' : 'p-2' }} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
+        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="10.5" cy="10.5" r="6.5" />
+            <path d="m16 16 5 5" stroke-linecap="round" />
+        </svg>
+    </button>
+{% endif %}

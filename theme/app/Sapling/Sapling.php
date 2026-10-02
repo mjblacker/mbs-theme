@@ -3,6 +3,8 @@
 use Timber\Timber;
 use Sapling\Integrations\ThemeOptions;
 use Sapling\Integrations\ProductFilters;
+use Sapling\Integrations\ProductCategoryVisibility;
+use Sapling\Integrations\ProductSearch;
 use Sapling\Integrations\ShopFiltersData;
 use Sapling\Integrations\WooCommercePricing;
 use Sapling\Integrations\WooCommerceCoupon;
@@ -20,6 +22,7 @@ class Sapling extends \Timber\Site
         add_filter('timber/twig', array( $this, 'add_to_twig' ));
         add_action('block_categories_all', array( $this, 'block_categories_all' ));
         add_action('enqueue_block_editor_assets', array( $this, 'enqueue_assets' ));
+        add_filter('should_load_separate_core_block_assets', '__return_false');
 
         // init our plugins
         $this->init_plugins();
@@ -206,6 +209,8 @@ class Sapling extends \Timber\Site
             new AcfBlocks(),
             new ThemeOptions(),
             new ProductFilters(),
+            new ProductCategoryVisibility(),
+            new ProductSearch(),
             new ShopFiltersData(),
             new WooCommercePricing(),
             new WooCommerceCoupon(),

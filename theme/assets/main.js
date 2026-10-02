@@ -6,12 +6,14 @@ import persist from '@alpinejs/persist'
 
 // Import Swiper and modules globally
 import { Swiper } from "swiper";
-import { Navigation } from "swiper/modules";
+import { Grid, Navigation } from "swiper/modules";
 import "swiper/css";
+import "swiper/css/grid";
 import "swiper/css/navigation";
 
 // Make Swiper globally available
 window.Swiper = Swiper;
+window.SwiperGrid = Grid;
 window.SwiperNavigation = Navigation;
 
 // Import alpinejs modules for this site

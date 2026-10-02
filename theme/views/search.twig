@@ -5,7 +5,7 @@
     <header class="mb-12">
         <h1 class="text-4xl font-bold text-gray-900 mb-4">Search Results</h1>
         {% if search_query %}
-            <p class="text-lg text-gray-700">Results for: <span class="font-semibold">"{{ search_query }}"</span></p>
+            <p class="text-lg text-gray-700">Results for: <span class="font-semibold">"{{ search_query|e }}"</span></p>
         {% endif %}
     </header>
 

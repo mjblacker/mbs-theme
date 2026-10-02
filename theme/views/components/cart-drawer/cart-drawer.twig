@@ -94,8 +94,7 @@
           <div class="flex items-center justify-center">
             <span class="text-lg font-medium text-gray-900 mr-5">Subtotal:</span>
             <div class="text-right flex items-center">
-              <span class="text-lg font-bold text-gray-900 mr-3" x-text="cartTotal"></span>
-              <div class="text-xs text-gray-500">INC GST</div>
+              <span class="text-lg font-bold text-gray-900 [&_.tax_label]:text-xs [&_.tax_label]:font-normal [&_.tax_label]:text-gray-500" x-html="cartSubtotalHtml"></span>
             </div>
           </div>
           

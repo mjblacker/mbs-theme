@@ -192,6 +192,7 @@ These classes provide core functionality and extend WordPress/WooCommerce featur
 - **navigation.twig** - Desktop primary menu navigation
 - **contact-button.twig** - Contact/call button (desktop & mobile)
 - **cart.twig** - Shopping cart icon and drawer toggle
+- **search-button.twig** - Product search toggle beside the cart (desktop and mobile)
 - **mobile-menu-button.twig** - Mobile menu hamburger button
 - **mobile-menu-overlay.twig** - Full-screen mobile menu with categories grid
 
@@ -207,6 +208,22 @@ These classes provide core functionality and extend WordPress/WooCommerce featur
 2. Modify individual component files in [theme/views/partial/header/](theme/views/partial/header/) for specific sections
 3. Update Primary Menu in WordPress Admin → Appearance → Menus
 4. Adjust styles in [theme/assets/styles/theme.css](theme/assets/styles/theme.css)
+
+#### Product Search
+
+The search icon beside the cart opens a dropdown search form on desktop and mobile. The form uses WordPress's built-in search with `post_type=product`, so only products are returned. WooCommerce applies its search visibility rules (including hidden products and the store's out-of-stock visibility setting), and results are limited to published products. Matching covers product titles, excerpts, descriptions, SKUs, and assigned category/brand names and slugs. Category matches include products in descendant categories. Published variation SKU matches return the parent product; disabled variations are excluded, and out-of-stock variations are excluded when the store hides out-of-stock items. Each search word must match, but different words can match different fields (for example, a brand name plus a product title). Excluded terms apply across these fields too.
+
+Product searches also match common English singular forms alongside the original word: for example, `screws` matches `screw`, `boxes` matches `box`, and `accessories` matches `accessory`. Some irregular forms such as `knives`/`knife` and `shelves`/`shelf` are included. This is lightweight plural handling, not typo correction or a full language stemmer. Quoted phrases, excluded terms, and alphanumeric product codes are not singularised. Explicit exact/sentence searches retain the native WordPress search fields and behaviour. The customer's original search text is kept in the form, results heading, and pagination.
+
+Relevance prioritises exact SKUs (including variation SKUs), exact product names, full phrases in titles, title keywords, partial SKUs, category/brand matches, then excerpts/descriptions. Weighted field matches break ties within these tiers, followed by product name and ID for stable pagination. This ordering applies only to relevance; price, date, and name sorting use their selected WooCommerce ordering. SKU matching uses WooCommerce's product lookup table, and taxonomy matches are cached within each request. Correlated `EXISTS` queries avoid duplicate product results when multiple categories, brands, or variations match.
+
+Results reuse `theme/views/woocommerce/product-card.twig`, with the existing pricing, sale badges, and add-to-cart functionality. Results can be sorted by relevance (default), latest, oldest, price (low/high), or product name (A–Z/Z–A) using WooCommerce's native ordering. Changing the sort returns to the first page; pagination and refining the search retain the selected sort. Pagination uses normal page links that retain the search term. A search returning one product still displays the results page.
+
+Key files:
+- `theme/app/Sapling/Integrations/ProductSearch.php` — routes WooCommerce product searches to the theme's search template
+- `theme/assets/js/header.js` — dropdown state, input focus, and dismissal
+- `theme/views/components/product-search-form.twig` — shared header/results search form
+- `theme/views/woocommerce/search-product.twig` — product results grid and empty state
 
 #### Footer Files
 **Main template:** [theme/views/footer.twig](theme/views/footer.twig)

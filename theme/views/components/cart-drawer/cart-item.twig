@@ -49,7 +49,7 @@
       
       <!-- Price -->
       <div class="text-right">
-        <span class="text-lg font-bold text-gray-900" x-text="formatPrice(item.line_total)"></span>
+        <span class="text-lg font-bold text-gray-900 [&_.tax_label]:text-xs [&_.tax_label]:font-normal [&_.tax_label]:text-gray-500" x-html="item.subtotal_html"></span>
       </div>
     </div>
   </div>

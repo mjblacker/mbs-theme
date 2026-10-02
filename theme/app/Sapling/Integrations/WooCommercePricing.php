@@ -3,6 +3,8 @@
 namespace Sapling\Integrations;
 
 use Sapling\SaplingPlugin;
+use Automattic\WooCommerce\StoreApi\Schemas\V1\CartSchema;
+use Automattic\WooCommerce\StoreApi\Schemas\V1\CartItemSchema;
 
 class WooCommercePricing implements SaplingPlugin
 {
@@ -21,8 +23,69 @@ class WooCommercePricing implements SaplingPlugin
         add_filter('woocommerce_add_cart_item_data', array($this, 'ensure_sale_price_in_cart'), 10, 3);
         add_action('woocommerce_add_to_cart', array($this, 'fix_cart_item_prices'), 10, 6);
         add_filter('woocommerce_add_cart_item', array($this, 'apply_sale_price_to_cart_item'), 10, 2);
+        // Register extension schemas before WooCommerce registers its REST routes.
+        add_action('rest_api_init', array($this, 'register_cart_drawer_data'), 5);
 
         remove_action('woocommerce_before_checkout_form', 'woocommerce_checkout_coupon_form', 10);
+    }
+
+    /**
+     * Expose core-formatted subtotals to the cart drawer through the Store API.
+     */
+    public function register_cart_drawer_data()
+    {
+        if (!function_exists('woocommerce_store_api_register_endpoint_data')) {
+            return;
+        }
+
+        foreach (array(
+            CartSchema::IDENTIFIER => 'get_cart_drawer_data',
+            CartItemSchema::IDENTIFIER => 'get_cart_drawer_item_data',
+        ) as $endpoint => $callback) {
+            woocommerce_store_api_register_endpoint_data(array(
+                'endpoint' => $endpoint,
+                'namespace' => 'mbs_cart_drawer',
+                'data_callback' => array($this, $callback),
+                'schema_callback' => array($this, 'get_cart_drawer_schema'),
+                'schema_type' => ARRAY_A,
+            ));
+        }
+    }
+
+    public function get_cart_drawer_schema()
+    {
+        return array(
+            'subtotal_html' => array(
+                'description' => 'Subtotal formatted using WooCommerce cart tax display settings.',
+                'type' => 'string',
+                'context' => array('view', 'edit'),
+                'readonly' => true,
+            ),
+        );
+    }
+
+    public function get_cart_drawer_data()
+    {
+        return array(
+            'subtotal_html' => WC()->cart ? wp_kses_post(WC()->cart->get_cart_subtotal()) : '',
+        );
+    }
+
+    public function get_cart_drawer_item_data($cart_item)
+    {
+        $subtotal = '';
+
+        if (WC()->cart && isset($cart_item['data'], $cart_item['quantity'], $cart_item['key'])) {
+            // Use the same helper and filter as the standard cart and checkout rows.
+            $subtotal = apply_filters(
+                'woocommerce_cart_item_subtotal',
+                WC()->cart->get_product_subtotal($cart_item['data'], $cart_item['quantity']),
+                $cart_item,
+                $cart_item['key']
+            );
+        }
+
+        return array('subtotal_html' => wp_kses_post($subtotal));
     }
 
     /**
