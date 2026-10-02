@@ -32,6 +32,29 @@ If you need to restore the build process to defaults, run `lando clean` and this
 
 Live reload is enabled by default using Vite.
 
+### Refresh Missing Uploads
+
+After importing a production or staging database, download just the uploads missing from your local site:
+
+```bash
+# Preview missing files without changing anything
+lando sync-uploads https://metrobuildingsupplies.com.au/ --dry-run
+
+# Download missing files from the main site
+lando sync-uploads https://metrobuildingsupplies.com.au/
+
+# Test with up to five missing files
+lando sync-uploads metrobuildingsupplies.com.au --limit=5
+```
+
+Supply any production/staging hostname or HTTP(S) site URL; bare hostnames default to HTTPS. Run `lando start` after updating `.lando.yml` to load the command.
+
+The command scans the **local database** for attachment originals, generated image sizes, original/backup images, and upload URLs in post content, post metadata (including ACF), options, and term metadata. URL references must be relative or use the local site/uploads hostname or the supplied source hostname; third-party upload URLs are ignored. It downloads referenced missing files into the local WordPress uploads directory (normally `wp/wp-content/uploads`), retaining their relative paths. Existing files are preserved, and downloads are saved only after a successful response. No database values are changed.
+
+Only files inside top-level **four-digit year folders** (for example, `2024/07/image.jpg`) are eligible. Non-year folders such as `templates/thumb/` are excluded, and cached transient options are not scanned.
+
+The source must publicly serve the files at the corresponding uploads path. Files without a local database reference are not discovered. Failed downloads are reported, the command exits with an error, and rerunning retries files still missing. A dry run checks local file presence only; it does not request files from the source site.
+
 ### Versioning
 
 To assist with long-term caching, file hashing (e.g. `main-e1457bfd.js`) is enabled by default. This is useful for cache-busting purposes.

@@ -95,12 +95,21 @@ tooling:
     cmd: 'tail -f /app/wp/wp-content/debug.log'
     description: 'Get real-time WP debug log output'
 
+  fix-prefix:
+    service: appserver
+    cmd: 'bash /app/scripts/fix-wordpress-prefix.sh'
+    description: 'Detect imported WordPress DB prefix and rename tables to wp_'
+
+  sync-uploads:
+    service: appserver
+    cmd: 'wp --path=/app/wp --skip-plugins --skip-themes --require=/app/scripts/sync-uploads.php sync-uploads'
+    description: 'Download missing local uploads from a source hostname'
+
   # Update this to the URL's needed for your install when loading existing data
-  update-urls:
+  updateurls:
     service: appserver
     cmd:
-      - echo "Not implemented yet"
-      #- wp search-replace '%old_url%' '%lando_url%'
+      - wp search-replace 'https://metrobuildingsupplies.com.au' 'https://mbs.lndo.site'
 
   create-admin:
     service: appserver
@@ -124,4 +133,3 @@ tooling:
           # 4. If the exit code was 0, the user already exists.
           echo "Admin user 'sapling' already exists. No action needed."
         fi
-
