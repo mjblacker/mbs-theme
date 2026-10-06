@@ -1,6 +1,8 @@
 {# Cart Item Subtotal Component
-   Props: product, cart_item
+   Props: product, cart_item, cart_item_key, wc_cart
 #}
+
+{% set subtotal = function('apply_filters', 'woocommerce_cart_item_subtotal', wc_cart.get_product_subtotal(product, cart_item.quantity), cart_item, cart_item_key) %}
 
 {% if product.is_on_sale() %}
     {% set regular_price = product.get_regular_price() %}
@@ -14,17 +16,22 @@
             </span>
             <!-- Regular price (crossed out) -->
             <span class="text-sm text-gray-500 line-through">
-                {{ function('wc_price', regular_price * cart_item.quantity)|raw }}
+                {% set regular_subtotal = function('wc_get_price_to_display', product, {
+                    price: regular_price,
+                    qty: cart_item.quantity,
+                    display_context: 'cart'
+                }) %}
+                {{ function('wc_price', regular_subtotal)|raw }}
             </span>
             <!-- Sale price (actual total) -->
             <span class="text-lg font-medium text-gray-900">
-                {{ function('wc_price', sale_price * cart_item.quantity)|raw }}
+                {{ subtotal|raw }}
             </span>
         </div>
     {% endif %}
 {% else %}
     <!-- Regular price for non-sale items -->
     <span class="text-lg font-medium text-gray-900">
-        {{ function('wc_price', cart_item.line_total)|raw }}
+        {{ subtotal|raw }}
     </span>
 {% endif %}

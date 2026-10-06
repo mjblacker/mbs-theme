@@ -73,7 +73,9 @@
     <div class="lg:col-span-4 flex items-center justify-end">
         {% include 'components/cart/cart-item-subtotal.twig' with {
             product: product,
-            cart_item: cart_item
+            cart_item: cart_item,
+            cart_item_key: cart_item_key,
+            wc_cart: wc_cart
         } %}
     </div>
 </div>
